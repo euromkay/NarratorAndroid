@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="voss.android" >
+
+    <uses-sdk
+        android:minSdkVersion="18"
+        android:targetSdkVersion="18" />
+
+
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission
+        android:required="true"
+        android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission
+        android:required="true"
+        android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission
+        android:required="true"
+        android:name="android.permission.INTERNET"/>
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <application
+        android:name="ApplicationNarratorPreferences"
+        android:allowBackup="true"
+        android:icon="@drawable/home"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".screens.ActivityHome"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name="voss.android.wifi.SocketClient"
+            android:label="SocketClient" >
+        </service>
+        <service
+            android:name="voss.android.wifi.SocketHost"
+            android:label="SocketClient" >
+        </service>
+        <activity
+            android:name="voss.android.ActivitySettings"
+            android:label="@string/app_name"
+            android:parentActivityName=".screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="voss.android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name=".setup.ActivityCreateGame"
+            android:label="@string/app_name"
+            android:parentActivityName=".screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="voss.android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name=".ActivityTutorial"
+            android:label="@string/app_name"
+            android:parentActivityName=".screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="voss.android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name=".day.ActivityDay"
+            android:label="@string/app_name"
+            android:parentActivityName=".screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="voss.android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name=".screens.ActivityEndGame"
+            android:label="@string/app_name"
+            android:parentActivityName=".screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="voss.android.screens.ActivityHome" />
+        </activity>
+
+
+        <receiver
+            android:name=".texting.ReceiverText"
+            android:enabled="true" >
+            <intent-filter android:priority="1000" >
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

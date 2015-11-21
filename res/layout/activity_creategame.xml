@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pinstripe"
+    android:keepScreenOn="true"
+    android:padding="8dp"
+    android:screenOrientation="portrait" >
+
+    <View
+        android:id="@+id/centerShim"
+        android:layout_width="16dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/roles_show_Players"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/rsz_addpeople"
+        android:padding="5dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:layout_alignParentEnd="false">
+
+    </ImageButton>
+
+    <TextView
+        android:id="@+id/roles_categories_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:paddingBottom="6dp"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:text="@string/roles_categoryTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <ListView
+        android:id="@+id/roles_categories_LV"
+        android:layout_width="wrap_content"
+        android:background="@color/category_tint"
+        android:layout_height="wrap_content"
+        android:divider="@null"
+        android:padding="6dp"
+        android:dividerHeight="0dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/roles_categories_title"
+        android:layout_toLeftOf="@+id/centerShim" >
+    </ListView>
+
+    <View
+        android:id="@+id/shim2"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/roles_categories_LV"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/roles_bottomLV_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/shim2"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:text="@string/roles_rolesTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/roles_hint_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/roles_bottomLV_title"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <ListView
+        android:id="@+id/roles_bottomLV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:divider="@null"
+        android:padding="6dp"
+        android:dividerHeight="0dp"
+        android:background="@color/category_tint"
+        android:layout_below="@id/roles_hint_title"
+        android:layout_toLeftOf="@+id/centerShim" >
+    </ListView>
+
+    <TextView
+        android:id="@+id/roles_rightLV_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="6dp"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="left"
+        android:layout_toRightOf="@+id/centerShim"
+        android:text="@string/roles_rolesListTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <ListView
+        android:id="@+id/roles_rolesList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:divider="@null"
+        android:background="@color/category_tint"
+        android:dividerHeight="0dp"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/centerShim"
+        android:layout_below="@id/roles_rightLV_title">
+    </ListView>
+
+    <View
+        android:layout_width="1sp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/roles_rolesList"
+        android:layout_alignBottom="@id/roles_rolesList">
+
+    </View>
+
+    <Button
+        android:id="@+id/roles_startGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="@string/roles_start"
+        android:textColor="@color/mafia"
+        android:textSize="25sp" />
+
+    </RelativeLayout>
+

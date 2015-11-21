@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">The Narrator</string>
+    <string name="action_settings">Settings</string>
+
+
+    <string name = "mafiaTitle">Mafia</string>
+    <string name = "version">v1.6</string>
+    <string name = "button1">New Game</string>
+    <string name = "button2">Settings</string>
+    <string name = "button3">Wins and Losses</string>
+
+    <string name = "playerDialogTitle">Players in Game</string>
+
+
+    <!--<color name = "mafia">#AF111C</color> -->
+    <color name = "category_tint">#66000000</color>
+    <color name = "redBlood">#AF111C</color>
+    <color name = "mafia">#FF0000</color>
+    <color name = "black" >#000000</color>
+    <color name = "cult">#00FF00</color>
+    <color name = "green">#00FF00</color>
+    <color name = "outcasts">#666600</color>
+    <color name = "benigns">#DDA0DD</color>
+    <color name = "blue">#0000FF</color>
+    <color name = "blue_cobalt">#0020C2</color>
+    <color name = "town">#6495ED</color>
+    <color name = "white">#FFFFFF</color>
+    <color name = "neutral">#808080</color>
+    <color name = "grey">#808080</color>
+    <color name = "yellow">#FFFF00</color>
+    <color name = "gold">#FFD700</color>
+    <color name = "orange">#FF8C00</color>
+    <color name = "greenYellow">#ADFF2F</color> //cult
+    <color name = "massMurderer">#CD853E</color>
+    <color name = "oranegRed">#FF4500</color>
+    <color name = "yakuza">#FFD700</color>
+    <color name = "serialKiller">#8B4513</color>
+    <color name = "backgroundApp">#000000</color>
+    <color name = "trimmings">#49C500</color>
+
+    <!-- RULES TEXT -->
+    <string name="rules_title">Settings</string>
+    <string name = "dayStart">Day Start</string>
+
+    <string name = "doctor_title">Doctor Settings</string>
+    <string name = "self_heal">Can Heal Stuff</string>
+    <string name = "success_noti">Notified On Success</string>
+
+    <string name = "sk_title">Serial Killer Settings</string>
+    <string name = "sk_invuln">Invulnerability</string>
+
+
+    <!-- PLAYERS TEXT -->
+    <string name="players_title">Players</string>
+    <string name="players_entryLabel">Entry</string>
+    <string name="players_addPlayerButton">Add Player</string>
+    <string name="players_addRoleButton">To Roles</string>
+    <string name="players_deletePlayerButton">Delete Player</string>
+    <string name="players_nameLabel">Players</string>
+    <string name="players_hint">Enter name here</string>
+
+
+    <!-- ROLES TEXT -->
+    <string name = "roles_addRole">Add</string>
+    <string name = "roles_deleteRole">Delete</string>
+    <string name = "roles_start">Start</string>
+    <string name = "roles_categoryTitle">Categories</string>
+    <string name = "roles_rolesTitle">Roles</string>
+    <string name = "roles_rolesListTitle">Roles List</string>
+    <string name = "roles_player_button">+P</string>
+
+
+    <string-array name="roles_townRoles">
+        <item>Citizen</item>
+        <item>Sheriff</item>
+        <item>Detective</item>
+        <item>Lookout</item>
+        <item>Doctor</item>
+        <item>Escort</item>
+        <item>Bus Driver</item>
+        <item>Bodyguard</item>
+        <item>Vigilante</item>
+        <item>Veteran</item>
+        <item>Mayor</item>
+    </string-array>
+
+    <string-array name="roles_mafiaRoles">
+        <item>Godfather</item>
+        <item>Mafioso</item>
+        <item>Agent</item>
+        <item>Blackmailer</item>
+        <item>Consort</item>
+        <item>Janitor</item>
+        <item>Framer</item>
+        <item>Chauffeur</item>
+    </string-array>
+
+    <string-array name="roles_neutralRoles">
+        <item>Cult Leader</item>
+        <item>Cultist</item>
+        <item>Witch</item>
+        <item>Arsonist</item>
+        <item>Serial Killer</item>
+        <item>Mass Murderer</item>
+        <item>Jester</item>
+        <item>Executioner</item>
+    </string-array>
+
+    <string-array name="roles_randomRoles">
+        <item>Any Random</item>
+        <item>Town Random</item>
+        <item>Town Protective</item>
+        <item>Town Investigative</item>
+        <item>Town Killing</item>
+        <item>Mafia Random</item>
+        <item>Yakuza Random</item>
+        <item>Neutral Random</item>
+    </string-array>
+
+
+    <!-- DAY TEXT -->
+    <string name = "day_title">Day 0</string>
+    <string name = "day_playerLabel">P</string>
+    <string name = "day_button_name">Go</string>
+    <string name = "day_last_will">Last Will</string>
+    <string name = "day_graveYard_label_name">Grave Yard</string>
+    <string name = "day_rolesList_label_name">Roles List</string>
+    <string name = "day_night_spinner">Commands</string>
+    <string name = "day_live_label_name">Players of Society</string>
+    <string name = "day_mayor_label">Reveal</string>
+</resources>

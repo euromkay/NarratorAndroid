@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/day_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<RelativeLayout
+    android:id="@+id/day_primary"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroundApp"
+    android:keepScreenOn="true"
+    android:screenOrientation="portrait"
+    android:scrollbars="vertical" >
+
+    <TextView
+        android:id="@+id/day_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/day_title"
+        android:paddingTop="3dp"
+        android:textColor="@color/trimmings"
+        android:textSize="30sp"
+        android:textStyle="bold" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/day_currentPlayerTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="(Player 1)"
+        android:layout_marginRight="5sp"
+        android:paddingTop="3dp"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:textStyle="bold" >
+    </TextView>
+
+    <Button
+        android:id="@+id/day_playerDrawerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="@string/day_playerLabel"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:textColor="@color/trimmings"
+        android:textSize="15sp" >
+    </Button>
+
+
+
+
+    <Button
+        android:id="@+id/day_actionButton"
+        android:text="Actions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/trimmings"
+        android:layout_below="@id/day_playerDrawerButton"
+        android:layout_alignParentLeft="true"
+        />
+
+
+
+    <Button
+        android:id="@+id/day_infoButton"
+        android:text="Info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/trimmings"
+        android:layout_alignTop="@id/day_actionButton"
+        android:layout_centerHorizontal="true"
+        />
+
+    <Button
+        android:id="@+id/day_messagesButton"
+        android:text="Messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/trimmings"
+        android:layout_alignTop="@id/day_actionButton"
+        android:layout_alignParentRight="true"
+        />
+
+    <Button
+        android:id="@+id/day_horizontalShimmy"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_below="@id/day_infoButton"
+        android:background="@color/trimmings" />
+
+    <View
+        android:id="@+id/centerShim"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_below="@id/day_horizontalShimmy"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/day_rolesList_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/day_horizontalShimmy"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:gravity="center"
+        android:text="@string/day_rolesList_label_name"
+        android:textColor="@color/trimmings"
+        android:textSize="20sp" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/day_membersLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/day_horizontalShimmy"
+        android:layout_toRightOf="@+id/centerShim"
+        android:gravity="center"
+        android:scrollHorizontally="false"
+        android:textColor="@color/trimmings"
+        android:textSize="20sp" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/day_role_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/centerShim"
+        android:layout_below="@id/day_membersLabel"
+        android:scrollbars="vertical"
+        android:textColor="@color/trimmings"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/day_commandsLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/day_horizontalShimmy"
+        android:gravity="center"
+        android:text="5 left"
+        android:textColor="@color/trimmings"
+        android:textSize="15sp" >
+    </TextView>
+
+
+    <Spinner
+        android:id="@+id/day_frameSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/day_commandsLabel"
+        android:layout_centerInParent="true"
+        android:gravity="right"
+        android:textColor="@color/yellow" />
+
+
+
+
+
+
+
+
+
+
+
+    <ListView
+        android:id="@+id/day_rolesList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:layout_alignRight="@id/day_rolesList_label"
+        android:layout_below="@id/day_rolesList_label"
+        android:scrollbars="vertical" >
+    </ListView>
+
+    <Button
+        android:id="@+id/day_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:text="@string/day_mayor_label"
+        android:textColor="@color/trimmings"
+        android:textSize="18dp" >
+    </Button>
+
+    <ListView
+        android:id="@+id/day_actionList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:layout_below="@id/day_commandsLabel"
+        android:layout_above="@id/day_button"
+        android:scrollbars="vertical" >
+    </ListView>
+
+    <!-- chat -->
+
+    <EditText
+        android:id="@+id/day_chatET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:textColor="@color/white"
+        android:imeOptions="actionDone"
+        android:singleLine="true"
+        android:hint="Send Message"/>
+    <ScrollView
+        android:id="@+id/day_chatHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/day_horizontalShimmy"
+        android:layout_above="@id/day_chatET"
+        android:orientation="vertical"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:id="@+id/day_chatTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+    </ScrollView>
+
+
+    <Button
+        android:id="@+id/day_chatButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:gravity="center"
+        android:text="Send"
+        android:textColor="@color/trimmings"
+        android:textSize="18dp" >
+    </Button>
+
+    <ListView
+        android:id="@+id/day_membersLV"
+        android:layout_width="match_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:layout_height="match_parent"
+        android:layout_alignLeft="@id/day_membersLabel"
+        android:layout_below="@id/day_membersLabel"
+        android:scrollbars="vertical" >
+    </ListView>
+
+
+
+
+
+</RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/day_playerNavigationPane"
+        android:scrollbars="vertical"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left|start"
+        android:choiceMode="singleChoice"
+        android:divider="@null"
+        android:backgroundTint="@color/grey"
+        />
+
+</android.support.v4.widget.DrawerLayout>
