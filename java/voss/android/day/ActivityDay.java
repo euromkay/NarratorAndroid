@@ -48,15 +48,15 @@ import voss.android.screens.SimpleGestureFilter;
 import voss.android.screens.SimpleGestureFilter.SimpleGestureListener;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.TextHandler;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.Team;
-import voss.logic.Event;
-import voss.logic.exceptions.PlayerTargetingException;
-import voss.logic.support.Constants;
 import voss.packaging.Board;
-import voss.roles.Framer;
+import voss.shared.logic.Event;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.Team;
+import voss.shared.logic.exceptions.PlayerTargetingException;
+import voss.shared.logic.support.Constants;
+import voss.shared.roles.Framer;
 
 
 public class ActivityDay extends FragmentActivity 

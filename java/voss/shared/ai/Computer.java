@@ -1,15 +1,15 @@
-package voss.android.ai;
+package voss.shared.ai;
 
 
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.Team;
-import voss.logic.exceptions.PhaseException;
-import voss.logic.exceptions.PlayerTargetingException;
-import voss.roles.Arsonist;
-import voss.roles.Framer;
-import voss.roles.Mayor;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.Team;
+import voss.shared.logic.exceptions.PhaseException;
+import voss.shared.logic.exceptions.PlayerTargetingException;
+import voss.shared.roles.Arsonist;
+import voss.shared.roles.Framer;
+import voss.shared.roles.Mayor;
 
 
 public class Computer {

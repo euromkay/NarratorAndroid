@@ -1,8 +1,8 @@
 package voss.android.screens;
 
 import voss.android.R;
-import voss.logic.Narrator;
-import voss.logic.Event;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Event;
 import voss.packaging.Board;
 import android.app.Activity;
 import android.os.Bundle;

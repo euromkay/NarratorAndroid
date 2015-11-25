@@ -9,8 +9,8 @@ import android.view.Window;
 import android.widget.ImageView;
 import voss.android.screens.SimpleGestureFilter;
 import voss.android.screens.SimpleGestureFilter.SimpleGestureListener;
-import voss.logic.Narrator;
-import voss.logic.exceptions.UnsupportedMethodException;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.exceptions.UnsupportedMethodException;
 
 
 public class ActivityTutorial extends Activity implements SimpleGestureListener{

@@ -15,10 +15,10 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
-import voss.logic.Narrator;
-import voss.logic.Rules;
-import voss.logic.exceptions.UnsupportedMethodException;
-import voss.logic.support.Constants;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Rules;
+import voss.shared.logic.exceptions.UnsupportedMethodException;
+import voss.shared.logic.support.Constants;
 
 public class ActivitySettings extends Activity implements OnClickListener, OnCheckedChangeListener, OnItemSelectedListener{
 	

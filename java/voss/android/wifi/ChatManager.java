@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import android.os.Handler;
 import android.util.Log;
-import voss.logic.support.Constants;
+import voss.shared.logic.support.Constants;
 
 
 

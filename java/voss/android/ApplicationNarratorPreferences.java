@@ -8,7 +8,7 @@ import android.preference.PreferenceManager;
 import com.parse.Parse;
 import com.parse.ParseCrashReporting;
 
-import voss.logic.support.Constants;
+import voss.shared.logic.support.Constants;
 
 public class ApplicationNarratorPreferences extends Application {
 	public void onCreate(){
@@ -30,7 +30,7 @@ public class ApplicationNarratorPreferences extends Application {
 
 		Parse.enableLocalDatastore(this);
 		ParseCrashReporting.enable(this);
-		Parse.initialize(this, "y0lEBXH1eEsqfKkgUqmsbgrcylk4rIK9cCj9Z1H6", "Ef2VLpoOHJixX9P6AYbzctfvSoZLJyoJO1KzneR7");
+		Parse.initialize(this, "JrqL953o31jfhzzkW6gYQoHrQudrHBu9DLoxFbxZ", "rm5gHJVygUlvs2yJveV3Xh6ywXdvSiwiEpr7ssmH");
 	}
 
 	

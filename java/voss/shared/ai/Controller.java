@@ -1,11 +1,9 @@
-package voss.android.ai;
+package voss.shared.ai;
 
-import voss.logic.Narrator;
-import voss.logic.Player;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
 
-/**
- * Created by Michael on 8/24/2015.
- */
+
 public interface Controller {
     Narrator getNarrator();
 

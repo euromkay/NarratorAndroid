@@ -8,8 +8,8 @@ import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.ReceiverText;
 import voss.android.texting.TextHandler;
-import voss.logic.Player;
-import voss.logic.PlayerList;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 
 
 public class TextAdder extends BroadcastReceiver{

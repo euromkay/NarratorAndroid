@@ -1,7 +1,7 @@
 package voss.android.setup;
 
-import voss.logic.Player;
-import voss.logic.support.RoleTemplate;
+import voss.shared.logic.Player;
+import voss.shared.logic.support.RoleTemplate;
 
 public class SetupScreenController implements SetupListener{
 

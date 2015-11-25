@@ -14,10 +14,10 @@ import voss.android.wifi.MessageTarget;
 import voss.android.wifi.SocketClient;
 import voss.android.wifi.SocketHost;
 import voss.android.wifi.WifiHost;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.listeners.CommandListener;
-import voss.logic.support.Constants;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.listeners.CommandListener;
+import voss.shared.logic.support.Constants;
 
 
 public class IpDayListener implements CommandListener, ServiceConnection, Handler.Callback {

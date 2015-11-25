@@ -15,7 +15,7 @@ import android.widget.Toast;
 import java.util.HashMap;
 
 import voss.android.setup.ActivityCreateGame;
-import voss.logic.support.Constants;
+import voss.shared.logic.support.Constants;
 
 
 public class WifiHost implements Handler.Callback{

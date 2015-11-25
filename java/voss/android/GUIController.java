@@ -4,13 +4,13 @@ import android.view.View;
 
 import java.util.Random;
 
-import voss.ai.Controller;
 import voss.android.R;
 import voss.android.day.ActivityDay;
 import voss.android.screens.SimpleGestureFilter;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.exceptions.PlayerTargetingException;
+import voss.shared.ai.Controller;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.exceptions.PlayerTargetingException;
 
 public class GUIController implements Controller{
 

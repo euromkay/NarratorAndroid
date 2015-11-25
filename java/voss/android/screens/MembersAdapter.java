@@ -7,8 +7,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import voss.android.R;
-import voss.logic.Player;
-import voss.logic.PlayerList;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 
 public class MembersAdapter extends BaseAdapter{
 

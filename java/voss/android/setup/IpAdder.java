@@ -7,12 +7,12 @@ import voss.android.CommunicatorPhone;
 import voss.android.wifi.ChatManager;
 import voss.android.wifi.CommunicatorInternet;
 import voss.android.wifi.WifiHost;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.support.Communicator;
-import voss.logic.support.Constants;
-import voss.logic.support.RoleTemplate;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.support.Communicator;
+import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.RoleTemplate;
 
 
 public class IpAdder implements SetupListener{

@@ -5,11 +5,13 @@ import java.net.InetAddress;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,35 +21,42 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+//import com.parse.ParseUser;
+
 import com.parse.ParseUser;
 
 import voss.android.ActivityTutorial;
 import voss.android.CommunicatorPhone;
 import voss.android.R;
+import voss.android.alerts.GameBookPopUp;
 import voss.android.alerts.IpPrompt;
 import voss.android.alerts.IpPrompt.IpPromptListener;
+import voss.android.alerts.LoginAlert;
 import voss.android.alerts.NamePrompt;
 import voss.android.alerts.NamePrompt.NamePromptListener;
 import voss.android.alerts.PhoneBookPopUp;
 import voss.android.alerts.PhoneBookPopUp.AddPhoneListener;
+import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
 import voss.android.wifi.WifiHost;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.exceptions.UnsupportedMethodException;
 import voss.packaging.Board;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.exceptions.UnsupportedMethodException;
 
 public class ActivityHome extends Activity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
-	
+
+	private Server server;
+
 	public void creating(Bundle b){
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_home);
 		
 		setText(R.id.home_join);
 		setText(R.id.home_host);
-		setText(R.id.home_login);
+		setText(R.id.home_login_signup);
 		setText(R.id.home_tutorial);
 		setText(R.id.home_settings);
 
@@ -58,11 +67,13 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		if(n == null)
 			n = Narrator.Default();
 
-		ParseUser p = ParseUser.getCurrentUser();
-		if(p != null){
-			findViewById(R.id.home_login).setVisibility(View.INVISIBLE);
+		server = new Server();
+
+		if(isLoggedIn()){
+			TextView tv = (TextView) findViewById(R.id.home_login_signup);
+			tv.setText("Sign Out");
 		}else{
-			
+
 		}
 		
 	}
@@ -92,7 +103,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	}
 
 	private boolean isLoggedIn(){
-		return false;
+		return ParseUser.getCurrentUser() != null;
 	}
 
 	public static int buildNumber(){
@@ -104,7 +115,14 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 			case R.id.home_host:
 				if(isLoggedIn())
-					startNewGame(null);
+					server.registerGame(new Server.GameRegister() {
+						public void onSuccess() {
+							startNewGame(null);
+						}
+						public void onFailure(String t){
+							toast(t);
+						}
+					});
 				else{
 					if(buildNumber() < 16)
 						toast("You will not be able to host games wirelessly");
@@ -113,9 +131,9 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 				break;
 
 			case R.id.home_join:
-				if(isLoggedIn())
-					startNewGame(null);
-				else{
+				if(isLoggedIn()) {
+					displayGames();
+				}else{
 					showNamePrompt("Join");
 				}
 				break;
@@ -124,8 +142,43 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 			case R.id.home_tutorial:
 				startTutorial();
 				break;
-			
+
+			case R.id.home_login_signup:
+				if (isLoggedIn()){
+					server.logOut();
+					TextView tv = (TextView) v;
+					tv.setText("Login/Signup");
+				}else if(!isInternetAvailable()){
+					LoginAlert loginer = new LoginAlert();
+					loginer.setServer(server, this);
+					loginer.show(getFragmentManager(), "logginer");
+				}else{
+					toast("You must be connected to the internet to login.");
+				}
+				break;
+
 		}
+	}
+
+	public void displayGames(){
+		GameBookPopUp gb = new GameBookPopUp();
+		gb.show(getFragmentManager(), "gamebook");
+	}
+
+	public boolean isInternetAvailable() {
+		try {
+			InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
+
+			if (ipAddr.equals("")) {
+				return false;
+			} else {
+				return true;
+			}
+
+		} catch (Exception e) {
+			return false;
+		}
+
 	}
 
 	private void startTutorial(){

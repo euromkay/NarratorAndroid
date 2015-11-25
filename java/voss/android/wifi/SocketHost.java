@@ -6,6 +6,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import voss.shared.logic.Narrator;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -16,8 +17,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import voss.logic.Narrator;
 
 
 public class SocketHost extends Service implements MessageTarget, Runnable{

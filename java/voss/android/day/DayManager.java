@@ -3,20 +3,20 @@ package voss.android.day;
 import java.util.ArrayList;
 import java.util.Random;
 
-import voss.ai.Simulations;
 import voss.android.CommunicatorPhone;
 import voss.android.PhoneBook;
 import voss.android.screens.SimpleGestureFilter;
 import voss.android.texting.TextHandler;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.listeners.NarratorListener;
-import voss.logic.support.RoleTemplate;
-import voss.logic.templates.TestController;
-import voss.roles.Arsonist;
-import voss.roles.Framer;
-import voss.roles.Mayor;
+import voss.shared.ai.Simulations;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.listeners.NarratorListener;
+import voss.shared.logic.support.RoleTemplate;
+import voss.shared.logic.templates.TestController;
+import voss.shared.roles.Arsonist;
+import voss.shared.roles.Framer;
+import voss.shared.roles.Mayor;
 
 public class DayManager implements NarratorListener {
 

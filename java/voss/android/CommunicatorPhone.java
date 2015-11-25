@@ -2,9 +2,9 @@ package voss.android;
 
 import java.util.ArrayList;
 
-import voss.logic.support.Communicator;
-import voss.logic.support.CommunicatorHandler;
-import voss.packaging.Packager;
+import voss.shared.logic.support.Communicator;
+import voss.shared.logic.support.CommunicatorHandler;
+import voss.shared.packaging.Packager;
 
 
 public class CommunicatorPhone extends Communicator{

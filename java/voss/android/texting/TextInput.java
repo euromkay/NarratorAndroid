@@ -1,6 +1,6 @@
 package voss.android.texting;
 
-import voss.logic.Player;
+import voss.shared.logic.Player;
 
 
 public interface TextInput {

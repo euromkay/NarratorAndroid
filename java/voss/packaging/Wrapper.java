@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Parcel;
+import voss.shared.packaging.Deliverer;
 
 public class Wrapper implements Deliverer{
 

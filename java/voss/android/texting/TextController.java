@@ -1,10 +1,10 @@
 package voss.android.texting;
 
-import voss.ai.Controller;
 import voss.android.texting.TextHandler;
 import voss.android.texting.TextInput;
-import voss.logic.Narrator;
-import voss.logic.Player;
+import voss.shared.ai.Controller;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
 
 
 

@@ -1,13 +1,13 @@
-package voss.android.ai;
+package voss.shared.ai;
 
 import java.util.HashMap;
 import java.util.Random;
 
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.Team;
-import voss.logic.exceptions.PlayerTargetingException;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.Team;
+import voss.shared.logic.exceptions.PlayerTargetingException;
 
 
 public class Brain {

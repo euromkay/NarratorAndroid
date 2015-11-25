@@ -5,10 +5,12 @@ import android.os.Parcelable;
 import voss.android.CommunicatorPhone;
 import voss.android.texting.CommunicatorText;
 import voss.android.wifi.CommunicatorInternet;
-import voss.logic.Narrator;
-import voss.logic.support.Communicator;
-import voss.logic.support.CommunicatorHandler;
-import voss.logic.support.CommunicatorNull;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.support.Communicator;
+import voss.shared.logic.support.CommunicatorHandler;
+import voss.shared.logic.support.CommunicatorNull;
+import voss.shared.packaging.Box;
+import voss.shared.packaging.Packager;
 
 public class Board implements CommunicatorHandler, Parcelable{
 

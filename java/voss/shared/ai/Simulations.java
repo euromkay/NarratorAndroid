@@ -1,9 +1,9 @@
-package voss.android.ai;
+package voss.shared.ai;
 
 import java.util.Random;
 
-import voss.logic.Player;
-import voss.logic.PlayerList;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 
 
 public class Simulations {

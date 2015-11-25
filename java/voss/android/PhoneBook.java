@@ -4,8 +4,8 @@ import java.util.TreeMap;
 
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
-import voss.logic.Narrator;
-import voss.logic.Player;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
 
 
 public class PhoneBook {

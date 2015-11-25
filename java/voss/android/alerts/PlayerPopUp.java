@@ -17,11 +17,11 @@ import voss.android.R;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.setup.SetupListener;
 import voss.android.wifi.CommunicatorInternet;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.support.CommunicatorNull;
-import voss.logic.support.RoleTemplate;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.support.CommunicatorNull;
+import voss.shared.logic.support.RoleTemplate;
 
 
 public class PlayerPopUp extends DialogFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SetupListener{

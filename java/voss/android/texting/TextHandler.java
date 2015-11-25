@@ -7,19 +7,19 @@ import java.util.ArrayList;
 
 import voss.android.PhoneBook;
 import voss.android.texting.TextInput;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.PlayerList;
-import voss.logic.Team;
-import voss.logic.exceptions.IllegalActionException;
-import voss.logic.exceptions.PhaseException;
-import voss.logic.exceptions.PlayerTargetingException;
-import voss.logic.exceptions.UnknownPlayerException;
-import voss.logic.exceptions.UnknownTeamException;
-import voss.logic.exceptions.VotingException;
-import voss.logic.listeners.NarratorListener;
-import voss.logic.support.CommandHandler;
-import voss.logic.support.RoleTemplate;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
+import voss.shared.logic.Team;
+import voss.shared.logic.exceptions.IllegalActionException;
+import voss.shared.logic.exceptions.PhaseException;
+import voss.shared.logic.exceptions.PlayerTargetingException;
+import voss.shared.logic.exceptions.UnknownPlayerException;
+import voss.shared.logic.exceptions.UnknownTeamException;
+import voss.shared.logic.exceptions.VotingException;
+import voss.shared.logic.listeners.NarratorListener;
+import voss.shared.logic.support.CommandHandler;
+import voss.shared.logic.support.RoleTemplate;
 
 
 public class TextHandler extends CommandHandler implements NarratorListener, TextInput {

@@ -1,10 +1,10 @@
-package voss.android.ai;
+package voss.shared.logic.templates;
 
-import voss.android.day.DayManager;
-import voss.logic.Narrator;
-import voss.logic.Player;
-import voss.logic.support.CommandHandler;
-import voss.roles.Framer;
+import voss.shared.ai.Controller;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.support.CommandHandler;
+import voss.shared.roles.Framer;
 
 
 public class TestController implements Controller{
