@@ -10,6 +10,8 @@ import android.util.Log;
 import voss.android.ActivitySettings;
 import voss.android.CommunicatorPhone;
 import voss.android.day.ActivityDay;
+import voss.android.parse.Server;
+import voss.android.parse.ServerResponder;
 import voss.android.screens.ActivityHome;
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
@@ -77,15 +79,21 @@ public class SetupManager implements ChatManager.ChatListener {
         }
     }
 
-    public void setupWifi(String ip){
-        wifi = new WifiHost(screen, this);
-        if(ip != null)
-            wifi.setIp(ip);
-        wifi.start(isHost());
-        
-        ipAdder = new IpAdder(this, wifi);
-        synchronized (listeners){
-        	listeners.add(ipAdder);
+    public void setupConnection(String ip){
+        if (Server.IsLoggedIn()) {
+            synchronized (listeners){
+                listeners.add(new ServerResponder(ip, screen));
+            }
+        }else{
+            wifi = new WifiHost(screen, this);
+            if (ip != null)
+                wifi.setIp(ip);
+            wifi.start(isHost());
+
+            ipAdder = new IpAdder(this, wifi);
+            synchronized (listeners) {
+                listeners.add(ipAdder);
+            }
         }
     }
 
@@ -310,7 +318,8 @@ public class SetupManager implements ChatManager.ChatListener {
 
     public void shutdown(){
         stopTexting();
-        wifi.shutdown(isHost);
+        if (!Server.IsLoggedIn())
+            wifi.shutdown(isHost);
     }
 
     public void stopTexting(){

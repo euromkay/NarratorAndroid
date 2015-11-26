@@ -143,7 +143,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
         for(int i = 0; i < persistant.size(); i++){
             colors.add(trim);
         }
-        contactsLV.setAdapter(new ListingAdapter(toAdd, colors, getActivity()));
+        contactsLV.setAdapter(new ListingAdapter(toAdd, getActivity()).setColors(colors));
     }
 
     public int parseColor(int id){

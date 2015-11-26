@@ -10,32 +10,49 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import voss.android.R;
+import voss.android.setup.ActivityCreateGame;
 
 public class ListingAdapter extends BaseAdapter{
 
 	private ArrayList<String> data;
 	private ArrayList<Integer> colors;
+	private int color;
+
 	private int layoutID;
 	private Activity c;
 	private Typeface font;
-	
-	public ListingAdapter(ArrayList<String> data, ArrayList<Integer> colors, Activity c){
-		this.data = data;
-		this.colors = colors;
-		this.layoutID = R.layout.create_roles_right_item;
+
+	public ListingAdapter(Activity c){
 		this.c = c;
+		this.layoutID = R.layout.create_roles_right_item;
+		color = ActivityCreateGame.parseColor(c, R.color.white);
 		font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
 	}
-	public ListingAdapter(String[] data, int[] colors, Activity c){
+
+	public ListingAdapter(ArrayList<String> data, Activity c){
+		this(c);
+		this.data = data;
+
+	}
+	public ListingAdapter(String[] data, Activity c){
+		this(c);
 		this.data = new ArrayList<>();
-		this.colors = new ArrayList<>();
 		for(String s: data)
 			this.data.add(s);
-		for(int i: colors)
-			this.colors.add(i);
-		this.c = c;
-		this.layoutID = R.layout.create_roles_right_item;
-		font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
+	}
+
+	public ListingAdapter setColors(ArrayList<Integer> list){
+		this.colors = list;
+		return this;
+	}
+	public void setColors(int[] inputColors){
+		colors = new ArrayList<>();
+		for(int i: inputColors)
+			colors.add(i);
+	}
+
+	public void setColor(int color){
+		this.color = color;
 	}
 
 	public void setLayoutID(int id){
@@ -54,6 +71,10 @@ public class ListingAdapter extends BaseAdapter{
 		return position;
 	}
 
+	private Float textSize;
+	public void setTextSize(float textSize){
+		this.textSize = textSize;
+	}
 	public View getView(int position, View convertView, ViewGroup parent) {
 		TextView result;
 
@@ -64,11 +85,19 @@ public class ListingAdapter extends BaseAdapter{
 	    }
 
 	    String item = getItem(position);
-	    int color = colors.get(position);
+	    int viewColor;
+		if (colors != null)
+			viewColor = colors.get(position);
+		else
+			viewColor = this.color;
 		result.setTypeface(font);
 
+		if (textSize != null){
+			result.setTextSize(textSize);
+		}
+
 	    result.setText(item);
-	    result.setTextColor(color);
+	    result.setTextColor(viewColor);
 	    
 	    return result;
 		

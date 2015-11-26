@@ -48,7 +48,6 @@ import voss.shared.logic.exceptions.UnsupportedMethodException;
 
 public class ActivityHome extends Activity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
 
-	private Server server;
 
 	public void creating(Bundle b){
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -58,7 +57,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		setText(R.id.home_host);
 		setText(R.id.home_login_signup);
 		setText(R.id.home_tutorial);
-		setText(R.id.home_settings);
+		setText(R.id.home_currentGames);
 
 		if(b == null)
 			n = Board.getNarrator(getIntent().getParcelableExtra(Narrator.KEY));
@@ -67,7 +66,6 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		if(n == null)
 			n = Narrator.Default();
 
-		server = new Server();
 
 		if(isLoggedIn()){
 			TextView tv = (TextView) findViewById(R.id.home_login_signup);
@@ -79,7 +77,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	}
 
 	public Narrator getNarrator(){
-		throw new UnsupportedMethodException();
+		return n;
 	}
 
 	private Narrator n;
@@ -103,7 +101,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	}
 
 	private boolean isLoggedIn(){
-		return ParseUser.getCurrentUser() != null;
+		return Server.IsLoggedIn();
 	}
 
 	public static int buildNumber(){
@@ -115,9 +113,9 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 			case R.id.home_host:
 				if(isLoggedIn())
-					server.registerGame(new Server.GameRegister() {
+					Server.RegisterGame(new Server.GameRegister() {
 						public void onSuccess() {
-							startNewGame(null);
+							startNewGame(null, true);
 						}
 						public void onFailure(String t){
 							toast(t);
@@ -132,9 +130,17 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 			case R.id.home_join:
 				if(isLoggedIn()) {
-					displayGames();
+					displayGames(GameBookPopUp.JOIN);
 				}else{
 					showNamePrompt("Join");
+				}
+				break;
+
+			case R.id.home_currentGames:
+				if(isLoggedIn()){
+					displayGames(GameBookPopUp.RESUME);
+				}else{
+
 				}
 				break;
 
@@ -145,12 +151,12 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 			case R.id.home_login_signup:
 				if (isLoggedIn()){
-					server.logOut();
+					Server.LogOut();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
 				}else if(!isInternetAvailable()){
 					LoginAlert loginer = new LoginAlert();
-					loginer.setServer(server, this);
+					loginer.setServer(this);
 					loginer.show(getFragmentManager(), "logginer");
 				}else{
 					toast("You must be connected to the internet to login.");
@@ -160,8 +166,9 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		}
 	}
 
-	public void displayGames(){
+	public void displayGames(int mode){
 		GameBookPopUp gb = new GameBookPopUp();
+		gb.setMode(mode);
 		gb.show(getFragmentManager(), "gamebook");
 	}
 
@@ -252,7 +259,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 			}else{
 				WifiHost.StartConnection(ActivityHome.this, ip.getIP(), retrName());
 				ip.dismiss();
-				startNewGame(ip.getIP());
+				startNewGame(ip.getIP(), false);
 			}
 		}
 	}
@@ -281,7 +288,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 				n.addPlayer(cp).setName(name);
 			}
 			popup.dismiss();
-			startNewGame(null);
+			startNewGame(null, true);
 		}
 	}
 
@@ -296,7 +303,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		return prefs.getString(HOST_NAME, null);
 	}
 
-	private void toast(String s){
+	public void toast(String s){
 		Toast.makeText(getBaseContext(), s, Toast.LENGTH_LONG).show();
 	}
 
@@ -304,11 +311,14 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
-	private void startNewGame(String ip){
+	public void startNewGame(String ip, boolean isHost){
 		Intent i = new Intent(this, ActivityCreateGame.class);
-		i.putExtra(ISHOST, ip == null);
+		i.putExtra(ISHOST, isHost);
 		i.putExtra(MYNAME, retrName());
-		n.removeAllRoles();
+
+		if(!isLoggedIn())
+			n.removeAllRoles();
+
 		i.putExtra(Narrator.KEY, Board.GetParcel(n));
 		if(ip != null)
 			i.putExtra(ActivityCreateGame.IP_KEY, ip);

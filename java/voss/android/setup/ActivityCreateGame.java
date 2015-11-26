@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import voss.android.R;
 import voss.android.alerts.PlayerPopUp;
+import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
 import voss.android.wifi.CommunicatorInternet;
@@ -155,7 +156,7 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 
 
 			if(ActivityHome.buildNumber() >= 16)
-				manager.setupWifi(tent.getStringExtra(IP_KEY));
+				manager.setupConnection(tent.getStringExtra(IP_KEY));
 
 
 			rolesLeftTV = (TextView) findViewById(R.id.roles_hint_title);
@@ -188,7 +189,8 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 	
 		final String[] CATEGORYTYPES = {"Town", "Mafia", "Yakuza", "Neutral", "Randoms"};
 		final int[] categoryColors = getColorArray(R.color.town, R.color.mafia, R.color.yakuza, R.color.neutral, R.color.white);
-		ListingAdapter adapter = new ListingAdapter(CATEGORYTYPES, categoryColors, this);
+		ListingAdapter adapter = new ListingAdapter(CATEGORYTYPES, this);
+		adapter.setColors(categoryColors);
 		adapter.setLayoutID(R.layout.create_roles_left_item);
 
 		cataLV.setAdapter(adapter);
@@ -226,14 +228,15 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		}
 
 		
-		ListingAdapter adapter = new ListingAdapter(names, colors, this);
+		ListingAdapter adapter = new ListingAdapter(names, this);
 		adapter.setLayoutID(R.layout.create_roles_right_item);
+		adapter.setColors(colors);
 		rolesListLV.setAdapter(adapter);
 
 	}
 
     private void setHostCode(){
-		if(manager.isHost())
+		if(manager.isHost() && !Server.IsLoggedIn())
         	rolesLeftTV.setText(manager.wifi.getIp().replace(".", "*"));
 		else
 			rolesLeftTV.setVisibility(View.GONE);
@@ -399,7 +402,8 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 			throw new IndexOutOfBoundsException();
 		}
 
-		ListingAdapter ada = new ListingAdapter(rolesList, colors, this);
+		ListingAdapter ada = new ListingAdapter(rolesList, this);
+		ada.setColors(colors);
 		ada.setLayoutID(R.layout.create_roles_left_item);
 		rolesLV.setAdapter(ada);
 		

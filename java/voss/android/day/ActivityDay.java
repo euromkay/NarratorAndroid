@@ -225,7 +225,8 @@ implements
 			frameOptions.add(t.getName());
 		}
 
-		ListingAdapter adapter = new ListingAdapter(frameOptions, teamColors, this);
+		ListingAdapter adapter = new ListingAdapter(frameOptions, this);
+		adapter.setColors(teamColors);
 		adapter.setLayoutID(R.layout.day_player_player_dropdown_item);
 		framerSpinner.setAdapter(adapter);
 	}
@@ -608,7 +609,7 @@ implements
 	}
 
 	protected void setListView(ListView v, ArrayList<String> texts, ArrayList<Integer> colors){
-		v.setAdapter(new ListingAdapter(texts, colors, this));
+		v.setAdapter(new ListingAdapter(texts, this).setColors(colors));
 	}
 
 	public void endGame(Narrator n){

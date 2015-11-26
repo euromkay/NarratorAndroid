@@ -27,22 +27,28 @@ public class SocketHost extends Service implements MessageTarget, Runnable{
     private String name;
 
     public int onStartCommand(Intent i, int flags, int startId){
+        if (i == null){
+            Log.e(TAG, "Start was null ------------------------->");
+            return 0;
+        }
     	name = i.getStringExtra(ChatManager.NAME);
-        try {
-            socket = new ServerSocket(4545);
-            if (t == null) {
-                pool.execute(this);
-                Log.d(TAG, "starting thread");
-            }
-            Log.d("SocketHost", "Socket Started");
-        } catch(BindException f){
+        if (socket == null){
+            try {
+                socket = new ServerSocket(4545);
+                if (t == null) {
+                    pool.execute(this);
+                    Log.d(TAG, "starting thread");
+                }
+                Log.d("SocketHost", "Socket Started");
+            } catch(BindException f){
 
-            pool.shutdownNow();
-            Log.e("SocketHost", "address in use");
-            throw new NullPointerException("address in use");
-        } catch (IOException e) {
-            e.printStackTrace();
-            pool.shutdownNow();
+                pool.shutdownNow();
+                Log.e("SocketHost", "address in use");
+                throw new NullPointerException("address in use");
+            } catch (IOException e) {
+                e.printStackTrace();
+                pool.shutdownNow();
+            }
         }
         return Service.START_STICKY;
     }

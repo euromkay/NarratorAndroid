@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -21,10 +19,8 @@ import voss.android.parse.Server;
 public class LoginAlert extends DialogFragment implements View.OnClickListener, Server.LoginListener{
 
     private View mainView;
-    private Server server;
     private Activity activity;
-    public void setServer(Server s, Activity a){
-        server = s;
+    public void setServer(Activity a){
         activity = a;
     }
 
@@ -56,7 +52,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 String username = userET.getText().toString();
                 String password = pwET.getText().toString();
 
-                server.login(username, password, this);
+                Server.Login(username, password, this);
                 break;
             case R.id.home_signup:
                 EditText emailET = (EditText) mainView.findViewById(R.id.home_email);
@@ -71,7 +67,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 password = pwET.getText().toString();
                 String email = emailET.getText().toString();
 
-                server.signUp(username, password, email, this);
+                Server.SignUp(username, password, email, this);
                 break;
             case R.id.home_cancelLogin:
                 getDialog().cancel();
