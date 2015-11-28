@@ -1,7 +1,9 @@
 package voss.android.parse;
 
 
+import android.app.Activity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
@@ -112,7 +114,7 @@ public class Server {
             public void done(List<ParseObject> gameLists, ParseException e) {
                 if (e == null) {
                     if (gameLists.size() == 0) {
-                        AddGame(g);
+                        CreateGame(g);
                     } else {
                         g.onFailure("You can't host more then one game at a time!");
                     }
@@ -123,7 +125,7 @@ public class Server {
         });
     }
 
-    private static void AddGame(final GameRegister g){
+    private static void CreateGame(final GameRegister g){
         final ParseObject game = new ParseObject(ParseConstants.NARRATOR_INSTANCE);
         game.put(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
         game.put(ParseConstants.ACTIVE, true);
@@ -197,16 +199,20 @@ public class Server {
     }
 
     public static void AddPlayer(final GameListing gl){
-        HashMap<String, Object> params = new HashMap<>();
-        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
-        ParseCloud.callFunctionInBackground(ParseConstants.ADD_PLAYER, params, new FunctionCallback<ParseObject>() {
-            public void done(ParseObject parseObject, ParseException e) {
-                if (e != null) {
-                    Log.e("Server", e.getMessage());
-                } else {
-                    ParsePush.subscribeInBackground(gl.getID());
-                    Log.e("Server", parseObject + "");
-                }
+        ParsePush.subscribeInBackground(gl.getID(), new SaveCallback() {
+            public void done(ParseException e) {
+                HashMap<String, Object> params = new HashMap<>();
+                params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+                ParseCloud.callFunctionInBackground(ParseConstants.ADD_PLAYER, params, new FunctionCallback<ParseObject>() {
+                    public void done(ParseObject parseObject, ParseException e) {
+                        if (e != null) {
+                            Log.e("Server", e.getMessage());
+                            ParsePush.unsubscribeInBackground(gl.getID());
+                        } else {
+                            Log.e("Server", parseObject + "");
+                        }
+                    }
+                });
             }
         });
     }
@@ -227,19 +233,35 @@ public class Server {
     }
 
 
-    public static void AddRole(RoleTemplate rt, ParseObject oP){
-        oP.add(ParseConstants.ROLES, rt.toIpForm());
-        oP.saveEventually();
+    public static void AddRole(RoleTemplate rt, GameListing gl, final Activity a){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        params.put(ParseConstants.ROLES, rt.toIpForm());
+        ParseCloud.callFunctionInBackground(ParseConstants.ADD_ROLE, params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    Toast.makeText(a, e.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("Server", parseObject + "");
+                }
+            }
+        });
     }
 
-    public static void RemoveRole(RoleTemplate rt, ParseObject oP){
+
+
+    public static void RemoveRole(RoleTemplate rt, GameListing gl, final Activity a){
         HashMap<String, Object> params = new HashMap<>();
-        params.put(ParseConstants.REMOVE_ROLE, rt.toIpForm());
-        params.put(ParseConstants.NARRATOR_INSTANCE, oP.getObjectId());
-        ParseCloud.callFunctionInBackground(ParseConstants.REMOVE_ROLE, params);
-        /*List<String> oldRoles = oP.getList(ParseConstants.ROLES);
-        oldRoles.remove(rt.toIpForm());
-        oP.put(ParseConstants.ROLES, oldRoles);
-        oP.saveEventually();*/
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        params.put(ParseConstants.ROLES, rt.toIpForm());
+        ParseCloud.callFunctionInBackground(ParseConstants.REMOVE_ROLE, params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    Toast.makeText(a, e.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("Server", parseObject + "");
+                }
+            }
+        });
     }
 }

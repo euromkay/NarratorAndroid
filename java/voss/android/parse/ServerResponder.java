@@ -32,10 +32,10 @@ public class ServerResponder implements SetupListener{
     }
 
     public void onRoleRemove(RoleTemplate rt){
-        Server.RemoveRole(rt, object.getParseObject());
+        Server.RemoveRole(rt, object, ac);
     }
     public void onRoleAdd(RoleTemplate rt){
-        Server.AddRole(rt, object.getParseObject());
+        Server.AddRole(rt, object, ac);
     }
     public void onPlayerRemove(Player p){
         //no player removals when talking with the server

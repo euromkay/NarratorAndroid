@@ -412,6 +412,15 @@ public class SetupManager implements ChatManager.ChatListener {
             case ParseConstants.REMOVE_PLAYER:
                 removePlayer(narrator.getPlayerByName(command[1]));
                 return;
+            case ParseConstants.ADD_ROLE:
+                if (!isHost)
+                    addRole(RoleTemplate.FromIp(command[1]));
+                return;
+            case ParseConstants.REMOVE_ROLE:
+                if (!isHost)
+                    removeRole(RoleTemplate.FromIp(command[1]));
+                return;
+
         }
     }
 }
