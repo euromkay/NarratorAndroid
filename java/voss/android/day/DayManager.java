@@ -5,6 +5,7 @@ import java.util.Random;
 
 import voss.android.CommunicatorPhone;
 import voss.android.PhoneBook;
+import voss.android.parse.Server;
 import voss.android.screens.SimpleGestureFilter;
 import voss.android.texting.TextHandler;
 import voss.shared.ai.Simulations;
@@ -41,8 +42,11 @@ public class DayManager implements NarratorListener {
 	private IpDayListener ipManager;
 	private boolean isHost;
 	protected void startIpListener(boolean isHost){
-		ipManager = new IpDayListener(isHost, n, dScreen);
-		this.isHost = isHost;
+		if (Server.IsLoggedIn()) {
+			initiate();
+		}else{
+			ipManager = new IpDayListener(isHost, n, dScreen);
+		}
 	}
 	protected void initiate(){
 		dScreen.setupFramerSpinner();
@@ -184,11 +188,11 @@ public class DayManager implements NarratorListener {
 		}
 	}
 
-	public void dayAction(Player p){
+	public void dayAction(Player p) {
 		p.doDayAction(!isHost);
 	}
 
-	public void onMayorReveal(Player mayor){
+	public void onMayorReveal(Player mayor) {
 		dScreen.say(mayor.getName() + " has revealed.");
 		if (currentPlayer == mayor)
 			dScreen.hideDayButton();
@@ -210,7 +214,7 @@ public class DayManager implements NarratorListener {
 		dScreen.updateChatPanel();
 	}
 
-	public void vote(Player owner, Player target){
+	public void vote(Player owner, Player target) {
 		owner.vote(target, !isHost);
 	}
 	public void onVote(Player owner, Player target, int voteCount){
@@ -220,7 +224,7 @@ public class DayManager implements NarratorListener {
 	public void onUnvote(Player owner, Player target, int voteCount){
 		onVote(owner, target, voteCount);
 	}
-	public void onChangeVote(Player owner, Player target, Player prev, int voteCount){
+	public void onChangeVote(Player owner, Player target, Player prev, int voteCount) {
 		onVote(owner, target, voteCount);
 	}
 
@@ -244,7 +248,7 @@ public class DayManager implements NarratorListener {
 		updateChatPanel();
 	}
 
-	public void untarget(Player owner, Player target, int ability){
+	public void untarget(Player owner, Player target, int ability) {
 		owner.removeTarget(ability, true);
 	}
 	public void onNightTargetRemove(Player owner, Player prev){
@@ -256,7 +260,7 @@ public class DayManager implements NarratorListener {
 		updateChatPanel();
 	}
 
-	public void talk(Player p, String message){
+	public void talk(Player p, String message) {
 		p.say(message, isHost);
 	}
 	public void onMessageReceive(Player p){
@@ -383,15 +387,17 @@ public class DayManager implements NarratorListener {
 
 	private void setupPlayerDrawer() {
 		PlayerList list;
-		if(!isHost){
+		if(Server.IsLoggedIn()){
+			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName()));
+		}else if(isHost) {
+			list = n.getLivePlayers();
+		}else{
 			list = new PlayerList();
 			for(Player p: n.getLivePlayers()){
 				if(p.getCommunicator().getClass() == CommunicatorPhone.class){
 					list.add(p);
 				}
 			}
-		}else{
-			list = n.getLivePlayers();
 		}
 		dScreen.setupPlayerDrawer(list);
 	}
@@ -409,10 +415,6 @@ public class DayManager implements NarratorListener {
 	public Narrator getNarrator(){
 		return n;
 	}
-	
-	
-	
-
 
 	public void setButton(){
 		if (!playerSelected()) {

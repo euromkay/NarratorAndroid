@@ -35,11 +35,11 @@ public class IpDayListener implements CommandListener, ServiceConnection, Handle
 
 
         Intent intent;
-        if(host) 
+        if(host)
             intent = new Intent(a, SocketHost.class);
         else
             intent = new Intent(a, SocketClient.class);
-        
+
         a.bindService(intent, this, Context.BIND_AUTO_CREATE);
         
         n.addListener(this);

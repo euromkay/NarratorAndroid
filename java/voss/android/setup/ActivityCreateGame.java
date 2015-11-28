@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +15,7 @@ import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -165,9 +165,13 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 			setupRoleList();
 
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
+			Button startGameButton = (Button) findViewById(R.id.roles_startGame);
 			if(manager.isHost())
-				findViewById(R.id.roles_startGame).setOnClickListener(this);
-			else
+				startGameButton.setOnClickListener(this);
+			else if (Server.IsLoggedIn()) {
+				startGameButton.setOnClickListener(this);
+				startGameButton.setText("Exit");
+			}else
 				findViewById(R.id.roles_startGame).setVisibility(View.GONE);
 			
 			changeRoleType(TOWN);
@@ -435,7 +439,10 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		switch(v.getId()) {
 
             case R.id.roles_startGame:
-				manager.startGame(manager.getNarrator().getSeed());
+				if (manager.isHost())
+					manager.startGame(manager.getNarrator().getSeed());
+				else
+					manager.exitGame();
 				break;
 
             case R.id.roles_show_Players:
@@ -496,10 +503,7 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 	}
 
 
-	public void registerReceiver(TextAdder textAdder, IntentFilter intentFilter) {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 
 

@@ -4,20 +4,22 @@ package voss.android.parse;
 import android.util.Log;
 
 import com.parse.FindCallback;
+import com.parse.FunctionCallback;
 import com.parse.GetCallback;
 import com.parse.LogInCallback;
-import com.parse.Parse;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-import voss.shared.logic.Player;
 import voss.shared.logic.support.RoleTemplate;
 
 public class Server {
@@ -30,7 +32,7 @@ public class Server {
     }
 
     public interface GameRegister{
-        void onSuccess();
+        void onSuccess(String id);
         void onFailure(String t);
     }
 
@@ -111,7 +113,6 @@ public class Server {
                 if (e == null) {
                     if (gameLists.size() == 0) {
                         AddGame(g);
-                        return;
                     } else {
                         g.onFailure("You can't host more then one game at a time!");
                     }
@@ -123,34 +124,39 @@ public class Server {
     }
 
     private static void AddGame(final GameRegister g){
-        ParseObject game = new ParseObject(ParseConstants.NARRATOR_INSTANCE);
-        game.put(ParseConstants.INSTANCE_HOST_KEY, getCurrentUserName());
+        final ParseObject game = new ParseObject(ParseConstants.NARRATOR_INSTANCE);
+        game.put(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
         game.put(ParseConstants.ACTIVE, true);
         game.put(ParseConstants.STARTED, false);
+        game.put(ParseConstants.SEED, 0);
+        game.put(ParseConstants.EVENTS, new ArrayList<String>());
+
 
         ArrayList<String> list = new ArrayList<>();
         game.put(ParseConstants.ROLES, list);
 
         list = new ArrayList<>();
-        list.add(getCurrentUserName());
+        list.add(GetCurrentUserName());
         game.put(ParseConstants.PLAYERS, list);
         game.saveInBackground(new SaveCallback() {
             public void done(ParseException e) {
                 if (e == null) {
-                    g.onSuccess();
+                    g.onSuccess(game.getObjectId());
+                    ParsePush.subscribeInBackground(game.getObjectId());
                 } else
                     g.onFailure(e.getMessage());
             }
         });
     }
 
-    public static String getCurrentUserName(){
+    public static String GetCurrentUserName(){
         return ParseUser.getCurrentUser().getUsername();
     }
 
     public static void GetAllGames(int limit, final GameFoundListener gf){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
-        query.whereNotEqualTo(ParseConstants.INSTANCE_HOST_KEY, getCurrentUserName());
+        query.whereNotEqualTo(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
+        query.whereNotEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());//not in the game
         query.whereEqualTo(ParseConstants.STARTED, Boolean.FALSE);
         query.setLimit(limit);
 
@@ -159,7 +165,7 @@ public class Server {
 
     public static void GetMyGames(final GameFoundListener gf){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
-        query.whereEqualTo(ParseConstants.PLAYERS, getCurrentUserName());
+        query.whereEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());
 
         GetGames(query, gf);
     }
@@ -172,22 +178,10 @@ public class Server {
                         gf.noGamesFound();
                         return;
                     }
-                    GameListing gl;
                     ArrayList<GameListing> games = new ArrayList<>();
-                    for (ParseObject po : list) {
-                        gl = new GameListing(po);
+                    for (ParseObject po : list)
+                        games.add(new GameListing(po));
 
-                        String hostname = po.getString(ParseConstants.INSTANCE_HOST_KEY);
-                        gl.setHostName(hostname);
-
-                        List<String> players = po.getList(ParseConstants.PLAYERS);
-                        gl.setPlayers(players);
-
-                        List<String> roles = po.getList(ParseConstants.ROLES);
-                        gl.setRoles(roles);
-
-                        games.add(gl);
-                    }
 
                     gf.onGamesFound(games);
                 } else {
@@ -202,15 +196,50 @@ public class Server {
         query.getInBackground(id, gcb);
     }
 
+    public static void AddPlayer(final GameListing gl){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        ParseCloud.callFunctionInBackground(ParseConstants.ADD_PLAYER, params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    Log.e("Server", e.getMessage());
+                } else {
+                    ParsePush.subscribeInBackground(gl.getID());
+                    Log.e("Server", parseObject + "");
+                }
+            }
+        });
+    }
+
+    public static void LeaveGame(final GameListing gl){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        ParseCloud.callFunctionInBackground(ParseConstants.REMOVE_PLAYER, params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    Log.e("Server", e.getMessage());
+                }else{
+                    ParsePush.unsubscribeInBackground(gl.getID());
+                    Log.e("Server", parseObject+ "");
+                }
+            }
+        });
+    }
+
+
     public static void AddRole(RoleTemplate rt, ParseObject oP){
         oP.add(ParseConstants.ROLES, rt.toIpForm());
         oP.saveEventually();
     }
 
     public static void RemoveRole(RoleTemplate rt, ParseObject oP){
-        List<String> oldRoles = oP.getList(ParseConstants.ROLES);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.REMOVE_ROLE, rt.toIpForm());
+        params.put(ParseConstants.NARRATOR_INSTANCE, oP.getObjectId());
+        ParseCloud.callFunctionInBackground(ParseConstants.REMOVE_ROLE, params);
+        /*List<String> oldRoles = oP.getList(ParseConstants.ROLES);
         oldRoles.remove(rt.toIpForm());
         oP.put(ParseConstants.ROLES, oldRoles);
-        oP.saveEventually();
+        oP.saveEventually();*/
     }
 }

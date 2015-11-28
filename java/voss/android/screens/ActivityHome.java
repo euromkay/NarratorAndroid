@@ -15,13 +15,12 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
-
-//import com.parse.ParseUser;
 
 import com.parse.ParseUser;
 
@@ -36,6 +35,7 @@ import voss.android.alerts.NamePrompt;
 import voss.android.alerts.NamePrompt.NamePromptListener;
 import voss.android.alerts.PhoneBookPopUp;
 import voss.android.alerts.PhoneBookPopUp.AddPhoneListener;
+import voss.android.day.ActivityDay;
 import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.CommunicatorText;
@@ -44,7 +44,6 @@ import voss.android.wifi.WifiHost;
 import voss.packaging.Board;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
-import voss.shared.logic.exceptions.UnsupportedMethodException;
 
 public class ActivityHome extends Activity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
 
@@ -112,16 +111,20 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		switch(v.getId()){
 
 			case R.id.home_host:
-				if(isLoggedIn())
+				if(isLoggedIn()) {
+					n.removeAllRoles();
+					n.removeAllPlayers();
 					Server.RegisterGame(new Server.GameRegister() {
-						public void onSuccess() {
-							startNewGame(null, true);
+						public void onSuccess(String id) {
+							n.addPlayer(Server.GetCurrentUserName());
+							startNewGame(id, true);
 						}
-						public void onFailure(String t){
+
+						public void onFailure(String t) {
 							toast(t);
 						}
 					});
-				else{
+				}else{
 					if(buildNumber() < 16)
 						toast("You will not be able to host games wirelessly");
 					showNamePrompt("Host");
@@ -312,7 +315,13 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
 	public void startNewGame(String ip, boolean isHost){
-		Intent i = new Intent(this, ActivityCreateGame.class);
+		Class activ;
+		if(n.isInProgress())
+			activ = ActivityDay.class;
+		else {
+            activ = ActivityCreateGame.class;
+        }
+		Intent i = new Intent(this, activ);
 		i.putExtra(ISHOST, isHost);
 		i.putExtra(MYNAME, retrName());
 

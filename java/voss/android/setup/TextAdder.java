@@ -20,6 +20,10 @@ public class TextAdder extends BroadcastReceiver{
     }
 
     public void onReceive(Context context, Intent intent){
+        if (intent.getExtras().getString("number") == null){
+            manager.updateNarrator(intent);
+            return;
+        }
         PhoneNumber number = new PhoneNumber(intent.getExtras().getString("number"));
         String name = intent.getExtras().getString("message");
 

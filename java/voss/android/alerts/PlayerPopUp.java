@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import voss.android.R;
+import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.setup.SetupListener;
 import voss.android.wifi.CommunicatorInternet;
@@ -32,7 +33,6 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     public PlayerList players;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        //todo what happens first, oncreate or on attach
 
         mainView = inflater.inflate(R.layout.create_player_list, container);
 
@@ -40,9 +40,14 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         ArrayAdapter<String> adapter = getAdapter(players.getNamesToStringArray());
         lv.setAdapter(adapter);
-        lv.setOnItemClickListener(this);
+        if (Server.IsLoggedIn()) {
+            mainView.findViewById(R.id.addPlayerContent).setVisibility(View.GONE);
+            mainView.findViewById(R.id.addPlayerConfirm).setVisibility(View.GONE);
+        }else {
+            lv.setOnItemClickListener(this);
+            mainView.findViewById(R.id.addPlayerConfirm).setOnClickListener(this);
+        }
         setTitle();
-        mainView.findViewById(R.id.addPlayerConfirm).setOnClickListener(this);
 
         return mainView;
     }

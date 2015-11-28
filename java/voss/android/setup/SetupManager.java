@@ -10,6 +10,8 @@ import android.util.Log;
 import voss.android.ActivitySettings;
 import voss.android.CommunicatorPhone;
 import voss.android.day.ActivityDay;
+import voss.android.parse.ParseConstants;
+import voss.android.parse.ParseCustomReceiver;
 import voss.android.parse.Server;
 import voss.android.parse.ServerResponder;
 import voss.android.screens.ActivityHome;
@@ -39,7 +41,7 @@ public class SetupManager implements ChatManager.ChatListener {
     private String name;
     public WifiHost wifi;
 
-    private ActivityCreateGame screen;
+    public ActivityCreateGame screen;
 
     private Narrator narrator;
     public TextAdder textAdder;
@@ -50,6 +52,7 @@ public class SetupManager implements ChatManager.ChatListener {
     private ArrayList<SetupListener> listeners;
 
     private IntentFilter intentFilter;
+    private IntentFilter parseFilter;
 
     private Random rand;
     
@@ -68,9 +71,9 @@ public class SetupManager implements ChatManager.ChatListener {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("SMS_RECEIVED_ACTION");
+        intentFilter.addAction("PARSE_RECEIVED_ACTION");
 
         textAdder = new TextAdder(this);
-
         
 
         screenController = new SetupScreenController(a);
@@ -79,10 +82,11 @@ public class SetupManager implements ChatManager.ChatListener {
         }
     }
 
+    private ServerResponder sResponder;
     public void setupConnection(String ip){
         if (Server.IsLoggedIn()) {
             synchronized (listeners){
-                listeners.add(new ServerResponder(ip, screen));
+                sResponder = new ServerResponder(ip, this);
             }
         }else{
             wifi = new WifiHost(screen, this);
@@ -188,8 +192,8 @@ public class SetupManager implements ChatManager.ChatListener {
 
     //from the phone
     public void addPlayer(String name){
-    	synchronized(narrator){
-    		if(isHost()){
+    	synchronized(narrator) {
+            if(isHost() || Server.IsLoggedIn()){
     			Player player = narrator.addPlayer();
     			player.setName(name);
     			player.setCommunicator(new CommunicatorPhone());
@@ -288,7 +292,6 @@ public class SetupManager implements ChatManager.ChatListener {
         try {
             narrator.setSeed(seed);
             narrator.setRules(ActivitySettings.getRules(screen));
-            narrator.shufflePlayers();
             narrator.startGame();
 
             ipAdder.startGame(seed);
@@ -309,6 +312,11 @@ public class SetupManager implements ChatManager.ChatListener {
         } catch (IllegalGameSettingsException |IllegalRoleCombinationException e) {
             toast(e.getMessage());
         }
+    }
+
+    public void exitGame(){
+        sResponder.exitGame();
+        screen.onBackPressed();
     }
 
     public void toast(String s){
@@ -393,4 +401,17 @@ public class SetupManager implements ChatManager.ChatListener {
     }
 
 
+    public void updateNarrator(Intent i){
+        String message = i.getStringExtra("stuff");
+        String[] command = message.split(",");
+
+        switch(command[0]){
+            case ParseConstants.ADD_PLAYER:
+                addPlayer(command[1]);
+                return;
+            case ParseConstants.REMOVE_PLAYER:
+                removePlayer(narrator.getPlayerByName(command[1]));
+                return;
+        }
+    }
 }

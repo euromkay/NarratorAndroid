@@ -14,9 +14,9 @@ public class ReceiverText extends BroadcastReceiver {
 
 	public void onReceive(Context context, Intent intent){
 		Bundle b = intent.getExtras();
-		String number = "";
-		String message = "";
 		if(b != null){
+			String number = "";
+			String message = "";
 			Object[] pdus = (Object[]) b.get(PDUS);
 			for(int i = 0; i < pdus.length; i++){
 				SmsMessage text = SmsMessage.createFromPdu((byte[])pdus[i]);

@@ -7,18 +7,23 @@ import com.parse.ParseObject;
 
 import voss.android.setup.ActivityCreateGame;
 import voss.android.setup.SetupListener;
+import voss.android.setup.SetupManager;
 import voss.shared.logic.Player;
 import voss.shared.logic.support.RoleTemplate;
 
 public class ServerResponder implements SetupListener{
 
-    private ParseObject object;
+    private GameListing object;
     private ActivityCreateGame ac;
-    public ServerResponder(String id, final ActivityCreateGame ac){
+    public ServerResponder(String id, final SetupManager manager){
+        final ActivityCreateGame ac = manager.screen;
         Server.GetNarratorInfo(id, new GetCallback<ParseObject>(){
             public void done(ParseObject retObject, ParseException e) {
                 if (e == null) {
-                    object = retObject;
+                    object = new GameListing(retObject);
+                    if (Server.GetCurrentUserName().equals(object.getHostName())){
+                        manager.addListener(ServerResponder.this);
+                    }
                 }else{
                     ac.toast(e.getMessage());
                 }
@@ -27,10 +32,10 @@ public class ServerResponder implements SetupListener{
     }
 
     public void onRoleRemove(RoleTemplate rt){
-        Server.RemoveRole(rt, object);
+        Server.RemoveRole(rt, object.getParseObject());
     }
     public void onRoleAdd(RoleTemplate rt){
-        Server.AddRole(rt, object);
+        Server.AddRole(rt, object.getParseObject());
     }
     public void onPlayerRemove(Player p){
         //no player removals when talking with the server
@@ -41,5 +46,9 @@ public class ServerResponder implements SetupListener{
 
     public void onNameChange(Player p, String s){
         //no name changes when going to the server
+    }
+
+    public void exitGame(){
+        Server.LeaveGame(object);
     }
 }

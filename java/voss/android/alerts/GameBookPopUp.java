@@ -1,11 +1,12 @@
 package voss.android.alerts;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +14,10 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import com.parse.FindCallback;
+import com.parse.ParsePush;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import voss.android.ActivitySettings;
 import voss.android.R;
 import voss.android.parse.GameListing;
 import voss.android.parse.Server;
@@ -28,6 +26,7 @@ import voss.android.screens.ListingAdapter;
 import voss.android.setup.ActivityCreateGame;
 import voss.shared.logic.Member;
 import voss.shared.logic.Narrator;
+import voss.shared.logic.support.CommandHandler;
 import voss.shared.logic.support.RoleTemplate;
 import voss.shared.roles.RandomRole;
 import voss.shared.roles.Role;
@@ -147,7 +146,21 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             else
                 n.addRole((RandomRole) rt);
         }
-        a.startNewGame(gl.getID(), Server.getCurrentUserName().equals(gl.getHostName()));
+        if (gl.inProgress()) {
+            n.setSeed(gl.getSeed());
+            n.setRules(ActivitySettings.getRules(a));
+            n.startGame();
+
+            CommandHandler ch = new CommandHandler(n);
+            for (String s : gl.getCommands()) {
+                ch.parseCommand(s);
+            }
+        }
+        if (mode == JOIN){
+            Server.AddPlayer(gl);
+        }
+
+        a.startNewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

@@ -1302,7 +1302,9 @@ public class Narrator{
 	public boolean isInProgress(){
 		if (winString != null)
 			return false;
-		
+
+		if (!gameStarted)
+			return false;
 		
 		if(players.get(0).getRole().getRoleName().equals(UnsetRole.ROLE_NAME)){
 			return false;

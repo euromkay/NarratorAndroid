@@ -41,6 +41,7 @@ import voss.android.R;
 import voss.android.alerts.ExitGameAlert;
 import voss.android.alerts.ExitGameAlert.ExitGameListener;
 import voss.android.day.PlayerDrawerAdapter.OnPlayerClickListener;
+import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
 import voss.android.screens.MembersAdapter;
@@ -120,7 +121,14 @@ implements
 		if (drawerOut){
 			closeDrawer();
 		}else {
-			onPlayerClick(null);
+			if(Server.IsLoggedIn()){
+				if (manager.getCurrentPlayer() == null){
+					onPlayerClick(manager.getNarrator().getPlayerByName(Server.GetCurrentUserName()));
+				} else {
+					onPlayerClick(null);
+				}
+			}else
+				onPlayerClick(null);
 			onDrawerClosed(null);
 			onClick(infoButton);
 		}

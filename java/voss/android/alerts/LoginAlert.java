@@ -31,9 +31,9 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         mainView = inflater.inflate(R.layout.home_login, null);
-        mainView.findViewById(R.id.home_loginButton).setOnClickListener(this);
-        mainView.findViewById(R.id.home_signup).setOnClickListener(this);
-        mainView.findViewById(R.id.home_cancelLogin).setOnClickListener(this);
+        mainView.findViewById(R.id.login_loginButton).setOnClickListener(this);
+        mainView.findViewById(R.id.login_signup).setOnClickListener(this);
+        mainView.findViewById(R.id.login_cancelLogin).setOnClickListener(this);
 
         builder.setView(mainView);
 
@@ -45,23 +45,23 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
     public void onClick(View v){
         switch (v.getId()){
 
-            case R.id.home_loginButton:
-                EditText userET = (EditText) mainView.findViewById(R.id.home_username);
-                EditText pwET = (EditText) mainView.findViewById(R.id.home_password);
+            case R.id.login_loginButton:
+                EditText userET = (EditText) mainView.findViewById(R.id.login_username);
+                EditText pwET = (EditText) mainView.findViewById(R.id.login_password);
 
                 String username = userET.getText().toString();
                 String password = pwET.getText().toString();
 
                 Server.Login(username, password, this);
                 break;
-            case R.id.home_signup:
-                EditText emailET = (EditText) mainView.findViewById(R.id.home_email);
+            case R.id.login_signup:
+                EditText emailET = (EditText) mainView.findViewById(R.id.login_email);
                 if(emailET.getVisibility() != View.VISIBLE) {
                     emailET.setVisibility(View.VISIBLE);
                     return;
                 }
-                userET = (EditText) mainView.findViewById(R.id.home_username);
-                pwET = (EditText) mainView.findViewById(R.id.home_password);
+                userET = (EditText) mainView.findViewById(R.id.login_username);
+                pwET = (EditText) mainView.findViewById(R.id.login_password);
 
                 username = userET.getText().toString();
                 password = pwET.getText().toString();
@@ -69,7 +69,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
                 Server.SignUp(username, password, email, this);
                 break;
-            case R.id.home_cancelLogin:
+            case R.id.login_cancelLogin:
                 getDialog().cancel();
                 break;
         }
