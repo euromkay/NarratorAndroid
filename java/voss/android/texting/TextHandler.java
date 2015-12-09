@@ -1,12 +1,11 @@
 package voss.android.texting;
 
-import android.content.BroadcastReceiver;
-import android.content.ContextWrapper;
-
 import java.util.ArrayList;
 
+import android.content.BroadcastReceiver;
+import android.content.ContextWrapper;
 import voss.android.PhoneBook;
-import voss.android.texting.TextInput;
+import voss.android.day.DayManager;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -24,14 +23,13 @@ import voss.shared.logic.support.RoleTemplate;
 
 public class TextHandler extends CommandHandler implements NarratorListener, TextInput {
 
-    private PhoneBook phoneBook;
 
-    public TextHandler(Narrator n){
+	private TextInput tc;
+    public TextHandler(Narrator n, DayManager tc){
         super(n);
         n.addListener(this);
-
-        phoneBook = new PhoneBook(n);
-
+        if(tc.isHost())
+        	this.tc = tc;
         String message;
         Team t;
         for(Player texter: getTexters(n.getAllPlayers())){
@@ -91,8 +89,11 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
                 return;
             default:
                 try{
-                    super.command(owner, message);
-
+                	synchronized(n){
+                		super.command(owner, message);	
+                		if(tc != null)
+                			tc.text(owner, message);
+                	}
                 }catch(IllegalActionException e){
                     if (e.getMessage().length() == 0){
                         owner.sendMessage("Unknown command.  Type " + HELP + " to see a list of commands.");
@@ -100,24 +101,34 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
                         owner.sendMessage(e.getMessage());
                     }
 
+                    printException(e);
                 }catch(UnknownPlayerException f){
                     owner.sendMessage("Unknown player name. Type "  + SQuote(LIVE_PEOPLE) + " to get a list of players.");
+                    printException(f);
 
                 }catch(UnknownTeamException e){
                     owner.sendMessage( "Unknown team name. Type " + NIGHT_HELP + " to get info about what you can do during the night.");
+                    printException(e);
 
                 }catch (PlayerTargetingException g){
                     owner.sendMessage( g.getMessage());
+                    printException(g);
 
                 }catch (PhaseException e){
                     owner.sendMessage(e.getMessage());
+                    printException(e);
 
                 }catch (VotingException e){
                     owner.sendMessage(e.getMessage());
+                    printException(e);
                 }
         }
     }
 
+    private void printException(Throwable e){
+    	System.err.println(e.getMessage());
+    }
+    
     public static Player findName(ArrayList<String> blocks, PhoneBook phonebook){
         for(int i = 0; i < blocks.size(); i++){
             String possName = "";
@@ -260,10 +271,10 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
         PlayerList votees = getTexters(n.getAllPlayers());
         if(dead != null) {
             if (dead.isEmpty() || dead.get(0) == n.Skipper)
-                votees.sendMessage(n.getVoteListOf(n.Skipper).getStringName() + " opted to skip lynching today.");
+                votees.sendMessage(n.Skipper.getVoters().getStringName() + " opted to skip lynching today.");
             else {
                 for (Player deadPerson : dead) {
-                    votees.sendMessage(deadPerson.getDescription() + " was lynched by " + n.getVoteListOf(deadPerson).getStringName() + ".");
+                    votees.sendMessage(deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + ".");
                 }
             }
         }

@@ -13,19 +13,20 @@ import java.net.Socket;
 
 import voss.android.wifi.ChatManager;
 
-public class SocketClient extends Service implements MessageTarget, Runnable {
+public class SocketClient extends Service implements Runnable {
 
-    public static final String HOST_IP_ADDRESS = "10.53.48.29";
+    public interface ClientListener {
+    	void onHostConnect();
+	}
+
+	public static final String HOST_IP_ADDRESS = "host_ip_address";
     private static final String TAG = "SocketClient";
     private ChatManager chat;
     private String hostIp;
-    private String name;
 
     public int onStartCommand(Intent i, int flags, int startId){
-        if(hostIp == null){
-        	name = i.getStringExtra(ChatManager.NAME);
-            hostIp = i.getStringExtra(HOST_IP_ADDRESS);
-        }
+        hostIp = i.getStringExtra(HOST_IP_ADDRESS);
+        
         return Service.START_STICKY;
     }
 
@@ -46,11 +47,10 @@ public class SocketClient extends Service implements MessageTarget, Runnable {
             socket.bind(null);
             socket.connect(new InetSocketAddress(hostIp, SERVER_PORT), 5000);
             Log.d(TAG, "Launching the I/O handler");
-            chat = new ChatManager(socket, handler, this, null, name, -1);
+            chat = new ChatManager(socket, handler, null, -1);
             new Thread(chat).start();
         } catch (IOException e) {
             e.printStackTrace();
-            //TODO detect connectException
             try {
                 socket.close();
             } catch (IOException e1) {
@@ -60,22 +60,15 @@ public class SocketClient extends Service implements MessageTarget, Runnable {
         }
     }
 
-    public void onChatReady(){
-        if(c != null)
-            c.onNewPlayer(chat);
-    }
-
     Handler handler;
     Thread t;
-    ChatManager.ChatListener c;
-    public void addHandler(Handler h, ChatManager.ChatListener c){
+    public void addHandler(Handler h){
         handler = h;
-        this.c = c;
         if(t== null) {
             t = new Thread(this);
             t.start();
         }else if (chat != null){
-            chat.setHandler(h, c);
+            chat.setHandler(h);
         }
     }
 
@@ -83,7 +76,7 @@ public class SocketClient extends Service implements MessageTarget, Runnable {
         return chat;
     }
 
-    public void write(String s){
+    public void send(String s){
         chat.write(s);
     }
 
@@ -94,6 +87,10 @@ public class SocketClient extends Service implements MessageTarget, Runnable {
 
 	public void shutdown() {
 		onDestroy();		
+	}
+
+	public void setName(String name) {
+		chat.setName(name);
 	}
 
 }

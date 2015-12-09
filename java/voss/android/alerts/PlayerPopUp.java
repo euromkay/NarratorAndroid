@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import voss.android.CommunicatorPhone;
 import voss.android.R;
 import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
@@ -21,6 +22,7 @@ import voss.android.wifi.CommunicatorInternet;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
+import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.RoleTemplate;
 
@@ -63,8 +65,10 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             return;
         if(clicked.getCommunicator().getClass() == CommunicatorNull.class)
             return;
-        if(players.get(i).isComputer() || !activity.getManager().isHost()) {
-            activity.getManager().removePlayer(clicked);
+        if(clicked.isComputer()){
+        	activity.getManager().removePlayer(clicked.getName(), false);//gotta be a host delete
+        }else if(!activity.getManager().isHost()) {
+        	activity.getManager().requestRemovePlayer(clicked.getName());
         }else{
             TextView tv = (TextView) v;
             tv.setTextColor(ActivityCreateGame.parseColor(activity, R.color.redBlood));
@@ -94,7 +98,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }
 
 
-        activity.getManager().addPlayer(name);
+        activity.getManager().addPlayer(name, new CommunicatorPhone());
 
         et.setText("");
     }
@@ -158,18 +162,14 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     public void onRoleAdd(RoleTemplate l){}
     public void onRoleRemove(RoleTemplate l){}
 
-    public void onPlayerAdd(Player p){
+    public void onPlayerAdd(String name, Communicator c){
         updatePlayerList();
         pushPlayersDown();
         setTitle();
     }
 
-    public void onPlayerRemove(Player p){
+    public void onPlayerRemove(String name){
         updatePlayerList();
         setTitle();
-    }
-
-    public void onNameChange(Player p, String name){
-        updatePlayerList();
     }
 }

@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.parse.ParsePush;
 
 import voss.android.ActivitySettings;
 import voss.android.R;
@@ -160,7 +159,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             Server.AddPlayer(gl);
         }
 
-        a.startNewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
+        a.start();//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

@@ -1,11 +1,9 @@
 package voss.android.parse;
 
 
-import com.parse.Parse;
-import com.parse.ParseObject;
-
-import java.util.ArrayList;
 import java.util.List;
+
+import com.parse.ParseObject;
 
 public class GameListing {
 
@@ -33,10 +31,6 @@ public class GameListing {
 
     public String getHeader() {
         return getHostName() + " (" + getPlayerNames().size() + "/" + getRoleNames().size() + ")";
-    }
-    private void addStrings(List<String> from, ArrayList<String> to){
-        for(String f: from)
-            to.add(f);
     }
 
     public String getID(){

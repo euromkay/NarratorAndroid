@@ -34,6 +34,9 @@ public class CommunicatorInternet extends Communicator{
 
     }
 
+    public Communicator copy(){
+    	return new CommunicatorInternet(c);
+    }
     
     public boolean equals(Object o){
     	if (o == null)

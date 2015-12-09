@@ -1,24 +1,19 @@
 package voss.android.texting;
 
-import voss.android.texting.TextHandler;
-import voss.android.texting.TextInput;
 import voss.shared.ai.Controller;
-import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
+import voss.shared.logic.exceptions.UnsupportedMethodException;
+import voss.shared.logic.support.Constants;
+import voss.shared.roles.Arsonist;
+import voss.shared.roles.Mayor;
 
 
 
-public class TextController implements Controller {
+public class TextController extends Controller {
 
-    private Narrator n;
     private TextInput texter;
-    public TextController(Narrator n, TextInput texter){
-        this.n = n;
+    public TextController(TextInput texter){
         this.texter = texter;
-    }
-
-    public Narrator getNarrator() {
-        return n;
     }
 
     public void log(String string) {
@@ -35,15 +30,25 @@ public class TextController implements Controller {
     }
 
     public void setNightTarget(Player a, Player b, String action) {
+    	b = Translate(a.getNarrator(), b);
         texter.text(a, action + " " + b.getName());
     }
 
     public void setNightTarget(Player a, Player b, String action, String teamName) {
+    	b = Translate(a.getNarrator(), b);
         texter.text(a, action + " " +  b.getName() + " " + teamName);
     }
+    
+    public void removeNightTarget(Player a, String action) {
+		texter.text(a, action + " " + Constants.UNTARGET);
+	}
 
     public void vote(Player slave, Player target) {
-        texter.text(slave, TextHandler.VOTE + " " + target.getName());
+    	target = Translate(slave.getNarrator(), target);
+    	if(target == slave.getSkipper())
+    		skipVote(slave);
+    	else
+    		texter.text(slave, TextHandler.VOTE + " " + target.getName());
         
     }
 
@@ -56,7 +61,27 @@ public class TextController implements Controller {
     }
 
 
-	public void say(Player slave, String string) {
-		texter.text(slave, TextHandler.SAY + " " + string);
+	public void say(Player slave, String message) {
+		texter.text(slave, TextHandler.SAY + " " + message);
 	}
+
+
+	public void doDayAction(Player p) {
+		if(p.is(Mayor.ROLE_NAME)){
+			texter.text(p, Mayor.REVEAL);
+			return;
+		}
+		else if(p.is(Arsonist.ROLE_NAME)){
+			texter.text(p, Arsonist.BURN);
+			return;
+		}
+		throw new UnsupportedMethodException();
+	}
+
+	public void unvote(Player slave) {
+		texter.text(slave, TextHandler.UNVOTE);
+		
+	}
+
+	
 }

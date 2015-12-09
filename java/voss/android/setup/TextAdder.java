@@ -56,7 +56,7 @@ public class TextAdder extends BroadcastReceiver{
             return;
         }
         //abortBroadcast();
-        manager.addPlayer(name, number);
+        manager.addPlayer(name, new CommunicatorText(number));
 
 
     }
@@ -87,7 +87,8 @@ public class TextAdder extends BroadcastReceiver{
         }
         for(Player p: TextHandler.getTexters(allPlayers)){
             if(((CommunicatorText) p.getCommunicator()).getNumber().equals(number)) {
-                manager.changeName(p, name);
+            	manager.removePlayer(p.getName(), false);
+                manager.addPlayer(p.getName(), p.getCommunicator());
                 p.sendMessage("You are now " + name + ".");
                 return true;
             }

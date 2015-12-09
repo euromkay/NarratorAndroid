@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,12 +36,12 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import voss.android.NActivity;
 import voss.android.R;
 import voss.android.alerts.ExitGameAlert;
 import voss.android.alerts.ExitGameAlert.ExitGameListener;
 import voss.android.day.PlayerDrawerAdapter.OnPlayerClickListener;
 import voss.android.parse.Server;
-import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
 import voss.android.screens.MembersAdapter;
 import voss.android.screens.SimpleGestureFilter;
@@ -55,12 +54,13 @@ import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 import voss.shared.logic.Team;
+import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.support.Constants;
 import voss.shared.roles.Framer;
 
 
-public class ActivityDay extends FragmentActivity 
+public class ActivityDay extends NActivity 
 implements 
 	ExitGameListener, 
 	OnClickListener, 
@@ -72,7 +72,6 @@ implements
 	SimpleGestureListener {
 
 	public DayManager manager;
-	protected TextHandler tHandler;
 
 	private IntentFilter iF;
 	private TextToSpeech speaker;
@@ -88,7 +87,6 @@ implements
 	
 	private SimpleGestureFilter detector;
 
-	private static final boolean HTML = true;
 
 	protected void onCreate(Bundle b){
 		super.onCreate(b);
@@ -138,16 +136,7 @@ implements
 	private void setup(Bundle b){
 		if (manager != null)
 			return;
-
-		Narrator n;
-		boolean isHost;
-		if(b == null) {
-			n = Board.getNarrator(getIntent().getParcelableExtra(Narrator.KEY));
-			isHost = getIntent().getBooleanExtra(ActivityHome.ISHOST, false);
-		}else {
-			n = Board.getNarrator(b.getParcelable(Narrator.KEY));
-			isHost = b.getBoolean(ActivityHome.ISHOST, false);
-		}
+		connectNarrator();
 		playerMenu = (RecyclerView) findViewById(R.id.day_playerNavigationPane);
 
 
@@ -198,10 +187,13 @@ implements
 		speaker.setLanguage(Locale.UK);
 		speaker.setSpeechRate(0.9f);
 
-		manager = new DayManager(this, n);
-		manager.startIpListener(isHost);
+		
 
-		manager.initiate();
+		while(ns == null);
+		manager = new DayManager(ns);
+		manager.initiate(this);
+		
+		
 		onClick(infoButton);
 
 	}
@@ -243,19 +235,15 @@ implements
 		Log.d("ActivityDay", i);
 	}
 
-	public int getSpinnerSelectedID(){
+	public Team getSpinnerSelectedTeam(){
 		String name = (String) framerSpinner.getSelectedItem();
-		Team found = null;
 		for (Team t: manager.getNarrator().getAllTeams()){
 			if (t.getName().equals(name)) {
-				found = t;
-				break;
+				return t;
 			}
 		}
 
-		if (found == null)
-			throw new NullPointerException(name + " wasn't found");
-		return found.getAlignment();
+		throw new NullPointerException(name + " wasn't found");
 	}
 	protected void setButtonText(String s){
 		if(button == null || s == null)
@@ -286,6 +274,7 @@ implements
 
 	protected void setCommand(String command){
 		commandsTV.setText(command);
+		
 	}
 
 	protected void updateMembers() {
@@ -311,19 +300,17 @@ implements
 
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		if (!manager.playerSelected() || (manager.getNarrator().isNight() && manager.getCurrentPlayer().endedNight())) {
-			manager.updateActionPanel();
-			return;
-		}
+		
 		try {
 			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandsTV.getText().toString() + ") for " + actionList.get(position).getDescription());
-		}catch (ArrayIndexOutOfBoundsException e){
-
-			log("accessing out of bounds again");
-		}
-
-		manager.command(actionList.get(position));
 			
+		}catch (IndexOutOfBoundsException e){
+	
+				log("accessing out of bounds again");
+				e.printStackTrace();
+		}
+		manager.command(actionList.get(position));
+		
 	}
 	
 	public BroadcastReceiver intentReceiver = new BroadcastReceiver(){
@@ -338,7 +325,9 @@ implements
 			}
 			
 			try{
-				tHandler.text(owner, message);
+				synchronized(manager.ns.local){
+					manager.tHandler.text(owner, message);
+				}
 			}catch(Exception|Error e){
 				e.printStackTrace();
 				if(owner != null)
@@ -358,11 +347,13 @@ implements
 	
 	public PlayerList actionList;
 	protected void setActionList(PlayerList playerList, boolean day){
-		actionList = playerList;
+		synchronized(manager){
+			actionList = playerList;
+		}
 		List<String> targetables = new ArrayList<>();
 		for(Player aP: playerList){
 			if(day)
-				targetables.add(manager.getNarrator().getVoteCountOf(aP) + " - " + aP.getName());
+				targetables.add(aP.getVoteCount() + " - " + aP.getName());
 			else
 				targetables.add(aP.getName());
 		}
@@ -391,7 +382,7 @@ implements
 				log("Big button clicked");
 				try{
 					manager.buttonClick();
-				}catch(PlayerTargetingException e){
+				}catch(PlayerTargetingException|IllegalActionException e){
 					e.printStackTrace();
 					toast(e.getMessage());
 				}
@@ -457,13 +448,7 @@ implements
 		chatET.setText("");
 	}
 
-	public void updateChatPanel(){
-		Player p = manager.getCurrentPlayer();
-		String text;
-		if (!manager.playerSelected())
-			text = manager.getNarrator().getEvents(Event.PUBLIC, HTML);
-		else
-			text = p.getNarrator().getEvents(p.getID(), true);
+	public void updateChatPanel(String text){
 		setChatPanelText(text);
 		pushChatDown();
 	}
@@ -484,8 +469,8 @@ implements
 		showView(rolesLV);
 
 		showView(rightTV);
-		if (manager.playerSelected()){
-			if (manager.getCurrentPlayer().hasDayAction() && manager.isDay())
+		if (manager.dScreenController.playerSelected()){
+			if (manager.getCurrentPlayer().hasDayAction() && manager.getNarrator().isDay())
 				showView(button);
 			else
 				hideView(button);
@@ -525,7 +510,7 @@ implements
 	}
 
 	public void setActionButton(){
-		if(manager.isDay()){
+		if(manager.getNarrator().isDay()){
 			actionButton.setText("Voting");
 		}else{
 			actionButton.setText("Night Actions");
@@ -544,8 +529,8 @@ implements
 		showView(actionLV);
 		showView(commandsTV);
 
-		if (manager.playerSelected()){
-			if (!manager.isDay()){
+		if (manager.dScreenController.playerSelected()){
+			if (!manager.getNarrator().isDay()){
 				showView(button);
 				showFrameSpinner();
 			}
@@ -555,7 +540,7 @@ implements
 	}
 
 	public void showFrameSpinner(){
-		if (!manager.playerSelected()) {
+		if (!manager.dScreenController.playerSelected()) {
 			hideView(framerSpinner);
 			return;
 		}
@@ -585,7 +570,7 @@ implements
 
 	public void showMessagesPanel() {
 		showView(chatLV);
-		if(manager.playerSelected() || Narrator.DEBUG) {
+		if(manager.dScreenController.playerSelected() || Narrator.DEBUG) {
 			showView(chatET);
 			showView(chatButton);
 		}
@@ -620,7 +605,7 @@ implements
 		v.setAdapter(new ListingAdapter(texts, this).setColors(colors));
 	}
 
-	public void endGame(Narrator n){
+	public void endGame(){
 
 		hideActionPanel();
 		hideInfoPanel();
@@ -635,17 +620,13 @@ implements
 		hideView(commandsTV);
 
 		showView(chatLV);
-		setChatPanelText(manager.getNarrator().getEvents(Event.PRIVATE, HTML));
+		setChatPanelText(manager.getNarrator().getEvents(Event.PRIVATE, false)); //false for HTML
 
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
 		speaker.stop();
 		speaker.shutdown();
 		stopTexting();
-		/*Intent i = new Intent(this, ActivityEndGame.class);
-		i.putExtra(Narrator.KEY, Board.GetParcel(n));
-		startActivity(i);
-		finish();*/
 
 	}
 	private void stopTexting(){
@@ -686,7 +667,9 @@ implements
 	public void onDrawerClosed(View v){
 		log("drawer closed");
 		drawerOut = false;
-		manager.updatePlayerControlPanel();
+		synchronized(manager.ns.local){
+		manager.dScreenController.updatePlayerControlPanel();
+		}
 	}
 	public void onDrawerOpened(View v){
 		drawerOut = true;
@@ -719,5 +702,16 @@ implements
 			log("swiped right");
 		}
 		manager.setNextAbility(direction);
+	}
+
+	public PlayerList getCheckedPlayers() {
+		boolean[] checkedPos = actionLV.getCheckedItemPositions();
+		PlayerList ret = new PlayerList();
+		for(int i = 0; i < actionList.size(); i++){
+			if(checkedPos[i])
+				ret.add(actionList.get(i));
+				
+		}
+		return ret;
 	}
 }

@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import voss.shared.logic.Narrator;
+import voss.shared.logic.support.Constants;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -19,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class SocketHost extends Service implements MessageTarget, Runnable{
+public class SocketHost extends Service implements Runnable{
 
     ServerSocket socket = null;
     private static final int THREAD_COUNT = 10;
@@ -52,7 +53,11 @@ public class SocketHost extends Service implements MessageTarget, Runnable{
         }
         return Service.START_STICKY;
     }
-
+    
+    public boolean isLive(){
+    	return socket != null;
+    }
+    
     public void onDestroy(){
         for(ChatManager cm: sockets)
             cm.close();
@@ -79,12 +84,24 @@ public class SocketHost extends Service implements MessageTarget, Runnable{
             THREAD_COUNT, THREAD_COUNT, 10, TimeUnit.SECONDS,
             new LinkedBlockingQueue<Runnable>());
 
-    private ArrayList<ChatManager> sockets = new ArrayList<>();
+    public ArrayList<ChatManager> sockets = new ArrayList<>();
 
-    public void write(String s){
+    public void send(String s){
+
+        Log.e("\t" + TAG + " " + sockets.size(), name + " writing \t" + s + Constants.INET_SEPERATOR);
         for (ChatManager cm: sockets){
             cm.write(s);
         }
+    }
+    public void send(String s, ChatManager notThisOne){
+    	for (ChatManager cm: sockets){
+    		if(cm != notThisOne){
+    			cm.write(s);
+    		}
+        }
+    }
+    public void write(String s){
+    	send(s);
     }
 
     public void onChatReady(){
@@ -93,21 +110,19 @@ public class SocketHost extends Service implements MessageTarget, Runnable{
 
     public void connectPlayers(Narrator n){
         for (ChatManager c: sockets){
-            for (int id: c.getIDs()){
-                n.getPlayerByID(id).setCommunicator(new CommunicatorInternet(c));
+            for (String name: c.getNames()){
+                n.getPlayerByName(name).setCommunicator(new CommunicatorInternet(c));
             }
         }
     }
 
     Handler handler;
-    ChatManager.ChatListener chat;
     Thread t;
-    public void addHandler(Handler h, ChatManager.ChatListener chat){
+    public void addHandler(Handler h){
         handler = h;
-        this.chat = chat;
 
         for(ChatManager cm: sockets){
-            cm.setHandler(h, chat);
+            cm.setHandler(h);
         }
     }
 
@@ -116,7 +131,7 @@ public class SocketHost extends Service implements MessageTarget, Runnable{
         while (true) {
             try {
                 Log.d(TAG, "starting threadx2");
-                ChatManager cm = new ChatManager(socket.accept(), handler, this, chat, name, i++);
+                ChatManager cm = new ChatManager(socket.accept(), handler, name, i++);
                 sockets.add(cm);
                 try {
                     pool.execute(cm);

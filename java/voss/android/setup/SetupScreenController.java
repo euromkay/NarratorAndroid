@@ -1,6 +1,6 @@
 package voss.android.setup;
 
-import voss.shared.logic.Player;
+import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.RoleTemplate;
 
 public class SetupScreenController implements SetupListener{
@@ -16,12 +16,11 @@ public class SetupScreenController implements SetupListener{
     }
     public void onRoleRemove(RoleTemplate listing){ screen.refreshRolesList();}
 
-    public void onPlayerAdd(Player p){
-    	screen.toast(p.getName() + " joined.");
+    public void onPlayerAdd(String name, Communicator c){
+    	screen.toast(name + " joined.");
     }
-    public void onPlayerRemove(Player p){
-    	screen.toast(p.getName() + " left.");
+    public void onPlayerRemove(String s){
+    	screen.toast(s + " left.");
 
     }
-    public void onNameChange(Player p, String name){}
 }

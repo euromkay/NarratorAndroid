@@ -5,28 +5,24 @@ import java.net.InetAddress;
 import java.util.HashMap;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.parse.ParseUser;
-
 import voss.android.ActivityTutorial;
 import voss.android.CommunicatorPhone;
+import voss.android.NActivity;
 import voss.android.R;
+import voss.android.SuccessListener;
 import voss.android.alerts.GameBookPopUp;
 import voss.android.alerts.IpPrompt;
 import voss.android.alerts.IpPrompt.IpPromptListener;
@@ -40,12 +36,11 @@ import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
-import voss.android.wifi.WifiHost;
-import voss.packaging.Board;
+import voss.android.wifi.SocketClient;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 
-public class ActivityHome extends Activity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
+public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
 
 
 	public void creating(Bundle b){
@@ -58,13 +53,6 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		setText(R.id.home_tutorial);
 		setText(R.id.home_currentGames);
 
-		if(b == null)
-			n = Board.getNarrator(getIntent().getParcelableExtra(Narrator.KEY));
-		else
-			n = Board.getNarrator(b.getParcelable(Narrator.KEY));
-		if(n == null)
-			n = Narrator.Default();
-
 
 		if(isLoggedIn()){
 			TextView tv = (TextView) findViewById(R.id.home_login_signup);
@@ -73,13 +61,14 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 		}
 		
+		connectNarrator();
 	}
-
+	
+	
 	public Narrator getNarrator(){
-		return n;
+		return ns.getNarrator();
 	}
 
-	private Narrator n;
 	protected void onCreate(Bundle b) {
 		super.onCreate(b);
 		creating(b);
@@ -112,21 +101,20 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
-					n.removeAllRoles();
-					n.removeAllPlayers();
+					//ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
 					Server.RegisterGame(new Server.GameRegister() {
 						public void onSuccess(String id) {
-							n.addPlayer(Server.GetCurrentUserName());
-							startNewGame(id, true);
+							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
 						}
 
 						public void onFailure(String t) {
 							toast(t);
 						}
 					});
+					start();
 				}else{
 					if(buildNumber() < 16)
-						toast("You will not be able to host games wirelessly");
+						toast("You will not be able to participate in wireless games.");
 					showNamePrompt("Host");
 				}
 				break;
@@ -134,8 +122,11 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 			case R.id.home_join:
 				if(isLoggedIn()) {
 					displayGames(GameBookPopUp.JOIN);
+				}else if(networkCapable()){
+					showIpPrompt();
+					//showNamePrompt("Join");
 				}else{
-					showNamePrompt("Join");
+					toast("Your device isn't capable of internet hostings.");
 				}
 				break;
 
@@ -143,11 +134,10 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 				if(isLoggedIn()){
 					displayGames(GameBookPopUp.RESUME);
 				}else{
-
+					toast("Not implemented yet.");
 				}
 				break;
 
-			//wins losses
 			case R.id.home_tutorial:
 				startTutorial();
 				break;
@@ -178,22 +168,17 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	public boolean isInternetAvailable() {
 		try {
 			InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
-
-			if (ipAddr.equals("")) {
+			if (ipAddr.equals("")) 
 				return false;
-			} else {
+			else 
 				return true;
-			}
-
 		} catch (Exception e) {
 			return false;
 		}
-
 	}
 
 	private void startTutorial(){
 		Intent i = new Intent(this, ActivityTutorial.class);
-		i.putExtra(Narrator.KEY, Board.GetParcel(n));
 		startActivity(i);
 		finish();
 	}
@@ -212,6 +197,7 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 		pList.show(getFragmentManager(), "namePrompt");
 	}
 
+	//this asks joiners what the host ip address is
 	private void showIpPrompt(){
 		DialogFragment pList = new IpPrompt();
 		pList.show(getFragmentManager(), "ipprompt");
@@ -220,20 +206,29 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 	public void onNamePromptConfirm(NamePrompt np, String name, boolean isHost){
 		SharedPreferences.Editor prefs = getPreferences(Context.MODE_PRIVATE).edit();
 		prefs.putString(HOST_NAME, name);
-		n.removeAllPlayers();
-		if(isHost)
-			n.addPlayer(name).setCommunicator(new CommunicatorPhone());
 		prefs.commit();
-		np.dismiss();
 
-		if( Build.VERSION.SDK_INT >= 18) {
-			if (isHost) {
-				PhoneBookPopUp pList = new PhoneBookPopUp();
-				pList.setIsHost();
-				pList.show(getFragmentManager(), "phoneBookPopup");
-			} else {
-				showIpPrompt();
-			}
+		if (isHost){
+			np.dismiss();
+			ns.addPlayer(name, new CommunicatorPhone());
+			if(networkCapable())
+				ns.startHost(this, name);
+			
+			PhoneBookPopUp pList = new PhoneBookPopUp();
+			pList.setIsHost();
+			pList.show(getFragmentManager(), "phoneBookPopup");
+		}else{
+			ns.submitName(name, new SuccessListener(){
+				public void onSuccess() {
+					np.dismiss();
+					start();
+				}
+
+				public void onFailure() {
+					toast("That name's already taken.");
+				}
+				
+			});
 		}
 	}
 
@@ -255,14 +250,18 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 			else
 				return null;
 		}
-		public void onPostExecute(IpPrompt ip){
+		public void onPostExecute(final IpPrompt ip){
 			boolean b = ip == null;
 			if (b){
 				toast("wrong code, try again");
 			}else{
-				WifiHost.StartConnection(ActivityHome.this, ip.getIP(), retrName());
-				ip.dismiss();
-				startNewGame(ip.getIP(), false);
+				ns.startClient(ActivityHome.this, ip.getIP(), new SocketClient.ClientListener(){
+					public void onHostConnect() {
+						ip.dismiss();
+						showNamePrompt("Join");
+					}
+					
+				});
 			}
 		}
 	}
@@ -288,10 +287,10 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 				number = contacts.get(name);
 				//ReceiverText.sendText(number, "You have been invited to the Narrator.  You are " + name + ". If that's not who you are, tell me your name.");
 				CommunicatorText cp = new CommunicatorText(number);
-				n.addPlayer(cp).setName(name);
+				ns.addPlayer(name, cp);
 			}
 			popup.dismiss();
-			startNewGame(null, true);
+			start();
 		}
 	}
 
@@ -314,23 +313,14 @@ public class ActivityHome extends Activity implements OnClickListener, IpPromptL
 
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
-	public void startNewGame(String ip, boolean isHost){
-		Class activ;
-		if(n.isInProgress())
+	public void start(){
+		Class<?> activ;
+		if(ns.getNarrator().isInProgress())
 			activ = ActivityDay.class;
 		else {
             activ = ActivityCreateGame.class;
         }
 		Intent i = new Intent(this, activ);
-		i.putExtra(ISHOST, isHost);
-		i.putExtra(MYNAME, retrName());
-
-		if(!isLoggedIn())
-			n.removeAllRoles();
-
-		i.putExtra(Narrator.KEY, Board.GetParcel(n));
-		if(ip != null)
-			i.putExtra(ActivityCreateGame.IP_KEY, ip);
 		startActivity(i);
 		finish();
 	}

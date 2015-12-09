@@ -12,9 +12,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-
 import voss.android.R;
-import voss.android.screens.ActivityHome;
 
 
 public class IpPrompt extends DialogFragment{

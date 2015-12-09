@@ -34,5 +34,7 @@ public class CommunicatorPhone extends Communicator{
 		ch.writeHeading(p, this);
 	}
 	public void getFromParcel(Packager p){}
-
+	public Communicator copy(){
+		return new CommunicatorPhone();
+	}
 }

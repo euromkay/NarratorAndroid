@@ -26,6 +26,9 @@ public class CommunicatorText extends Communicator{
 		sendMessage(message.substring(139));
 	}
 	
+	public Communicator copy(){
+		return new CommunicatorText(new PhoneNumber(number.number));
+	}
 
 	public void sendMessage(ArrayList<String> messages) {
 		for(String s: messages)

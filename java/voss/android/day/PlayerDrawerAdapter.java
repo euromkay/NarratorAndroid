@@ -56,7 +56,7 @@ public class PlayerDrawerAdapter extends RecyclerView.Adapter<PlayerDrawerAdapte
     public void onBindViewHolder(ViewHolder holder, final int position) {
         final TextView tv = holder.mTextView;
         if (position == 0){
-            tv.setText(DayManager.PlayerMenuHeader);
+            tv.setText(DayScreenController.PlayerMenuHeader);
 
             prev = tv;
             tv.setOnClickListener(new View.OnClickListener() {

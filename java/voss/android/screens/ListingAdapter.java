@@ -1,23 +1,22 @@
 package voss.android.screens;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-
 import voss.android.R;
 import voss.android.setup.ActivityCreateGame;
 
 public class ListingAdapter extends BaseAdapter{
 
-	private ArrayList<String> data;
 	private ArrayList<Integer> colors;
 	private int color;
 
+	private ArrayList<String> data;
 	private int layoutID;
 	private Activity c;
 	private Typeface font;

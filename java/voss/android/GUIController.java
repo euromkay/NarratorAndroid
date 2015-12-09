@@ -1,52 +1,84 @@
 package voss.android;
 
-import android.view.View;
-
 import java.util.Random;
 
-import voss.android.R;
+import android.util.Log;
+import android.view.View;
 import voss.android.day.ActivityDay;
 import voss.android.screens.SimpleGestureFilter;
+import voss.android.texting.TextController;
+import voss.android.texting.TextInput;
 import voss.shared.ai.Controller;
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 import voss.shared.logic.exceptions.PlayerTargetingException;
+import voss.shared.roles.Framer;
 
-public class GUIController implements Controller{
+public class GUIController extends Controller implements TextInput{
 
-    private ActivityDay dScreen;
+    public ActivityDay dScreen;
     private Random rand;
+    private TextController logger;
     public GUIController(ActivityDay dScreen){
         this.dScreen = dScreen;
         rand = new Random();
+        logger = new TextController(this);
     }
 
+
+	public static final boolean VOTE = true;
+    public static final boolean END_NIGHT = true;
+	public static final boolean SAY = false;
+	public static final boolean TARGET = true;
+    
     public void vote(Player slave, Player target){
+    	target = Translate(slave.getNarrator(), target);
+    	if(VOTE && target != slave.getSkipper())
+    		logger.vote(slave, target);
+        
         selectSlave(slave);
         actionPanelClick();
-
-        clickPlayer(target);
+        
+        try{
+        	clickPlayer(target);
+        }catch(PlayerTargetingException e){
+        	if(slave.getNarrator().isDay()){
+        		throw e;
+        	}
+        }
     }
 
     public void skipVote(Player slave){
+    	if(VOTE)
+    		logger.skipVote(slave);
         vote(slave, slave.getSkipper());
     }
 
     public void setNightTarget(Player slave, Player choice, String ability){
+    	choice = Translate(slave.getNarrator(), choice);
+    	if(TARGET && !ability.toLowerCase().equals(Framer.FRAME.toLowerCase())){
+    		logger.setNightTarget(slave, choice, ability);
+    	}
     	selectSlave(slave);
         swipeAbilityPanel(slave, ability);
         clickPlayer(choice);
     }
 
     public void setNightTarget(Player slave, Player choice, String ability, String teamName){
-        setFrame(slave, choice, teamName);
+    	if(TARGET)
+    		logger.setNightTarget(slave, choice, ability, teamName);
+        setFrame(teamName);
         setNightTarget(slave,choice,ability);
     }
 
     private void clickPlayer(Player p){
         int position = dScreen.actionList.indexOf(p);
-        if (position == -1)
+        if (position == -1){
+        	System.out.println(p.getNarrator().getEvents(Event.PRIVATE, false));
             throw new PlayerTargetingException(p + " not found\n" );
+        }
         
         dScreen.onItemClick(null, null, position, 0);
     }
@@ -79,9 +111,14 @@ public class GUIController implements Controller{
     	if(dScreen.panel != dScreen.messagesButton)
     		dScreen.onClick(dScreen.messagesButton);
     }
+    private void setInfoPanel(){
+    	if (dScreen.panel != dScreen.infoButton){
+    		dScreen.onClick(dScreen.infoButton);
+    	}
+    }
 
     protected void selectSlave(Player slave){
-    		GUIController.selectScreen(dScreen, slave);
+    	GUIController.selectScreen(dScreen, slave);
     }
     
     public void selectHost(Player host){
@@ -99,11 +136,11 @@ public class GUIController implements Controller{
         if (slf != null && slf.isDead()){
             throw new PlayerTargetingException(slf.getDescription() + " is dead and can't be selected on Player Click");
         }
+        if(!dScreen.manager.getNarrator().getAllPlayers().has(slf))
+        	throw new PlayerTargetingException("Player not part of game!");
         dScreen.onPlayerClick(slf);
 
         dScreen.closeDrawer();
-
-        dScreen.onDrawerClosed(null);
     }
 
     public void actionPanelClick(){
@@ -111,16 +148,23 @@ public class GUIController implements Controller{
     }
 
     public void endNight(Player slave){
-    	selectSlave(slave);
-        dScreen.onClick(dScreen.button);
+    	if(END_NIGHT)
+    		logger.endNight(slave);
+    	clickButton(slave);
     }
 
     public void cancelEndNight(Player slave){
+    	logger.cancelEndNight(slave);
+    	clickButton(slave);    	
+    }
+    
+    public void clickButton(Player slave){
         selectSlave(slave);
+        setActionPanel();
         dScreen.onClick(dScreen.button);
     }
 
-    public void setFrame(Player slave, Player target, String team){
+    public void setFrame(String team){
         int id = dScreen.frameOptions.indexOf(team);
         dScreen.framerSpinner.setSelection(id);
     }
@@ -134,9 +178,40 @@ public class GUIController implements Controller{
 	}
 	
 	public void say(Player slave, String message){
+		if(SAY)
+			logger.say(slave, message);
 		selectSlave(slave);
 		setMessagePanel();
 		dScreen.chatET.setText(message);
 		dScreen.onClick(dScreen.chatButton);
+	}
+
+
+	public void doDayAction(Player p) {
+		logger.doDayAction(p);
+		selectSlave(p);
+		setInfoPanel();
+        dScreen.onClick(dScreen.button);
+	}
+
+	public void unvote(Player slave) {
+		if(VOTE)
+			logger.unvote(slave);
+		selectSlave(slave);
+        actionPanelClick();
+        PlayerList pList = dScreen.getCheckedPlayers();
+        clickPlayer(pList.get(0));
+	}
+	
+	public void removeNightTarget(Player slave, String ability){
+		logger.removeNightTarget(slave, ability);
+		selectSlave(slave);
+        swipeAbilityPanel(slave, ability);
+        PlayerList pList = dScreen.getCheckedPlayers();
+        clickPlayer(pList.get(0));
+	}
+
+	public void text(Player p, String message) {
+		Log.i(p.toString(), message);
 	}
 }

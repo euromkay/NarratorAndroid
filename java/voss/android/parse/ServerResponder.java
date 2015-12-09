@@ -8,7 +8,7 @@ import com.parse.ParseObject;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.setup.SetupListener;
 import voss.android.setup.SetupManager;
-import voss.shared.logic.Player;
+import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.RoleTemplate;
 
 public class ServerResponder implements SetupListener{
@@ -37,15 +37,11 @@ public class ServerResponder implements SetupListener{
     public void onRoleAdd(RoleTemplate rt){
         Server.AddRole(rt, object, ac);
     }
-    public void onPlayerRemove(Player p){
+    public void onPlayerRemove(String n){
         //no player removals when talking with the server
     }
-    public void onPlayerAdd(Player p){
+    public void onPlayerAdd(String n, Communicator c){
         //no player adding when going to the server
-    }
-
-    public void onNameChange(Player p, String s){
-        //no name changes when going to the server
     }
 
     public void exitGame(){

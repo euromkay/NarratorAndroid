@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 import android.os.Handler;
 import android.util.Log;
+import voss.android.NarratorService;
 import voss.shared.logic.support.Constants;
 
 
@@ -17,9 +19,7 @@ public class ChatManager implements Runnable {
 
     private Socket socket = null;
     private Handler handler;
-    private MessageTarget mt;
-    private ArrayList<Integer> players;
-    private ChatListener chat;
+    private ArrayList<String> players;
     
 
     public static final String NAME = "name FOR SOCKETS";
@@ -27,27 +27,24 @@ public class ChatManager implements Runnable {
     private String name;
 
     private int id;
-    public ChatManager(Socket socket, Handler handler, MessageTarget mt, ChatListener chat, String name, int id) {
+    public ChatManager(Socket socket, Handler handler, String name, int id) {
         Log.d(TAG, "new thread made");
         this.socket = socket;
         this.handler = handler;
-        this.mt = mt;
         players = new ArrayList<>();
-        this.chat = chat;
-        this.name = name;
+        this.setName(name);
         this.id= id;
     }
 
-    public void setHandler(Handler handler, ChatListener chat){
+    public void setHandler(Handler handler){
         this.handler = handler;
-        this.chat = chat;
     }
 
-    public void addID(int id){
-        players.add(id);
+    public void addName(String name){
+        players.add(name);
     }
 
-    public ArrayList<Integer> getIDs(){
+    public ArrayList<String> getNames(){
         return players;
     }
 
@@ -62,14 +59,12 @@ public class ChatManager implements Runnable {
 
             oStream = socket.getOutputStream();
             iStream = socket.getInputStream();
+            handler.obtainMessage(NarratorService.MESSAGE_CONNECTED, -1, -1, new Object[]{}).sendToTarget();
 
-            mt.onChatReady();
-            if(chat != null)
-                chat.onNewPlayer(this);
+
             byte[] buffer = new byte[BUFFER];
             int bytes;
             String line;
-            //handler.obtainMessage(WiFiServiceDiscoveryActivity.MY_HANDLE, this).sendToTarget();
 
             while (true) {
                 try {
@@ -82,18 +77,22 @@ public class ChatManager implements Runnable {
 
                     // Send the obtained bytes to the UI Activity
                     //if(!name.equals("Master"))
-                    	Log.e(TAG, name + " Reading \t" + line);
+                    Log.e(TAG, getName() + " Reading \t" + line);
 
-                    handler.obtainMessage(WifiHost.MESSAGE_READ, bytes, -1, new Object[]{buffer, this}).sendToTarget();
+                    handler.obtainMessage(NarratorService.MESSAGE_READ, bytes, -1, new Object[]{buffer, this}).sendToTarget();
                     buffer = new byte[BUFFER];
-
-                } catch (IOException e) {
+                } catch (SocketException e) {
+                	if(e.getMessage().equals("Socket closed"))
+                		break;
+                	throw e;
+                } catch (Exception|Error e) {
+                	e.printStackTrace();
                     Log.e(TAG, "disconnected");
                     break;
                 }
             }
         } catch (IOException e) {
-        	e.getMessage();
+        	e.printStackTrace();
         	Log.e(TAG, "exception");
         } finally {
         	close();
@@ -112,7 +111,6 @@ public class ChatManager implements Runnable {
     }
     public void write(String s){
     	
-        Log.e(TAG, name + " writing \t" + s + Constants.INET_SEPERATOR);
         write((s + Constants.INET_SEPERATOR).getBytes());
     }
 
@@ -133,16 +131,19 @@ public class ChatManager implements Runnable {
 
 
 
-
-    public interface ChatListener {
-        void onNewPlayer(ChatManager c);
-        void onRead(String message, ChatManager p);
-    }
-
-
-
-
 	public int getID() {
 		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public boolean isClosed(){
+		return socket.isClosed();
 	}
 }

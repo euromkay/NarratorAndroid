@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,16 +18,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import voss.android.NActivity;
 import voss.android.R;
 import voss.android.alerts.PlayerPopUp;
 import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
-import voss.android.wifi.CommunicatorInternet;
 import voss.packaging.Board;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
-import voss.shared.logic.PlayerList;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.RoleTemplate;
 import voss.shared.roles.Agent;
@@ -60,9 +58,8 @@ import voss.shared.roles.Vigilante;
 import voss.shared.roles.Witch;
 
 
-//TODO have to remove spaces from names
 
-public class ActivityCreateGame extends FragmentActivity implements OnItemClickListener, OnClickListener, PlayerPopUp.AddPlayerListener {
+public class ActivityCreateGame extends NActivity implements OnItemClickListener, OnClickListener, PlayerPopUp.AddPlayerListener {
 
 	public static final int TOWN = 0;
 	public static final int MAFIA = 1;
@@ -77,7 +74,6 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 
 	public ListView cataLV, rolesLV, rolesListLV;
 	public TextView playersInGameTV, rolesLeftTV;
-	private Narrator narrator;
 
 
 	protected void onCreate(Bundle b){
@@ -90,7 +86,6 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 	
 	protected void onSaveInstanceState(Bundle b){
 		super.onSaveInstanceState(b);
-		b.putParcelable(Narrator.KEY, Board.GetParcel(narrator));
 		manager.stopTexting();
 	}
 	
@@ -103,7 +98,6 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 	
 	public void onBackPressed(){
 		Intent i = new Intent(this, ActivityHome.class);
-		i.putExtra(Narrator.KEY, Board.GetParcel(narrator));
 		manager.shutdown();
 		startActivity(i);
 		finish();
@@ -135,48 +129,45 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		return array;
 		
 	}
-	public static final String IP_KEY = "@3ip_key";
+	public static final String ID_KEY = "game_id";
 	private SetupManager manager;
 	private void setup(Bundle b){
 		if(manager == null){
+			connectNarrator();
 			setupCategories();
-			
-			if(b == null)
-				narrator = Board.getNarrator(getIntent().getParcelableExtra(Narrator.KEY));
-			else
-				narrator = Board.getNarrator(b.getParcelable(Narrator.KEY));
-
-			//narrator = Narrator.Default();
-
-			Intent tent = getIntent();
-			boolean isHost = tent.getBooleanExtra(ActivityHome.ISHOST, false);
-			manager = new SetupManager(isHost, this, narrator);
-
-			manager.setName(tent.getStringExtra(ActivityHome.MYNAME));
-
-
-			if(ActivityHome.buildNumber() >= 16)
-				manager.setupConnection(tent.getStringExtra(IP_KEY));
-
-
-			rolesLeftTV = (TextView) findViewById(R.id.roles_hint_title);
-
 			setupRoleCatalogue();
-			setupRoleList();
-
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
-			Button startGameButton = (Button) findViewById(R.id.roles_startGame);
-			if(manager.isHost())
-				startGameButton.setOnClickListener(this);
-			else if (Server.IsLoggedIn()) {
-				startGameButton.setOnClickListener(this);
-				startGameButton.setText("Exit");
-			}else
-				findViewById(R.id.roles_startGame).setVisibility(View.GONE);
-			
 			changeRoleType(TOWN);
-			setHostCode();
+			
+			while(ns == null);
+			setupManager();
 		}
+	}
+	private void setupManager(){
+		manager = new SetupManager(this, ns);
+
+
+		if(networkCapable())
+			manager.setupConnection();
+
+		setupRoleList();
+
+		rolesLeftTV = (TextView) findViewById(R.id.roles_hint_title);
+
+
+		Button startGameButton = (Button) findViewById(R.id.roles_startGame);
+		if(manager.isHost())
+			startGameButton.setOnClickListener(this);
+		else if (Server.IsLoggedIn()) {
+			startGameButton.setOnClickListener(this);
+			startGameButton.setText("Exit");
+		}else
+			findViewById(R.id.roles_startGame).setVisibility(View.GONE);
+
+		if(manager.isHost())//only host can add roles
+			rolesLV.setOnItemClickListener(this);
+		
+		setHostCode();
 	}
 
 	private void changeFont(int id){
@@ -205,8 +196,6 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 	private void setupRoleCatalogue(){
 		rolesLV = (ListView) findViewById(R.id.roles_bottomLV);
 		rolesLV.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-		if(manager.isHost())
-			rolesLV.setOnItemClickListener(this);
 		rolesLV.setItemsCanFocus(false);
 		changeFont(R.id.roles_bottomLV_title);
 	}
@@ -226,7 +215,7 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		ArrayList<String> names = new ArrayList<>();
 		ArrayList<Integer> colors = new ArrayList<>();
 
-		for(RoleTemplate r : narrator.getAllRoles()){
+		for(RoleTemplate r : manager.ns.local.getAllRoles()){
 			names.add(r.getName());
 			colors.add(r.getColor());
 		}
@@ -241,7 +230,7 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 
     private void setHostCode(){
 		if(manager.isHost() && !Server.IsLoggedIn())
-        	rolesLeftTV.setText(manager.wifi.getIp().replace(".", "*"));
+        	rolesLeftTV.setText(manager.ns.getIp().replace(".", "*"));
 		else
 			rolesLeftTV.setVisibility(View.GONE);
     }
@@ -361,7 +350,7 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		case R.id.roles_rolesList:
 			position = rolesListLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
-				role = narrator.getAllRoles().get(position);
+				role = manager.ns.local.getAllRoles().get(position);
 				manager.removeRole(role);
 			}
 			break;
@@ -460,21 +449,18 @@ public class ActivityCreateGame extends FragmentActivity implements OnItemClickL
 		new PlayerPopUp().show(getFragmentManager(), "playerlist");
 	}
 
-	private PlayerPopUp popup;
 	public void onPopUpDismiss(){
-		popup = null;
+		
 	}
 
 	public void onPopUpCreate(PlayerPopUp p){
-		popup = p;
+		
 	}
 
 	public Narrator getNarrator(){
-		return narrator;
-	}
-
-	public void onPlayerRemove(Player selected){
-		narrator.removePlayer(selected);
+		if(manager == null)
+			manager.toString();
+		return manager.ns.local;
 	}
 
 	private RoleTemplate getSelectedRole(int position){
