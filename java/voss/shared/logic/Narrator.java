@@ -159,8 +159,7 @@ public class Narrator{
 	public Player Skipper;
 	public Narrator(){
 		addTeam(Constants.A_SKIP).setName("Skip Team");
-		Skipper = new Player(Constants.A_SKIP, new CommunicatorNull(), this);
-		Skipper.setName("Skip Day");
+		Skipper = new Player("Skip Day", new CommunicatorNull(), this);
 		Skipper.setRole(new Citizen(Skipper), Constants.A_SKIP);
 		events = new EventManager();
 		random = new Random();
@@ -209,28 +208,25 @@ public class Narrator{
 		return players.size();
 	}
 
-	private int key = 0;
-	public Player addPlayer(Communicator comm) {
+	public Player addPlayer(String name, Communicator comm) {
 		if(gameStarted)
 			throw new PhaseException("Cannot add players if game has already started");
-		Player p = new Player(key++, comm, this);
-		synchronized (players){
-			players.add(p);
+		name = name.replace(" ", "");
+		
+		synchronized (getPlayerByNameLock){
+			Player existing = getPlayerByName(name);
+			if(existing != null){
+				existing.setCommunicator(comm);
+				return existing;
+			}else{
+				Player p = new Player(name, comm, this);
+				players.add(p);
+				return p;
+			}
 		}
-		return p;
-	}
-	public Player addPlayer(){
-		return addPlayer(new CommunicatorNull());
-	}
-	public Player addPlayer(int id){
-		Player p = getPlayerByID(id);
-		if (p == null)
-			return addPlayer(new CommunicatorNull());
-		else
-			return p;
 	}
 	public Player addPlayer(String name){
-		return addPlayer().setName(name);
+		return addPlayer(name, new CommunicatorNull());
 	}
 	public void removePlayer(Player p){
 		players.remove(p);
@@ -254,30 +250,20 @@ public class Narrator{
 		if(rem != null)
 			players.remove(rem);
 	}
-	public Player getPlayerByID(int i){
-		if(i == Constants.A_SKIP)
-			return Skipper;
-		for(Player p: players){
-			if(p.getID() == i)
-				return p;
-		}
-		return null;
-		//if(i == -1)
-		//	return null;
-		//throw new NullPointerException("integer was: " + i );
-	}
+	private Object getPlayerByNameLock = new Object();
 	public Player getPlayerByName(String name){
         if (Skipper.getName().equals(name))
         	return Skipper;
-        
-		for (Player p: players)
+        synchronized(getPlayerByNameLock){
+		for (Player p: players){
+			if(p == null || p.getName() == null)
+				System.err.println("WTF?");
 			if (p.getName().equals(name)){
 				return p;
 			}
+		}
+        }
 		return null;
-	}
-    public void shufflePlayers(){
-		players.shuffle(random);
 	}
 	public PlayerList getAllPlayers(){
 		synchronized (players){
@@ -292,13 +278,7 @@ public class Narrator{
 		return list;
 	}
 	
-	public static Player getPlayerByID(PlayerList players2, int i){
-		for(Player p: players2){
-			if(p.getID() == i)
-				return p;
-		}
-		throw new NullPointerException("integer was: " + i );
-	}
+	
 	
 
 
@@ -324,8 +304,11 @@ public class Narrator{
 		Team t = teams.get(team);
 		t.addMember(role);	
 	}
-	public void addRole(Member m){
-		addRole(m.getName(), m.getColor());
+	public void addRole(RoleTemplate rt){
+		if(Role.isRole(rt.getName()))
+			addRole(rt.getName(), rt.getColor());
+		else
+			randomRoles.add((RandomRole) rt);
 	}
 	
 	//need to return it, to chain the names in default
@@ -365,12 +348,7 @@ public class Narrator{
 	
 	//cross faction randoms
 	private ArrayList<RandomRole> randomRoles = new ArrayList<RandomRole>();
-	
-	public void addRole(RandomRole role) {
-		if(role == null)
-			throw new NullPointerException();
-		randomRoles.add(role);
-	}
+
 	
 	
 	
@@ -392,7 +370,7 @@ public class Narrator{
 	
 	
 	
-	private void runSetupChecks(){
+	public void runSetupChecks(){
 		sizeCheck();
 		playerNumberCheck();
 		opponentCheck();
@@ -429,7 +407,7 @@ public class Narrator{
 	private void randomChecks(){
 		for(RandomRole r: randomRoles){
 			int size = r.getSize();
-			if(size == 0 || size == 1)
+			if(size <= 1)
 				throw new IllegalRoleCombinationException(r.getName() + " can only spawn one role!");
 		}
 	}
@@ -550,10 +528,11 @@ public class Narrator{
 
 		runSetupChecks();
 		gameStarted = true;
-		
+
 		ArrayList<RoleTemplate> list = getAllRoles();
 		if (!DEBUG) {
-			Collections.sort(list, RoleTemplate.RandomComparator());
+			players.sortByName();
+			Collections.shuffle(list);
 		}
 		assignRoles(list);
 		
@@ -561,7 +540,7 @@ public class Narrator{
 		for(Player p: players)
 			Executioner.check(p, this);
 
-		players.sortById();
+		players.sortByName();
 		
 		if(rules.DAY_START){
 			dayNumber = 1;
@@ -573,7 +552,6 @@ public class Narrator{
 		
 	}
 	private void assignRoles(ArrayList<RoleTemplate> list){
-		
 		for(int i = 0; i < players.size(); i++){
 			Player player = players.get(i);
 			RoleTemplate m = list.get(i);
@@ -584,7 +562,7 @@ public class Narrator{
 			team.addMember(player);
 			Event e = new Event();
 			e.dontShowPrivate();
-			e.setVisibility(player.getID());
+			e.setVisibility(player);
 			e.add(player);
 			e.add(" are a " + player.getRoleName() + ".");
 			addEvent(e);
@@ -644,6 +622,7 @@ public class Narrator{
 	
 	//people who have completed their night actions
 	private PlayerList nightList = new PlayerList();
+	private int key = 0;
 	protected void endNight(Player p){
 		if(!canDoNightAction())
 			throw new PlayerTargetingException(p.getDescription() + "cannot end night.  It is daytime!");
@@ -700,10 +679,16 @@ public class Narrator{
 	
 	
 	private EventManager events;
-	public String getEvents(int access, boolean HTML){
-		if(access == Event.PRIVATE || !isInProgress())
+	public String getEvents(String access, boolean HTML){
+		if(access.equals(Event.PRIVATE) || !isInProgress())
 			return events.access(Event.PRIVATE, HTML);
 		return events.access(access, HTML);
+	}
+	public String getHappenings(){
+		return getEvents(Event.PRIVATE, false);
+	}
+	public String getEvents(Player p, boolean HTML){
+		return getEvents(p.getName(), HTML);
 	}
 	private ArrayList<CommandListener> cListeners;
 	public void addEvent(Event e){
@@ -716,14 +701,9 @@ public class Narrator{
 	public ArrayList<CommandListener> getCommandListeners(){
 		return cListeners;
 	}
-	public String getCommands(){
-		
-		String s = events.getCommands();
-		if(s.indexOf("@") != -1)
-			throw new NullPointerException();
-		return s;
+	public ArrayList<String> getCommands(){
+		return events.getCommands();
 	}
-	
 	
 	
 	private void endNight(){
@@ -796,7 +776,7 @@ public class Narrator{
 			for(Player newDead : getDeadList(dayNumber)){
 				if(newDead.getDeathType().isLynch())
 					continue;
-				if(newDead.equals(exec.getTarget(this))){
+				if(newDead.equals(exec.getTarget(p))){
 					p.setRole(new Jester(p), p.getAlignment());
 					
 					//Event jester = new JesterEvent(p);
@@ -848,6 +828,7 @@ public class Narrator{
 		for(Player p: players)
 			if(p.getVotedForJester())
 				jesterList.add(p);
+		jesterList.sortByName();
 		if(jesterList.size() > 0){
 			Player lolKilled = jesterList.getRandom(random);
 			lolKilled.votedForJester(false);
@@ -1027,6 +1008,9 @@ public class Narrator{
 		if(target == null)
 			throw new NullPointerException("target was null");
 
+		if(target == Skipper)
+			throw new VotingException("Skipper cannot vote");
+		
 		if(!voter.isAlive())
 			throw new VotingException("Dead players cannot vote.  " + voter.getDescription() + " is dead.");
 		if(!target.isAlive())
@@ -1040,7 +1024,7 @@ public class Narrator{
 	}
 
 	//garunteeing target isn't null, and not an unvote
-	void vote(Player voter, Player target, boolean simulation) {
+	void vote(Player voter, Player target) {
 		voteCheck(voter, target);
 
 		Player prevTarget = null;
@@ -1048,15 +1032,12 @@ public class Narrator{
 		e.add(voter);
 		
 		e.setCommand(voter, CommandHandler.VOTE, target.getName());
-
-		if(simulation)
-			return;
 		
 		//can't revote
-		int toLynch = getMinLynchVote() - getVoteCountOf(target);
+		int toLynch = getMinLynchVote() - (getVoteCountOf(target) + 1);
 		if(voterList.containsKey(voter)){
 			prevTarget = unVoteHelper(voter);
-			e.add(" changed ", new StringChoice("their").add(voter.getID(), "your")," vote from ", prevTarget, " to ", target, numberOfVotesNeeded(toLynch));
+			e.add(" changed ", new StringChoice("their").add(voter, "your")," vote from ", prevTarget, " to ", target, numberOfVotesNeeded(toLynch));
 
 			addVoteHelper(voter, target);
 
@@ -1087,7 +1068,7 @@ public class Narrator{
 		list.add(voter);
 
 	}
-	Player unVote(Player voter, boolean simulation) {
+	Player unVote(Player voter) {
 		if(!voter.isAlive())
 			throw new VotingException("Dead players can't vote or unvote.");
 		
@@ -1096,8 +1077,6 @@ public class Narrator{
 
 		Event e = new Event();
 		e.setCommand(voter, CommandHandler.SKIP_VOTE);
-		if(simulation)
-			return null;
 		
 		Player prevTarget = unVoteHelper(voter);
 
@@ -1124,14 +1103,14 @@ public class Narrator{
 		return prevTarget;
 	}
 
-	void skipVote(Player p, boolean simulation){
+	void skipVote(Player p){
+		if(p == Skipper)
+			throw new VotingException("Skipper cannot vote");
 		isDayCheck();
 		Player prevTarget = voterList.get(p);
 		
 		Event e = new Event();
 		e.setCommand(p, CommandHandler.SKIP_VOTE);
-		if(simulation)
-			return;
 		
 		e.add(p);
 		if(prevTarget == Skipper)
@@ -1174,16 +1153,16 @@ public class Narrator{
 					voters.add(voter);
 				}
 				//jester check
-				if (target.getRoleName().equals(Jester.ROLE_NAME)) {
+				if (target.is(Jester.ROLE_NAME)) {
 					for (Player p : voters) {
 						p.votedForJester(true);
 					}
 				}
 
 				for (Player exec : getLivePlayers()) {
-					if (exec.getRoleName().equals(Executioner.ROLE_NAME)) {
+					if (exec.is(Executioner.ROLE_NAME)) {
 						Executioner r = (Executioner) exec.getRole();
-						if (r.getTarget(this).equals(target))
+						if (r.getTarget(exec).equals(target))
 							r.setWon();
 					}
 				}
@@ -1200,7 +1179,7 @@ public class Narrator{
 		}
 	}
 	
-	public int getVoteCountOf(Player voted){
+	protected int getVoteCountOf(Player voted){
 		isDayCheck();
 		int count = 0;
 		PlayerList voters = voteList.get(voted);
@@ -1217,10 +1196,10 @@ public class Narrator{
 		minVote ++;
 		return minVote;
 	}
-	public Player getVoteTarget(Player voter){
+	protected Player getVoteTarget(Player voter){
 		return voterList.get(voter);
 	}
-	public PlayerList getVoteListOf(Player target){
+	protected PlayerList getVoteListOf(Player target){
 		return voteList.get(target).copy();
 	}
 	private void isDayCheck(){
@@ -1229,18 +1208,17 @@ public class Narrator{
 	}
 	
 	public Object commandLock = new Object();
-	protected void talk(Player p, String message, boolean simulation){
-		PlayerList list;
-		if (isDay())
-			list = getLivePlayers();
-		else
-			list = p.getTeam().getMembers();
+	protected void talk(Player p, String message){
 		Event e = new Event();
-		e.setVisibility(list);
+		if (isNight()) {
+			e.setVisibility(p.getTeam().getMembers());
+		}
 		e.add(p, ": ", message);
-		e.setCommand(p, CommandHandler.SAY, message);
-		if(!simulation)
-			addEvent(e);
+		addEvent(e);
+		//e.setCommand(p, CommandHandler.SAY, message);
+		for(NarratorListener nl: listeners){
+			nl.onMessageReceive(p);
+		}
 	}
 	
 	
@@ -1298,15 +1276,17 @@ public class Narrator{
 	}
 
 
-	
-	public boolean isInProgress(){
+	private Object progSync = new Object();
+	public synchronized boolean isInProgress(){
+		synchronized(progSync){
 		if (winString != null)
 			return false;
-
-		if (!gameStarted)
-			return false;
 		
-		if(players.get(0).getRole().getRoleName().equals(UnsetRole.ROLE_NAME)){
+		if (players.size() == 0){
+			return false;
+		}
+		
+		if(players.get(0).is(UnsetRole.ROLE_NAME)){
 			return false;
 		}
 		
@@ -1319,10 +1299,8 @@ public class Narrator{
 				if(enemyTeam.isAlive()){
 					if(!isDay || getLivePlayers().size() >= 3)
 						return true;
-					
 				}
 			}
-			
 		}
 		if(winString == null)
 			determineWinners();
@@ -1331,6 +1309,7 @@ public class Narrator{
 			nL.onEndGame();
 		
 		return false;
+		}
 	}
 	private void determineWinners(){
 		ArrayList<Player> winningPlayers = new ArrayList<Player>();
@@ -1425,7 +1404,6 @@ public class Narrator{
 		dest.write(players.size());
 		for(Player p: players){
 			dest.write(p.getName());
-			dest.write(p.getID());
 			p.getCommunicator().writeToParcel(dest, ch);
 			dest.write(p.isComputer());
 		}
@@ -1460,6 +1438,56 @@ public class Narrator{
 			events.writeToPackage(dest);
 	}
 	
+	public Narrator(Narrator n){
+		this();
+		seed = n.seed; 
+		rules = new Rules(n.rules);
+
+		for(Player oldP: n.players){
+			addPlayer(oldP.getName(), oldP.getCommunicator().copy());
+			if(oldP.isComputer())
+				oldP.setComputer();
+		}
+		
+		Team t;
+		for (Team oldTeam: n.getAllTeams()){
+			t = new Team(oldTeam.getAlignment(), this);
+			t.setName(oldTeam.getName());
+			t.setPriority(oldTeam.getPriority());
+			t.setKnowsTeam(oldTeam.knowsTeam());
+			t.setCanRecruitFrom(oldTeam.canRecruitFrom());
+			if(oldTeam.getAliveToWin())
+				t.setMustBeAliveToWin();
+			t.setKill(oldTeam.canKill());
+			
+			for(int alignment: oldTeam.getSheriffDetectables()){
+				t.addSheriffDetectableTeam(alignment);
+			}
+			for(int aligment: oldTeam.getEnemyTeams()){
+				t.addEnemy(aligment);
+			}
+			
+			teams.put(t.getAlignment(), t);
+			for(String m: oldTeam.getAllMembers()){
+				addRole(new Member(m, oldTeam.getAlignment()));
+			}
+		}
+
+		
+		for(RandomRole r: n.randomRoles) {
+			randomRoles.add(new RandomRole(r));
+		}
+
+		if(n.gameStarted)
+			startGame();
+
+		CommandHandler commander = new CommandHandler(this);
+
+		for(String command: n.getCommands()) {
+			commander.parseCommand(command);
+		}
+	}
+	
 	public Narrator(Packager in, CommunicatorHandler ch){
 		this();
 		setSeed(Long.parseLong(in.readString()));
@@ -1470,7 +1498,6 @@ public class Narrator{
 		HashMap<Player, Communicator> players_to_comms = new HashMap<>();
 		for(int i = 0; i < size; i++){
 			p = addPlayer(in.readString());
-			p.setID(in.readInt());
 			players_to_comms.put(p, ch.getComm(in, this));
 			p.setCommunicator(new CommunicatorNull());
 			if(in.readBool())

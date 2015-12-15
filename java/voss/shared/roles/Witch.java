@@ -30,9 +30,9 @@ public class Witch extends Role {
 		return "You have the ability to change someone else's action target.";
 	}
 
-	public void setAction(Player owner, Player target, int ability, boolean simulation) {
+	public void setAction(Player owner, Player target, int ability) {
 		if (ability != VICTIM & ability != VICTIM_TARGET){
-			owner.getTeam().getSelectionFeedback(owner, target, ability, simulation);
+			owner.getTeam().getSelectionFeedback(owner, target, ability);
 			return;
 		}
 		Event e = Role.selectionEvent(owner);
@@ -61,8 +61,8 @@ public class Witch extends Role {
 		else
 			e.setCommand(owner, COMMAND2, target.getName());
 		e.add(".");
-		if(!simulation)
-			owner.getNarrator().addEvent(e);
+		
+		owner.getNarrator().addEvent(e);
 		 //owner.getTeam().notifyTeammates(owner, message);
 	}
 

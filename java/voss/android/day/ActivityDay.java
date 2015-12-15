@@ -19,6 +19,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,6 +42,7 @@ import voss.android.R;
 import voss.android.alerts.ExitGameAlert;
 import voss.android.alerts.ExitGameAlert.ExitGameListener;
 import voss.android.day.PlayerDrawerAdapter.OnPlayerClickListener;
+import voss.android.parse.ParseConstants;
 import voss.android.parse.Server;
 import voss.android.screens.ListingAdapter;
 import voss.android.screens.MembersAdapter;
@@ -98,6 +100,7 @@ implements
 
 		iF = new IntentFilter();
 		iF.addAction("SMS_RECEIVED_ACTION");
+		iF.addAction(ParseConstants.PARSE_FILTER);
 	}
 	
 	protected void onResume(){
@@ -128,7 +131,8 @@ implements
 			}else
 				onPlayerClick(null);
 			onDrawerClosed(null);
-			onClick(infoButton);
+			if(!Server.IsLoggedIn())
+				onClick(infoButton);
 		}
 	}
 	
@@ -136,7 +140,11 @@ implements
 	private void setup(Bundle b){
 		if (manager != null)
 			return;
-		connectNarrator();
+		connectNarrator(new NarratorConnectListener() {
+			public void onConnect() {
+				continueSetup();
+			}
+		});
 		playerMenu = (RecyclerView) findViewById(R.id.day_playerNavigationPane);
 
 
@@ -189,13 +197,22 @@ implements
 
 		
 
-		while(ns == null);
+
+	}
+	private void continueSetup(){
+		if(manager != null)
+			return;
 		manager = new DayManager(ns);
 		manager.initiate(this);
-		
-		
+
 		onClick(infoButton);
 
+		if(!manager.getNarrator().isInProgress()) {
+			endGame();
+			return;
+		}
+		if(Server.IsLoggedIn())
+			toast("Press back to switch between general information and your information.");
 	}
 	public Narrator getNarrator(){
 		return manager.getNarrator();
@@ -316,6 +333,10 @@ implements
 	public BroadcastReceiver intentReceiver = new BroadcastReceiver(){
 		public void onReceive(Context context, Intent intent){
 			String message = intent.getExtras().getString("message");
+			if(message == null) {
+				manager.parseCommand(intent);
+				return;
+			}
 			PhoneNumber number = new PhoneNumber(intent.getExtras().getString("number"));
 			Player owner = manager.phoneBook.getByNumber(number);
 			
@@ -326,7 +347,7 @@ implements
 			
 			try{
 				synchronized(manager.ns.local){
-					manager.tHandler.text(owner, message);
+					manager.tHandler.text(owner, message, false);
 				}
 			}catch(Exception|Error e){
 				e.printStackTrace();
@@ -443,7 +464,7 @@ implements
 					baddy.modkill();
 			}
 				
-		}else
+		}else if(manager.getCurrentPlayer().isAlive())
 			manager.talk(manager.getCurrentPlayer(), message);
 		chatET.setText("");
 	}
@@ -469,7 +490,7 @@ implements
 		showView(rolesLV);
 
 		showView(rightTV);
-		if (manager.dScreenController.playerSelected()){
+		if (manager.dScreenController != null && manager.dScreenController.playerSelected()){
 			if (manager.getCurrentPlayer().hasDayAction() && manager.getNarrator().isDay())
 				showView(button);
 			else
@@ -529,11 +550,9 @@ implements
 		showView(actionLV);
 		showView(commandsTV);
 
-		if (manager.dScreenController.playerSelected()){
-			if (!manager.getNarrator().isDay()){
-				showView(button);
-				showFrameSpinner();
-			}
+		if (manager.dScreenController.playerSelected() && manager.dScreenController.currentPlayer.isAlive() && manager.getNarrator().isNight()){
+			showView(button);
+			showFrameSpinner();
 		}else{
 			hideView(button);
 		}
@@ -544,7 +563,7 @@ implements
 			hideView(framerSpinner);
 			return;
 		}
-		if (manager.getCurrentPlayer().getRoleName().equals(Framer.ROLE_NAME) && isFrameActionSelected()) {
+		if (manager.getCurrentPlayer().is(Framer.ROLE_NAME) && manager.getCurrentPlayer().isAlive() && isFrameActionSelected()) {
 			showView(framerSpinner);
 			((RelativeLayout.LayoutParams) actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, framerSpinner.getId());
 		}else
@@ -579,7 +598,6 @@ implements
 
 	public void pushChatDown(){
 		chatLV.post(new Runnable() {
-			@Override
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
 			}
@@ -620,7 +638,7 @@ implements
 		hideView(commandsTV);
 
 		showView(chatLV);
-		setChatPanelText(manager.getNarrator().getEvents(Event.PRIVATE, false)); //false for HTML
+		setChatPanelText(manager.getNarrator().getEvents(Event.PRIVATE, true)); //false for HTML
 
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
@@ -677,13 +695,12 @@ implements
 	public void onDrawerSlide(View v, float f){}
 	public void onDrawerStateChanged(int i){}
 	public void onDoubleTap() {
-		if (Narrator.DEBUG && !drawerOut && !simulationRunning && manager.getNarrator().isInProgress()) {
-			simulationRunning = true;
-			manager.nextSimulation();
-			simulationRunning = false;
+		if (Narrator.DEBUG && !drawerOut && manager.getNarrator().isInProgress()) {
+			synchronized(manager.ns.local){
+				manager.nextSimulation();
+			}
 		}
 	}
-	private boolean simulationRunning = false;
 	private boolean drawerOut = false;
 	public boolean drawerOut(){
 		return drawerOut;
@@ -705,10 +722,10 @@ implements
 	}
 
 	public PlayerList getCheckedPlayers() {
-		boolean[] checkedPos = actionLV.getCheckedItemPositions();
+		SparseBooleanArray checkedPos = actionLV.getCheckedItemPositions();
 		PlayerList ret = new PlayerList();
 		for(int i = 0; i < actionList.size(); i++){
-			if(checkedPos[i])
+			if(checkedPos.get(i))
 				ret.add(actionList.get(i));
 				
 		}

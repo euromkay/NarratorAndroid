@@ -211,7 +211,7 @@ public class GUIController extends Controller implements TextInput{
         clickPlayer(pList.get(0));
 	}
 
-	public void text(Player p, String message) {
+	public void text(Player p, String message, boolean sync) {
 		Log.i(p.toString(), message);
 	}
 }

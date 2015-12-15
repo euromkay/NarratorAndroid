@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 
+import com.parse.ParsePush;
+
 import voss.android.ActivitySettings;
 import voss.android.R;
 import voss.android.parse.GameListing;
@@ -131,10 +133,11 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         searchBar.setText(s);
     }
 
-    private void joinGame(GameListing gl){
-        Narrator n = a.getNarrator();
-        n.removeAllPlayers();
-        n.removeAllRoles();
+    private synchronized void joinGame(GameListing gl){
+        ParsePush.subscribeInBackground(gl.getID());
+
+        a.ns.refresh();
+        Narrator n = a.ns.local;
         for (String name: gl.getPlayerNames()){
             n.addPlayer(name);
         }
@@ -151,15 +154,23 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             n.startGame();
 
             CommandHandler ch = new CommandHandler(n);
+            String[] parts;
+            String sender;
             for (String s : gl.getCommands()) {
-                ch.parseCommand(s);
+                parts =  s.split(",");
+                sender = parts[0];
+                s = s.substring(sender.length() + 1);
+                try {
+                    ch.parseCommand(s);
+                }catch(Throwable e){}
             }
         }
         if (mode == JOIN){
             Server.AddPlayer(gl);
         }
 
-        a.start();//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
+        a.start(gl);//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
+
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

@@ -1,5 +1,6 @@
 package voss.shared.ai;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -7,23 +8,33 @@ import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 import voss.shared.logic.Team;
-import voss.shared.logic.exceptions.PlayerTargetingException;
 
 
 public class Brain {
 
     PlayerList masters;
     Random random;
-    PlayerList slaves;
+    public PlayerList slaves;
     public Brain(PlayerList masters, Random random){
         this.masters = masters;
         mafKiller = new HashMap<>();
         this.random = random;
         
         slaves = new PlayerList();
+        namesInBrain = new ArrayList<>();
     }
     
+    private boolean targetAnyone = false;
+    public void setTargetAnyone(boolean b){
+    	targetAnyone = b;
+    }
+    
+    ArrayList<String> namesInBrain;
     public void addSlave(Player p, Controller controller){
+    	if(namesInBrain.contains(p.getName()))
+    		return;
+    	namesInBrain.add(p.getName());
+    		
         Computer c = new Computer(p, this, controller);
         map.put(p, c);
         slaves.add(p);
@@ -37,8 +48,8 @@ public class Brain {
     
     public Computer getComputer(Player p){
         Computer c = map.get(p);
-        if (c == null && !p.equals(p.getSkipper()))
-            throw new NullPointerException(p.getName() + " - name");
+        //if (c == null && !p.equals(p.getSkipper()))
+            //throw new NullPointerException(p.getName() + " - name");
 
         return c;
     }
@@ -47,17 +58,26 @@ public class Brain {
     private Player skipper;
     private boolean firstTimeThrough = true;
     public void dayAction(){
+    	if(slaves.isEmpty())
+    		return;
     	skipper = slaves.get(0).getSkipper();
     	if(firstTimeThrough){
     		initialDayAction();
     		firstTimeThrough = false;
     	}else{
     		skipDay();
+    		firstTimeThrough = true;
     	}
         
     }
     private void initialDayAction(){
-        PlayerList choices = slaves.copy().getLivePlayers().add(skipper);
+        PlayerList choices;
+        if(!targetAnyone)
+        	choices = slaves.copy().getLivePlayers();
+        else
+        	choices = slaves.get(0).getNarrator().getLivePlayers();
+        
+        choices.add(slaves.get(0).getSkipper());
         
         if (choices.size() < 2)
             return;
@@ -69,12 +89,10 @@ public class Brain {
         voteChoices[1] = choices.getRandom(random);
         choices.remove(voteChoices[1]);
 
-        Computer current;
 
 
         if (voteChoices[0] != skipper) {
-            current = getComputer(voteChoices[0]);
-            current.doDayAction();
+        	doDayAction(voteChoices[0]);
         }
         if (voteChoices[1] != skipper) {
             doDayAction(voteChoices[1]);
@@ -107,18 +125,14 @@ public class Brain {
             return;
     	Computer comp = getComputer(p);
     	if(comp != null){
-    		try{
-    			comp.doDayAction();
-    		}catch(PlayerTargetingException e){
-    			e.printStackTrace();
-    		}
+    		comp.doDayAction();
     	}
     }
     
     public void nightAction(){
         for (Player c: slaves.getLivePlayers().remove(masters).sortByName()) {
             Computer comp = getComputer(c);
-            if(comp != null)
+            if(comp != null && c.getNarrator().isNight())
             	comp.doNightAction();
         }
         reset();
@@ -141,11 +155,23 @@ public class Brain {
 	public Player getMafSender(Player slave) {
 		Player killer = mafKiller.get(slave.getAlignment());
 		if(killer != null)
-			return slave.getNarrator().getPlayerByID(killer.getID());
+			return slave.getNarrator().getPlayerByName(killer.getName());
 		
 		Team t = slave.getTeam();
 		killer = t.getMembers().getLivePlayers().getRandom(random);
         mafKiller.put(slave.getAlignment(), killer);
 		return killer;
+	}
+
+	public void endGame() {
+		if(slaves.isEmpty())
+			return;
+		Narrator n = slaves.get(0).getNarrator();
+		while(n.isInProgress()){
+			if(n.isDay())
+				dayAction();
+			else
+				nightAction();
+		}
 	}
 }

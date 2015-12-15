@@ -26,15 +26,13 @@ public class MassMurderer extends Role {
 	}
 
 	private static final String SELECTION_PROMPT = " will murder all targets at ";
-	public void setAction(Player owner, Player target, int ability, boolean simulation) {
+	public void setAction(Player owner, Player target, int ability) {
 		if(ability != MAIN_ABILITY){
-			owner.getTeam().getSelectionFeedback(owner, target, ability, simulation);
+			owner.getTeam().getSelectionFeedback(owner, target, ability);
 			return;
 		}
 		Event e = Role.selectionEvent(owner);
 		e.setCommand(owner, COMMAND, target.getName());
-		if(simulation)
-			return;
 		e.add(owner, SELECTION_PROMPT, target, ".");
 		owner.getNarrator().addEvent(e);
 			//owner.getTeam().notifyTeammates(owner, SELECTION_PROMPT + target.getName() + ".");
@@ -61,12 +59,7 @@ public class MassMurderer extends Role {
 	}
 
 	
-	public int parseAbility(String message, boolean isDay){
-		if(message.equalsIgnoreCase(COMMAND) && !isDay)
-			return MAIN_ABILITY;
-		else
-			return INVALID_ABILITY;
-	}
+	
 	
 	public void isAcceptableTarget(Player owner, Player target, int ability) {
 		deadCheck(owner);

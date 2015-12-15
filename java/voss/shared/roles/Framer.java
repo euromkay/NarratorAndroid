@@ -42,10 +42,10 @@ public class Framer extends Role {
 	}
 
 
-	public void setAction(Player owner, Player target, int ability, boolean simulation){
+	public void setAction(Player owner, Player target, int ability){
 		Team t = owner.getTeam();
 		if(getAbilityCount() == 0 || ability != MAIN_ABILITY)
-			t.getSelectionFeedback(owner, target, ability, simulation);
+			t.getSelectionFeedback(owner, target, ability);
 		else if(target.equals(owner.getSkipper())){
 			//t.notifyTeammates(owner, " won't " + getKeyWord() + " anyone.");
 		}else {
@@ -54,8 +54,6 @@ public class Framer extends Role {
 			e.add(owner, " will " + getKeyWord().toLowerCase() + " ", target);
 			if (parse != null){
 				e.setCommand(owner, getKeyWord(), target.getName(), parse.getName());
-				if(simulation)
-					return;
 				e.add(" as ", parse.getName());
 			}
 			e.add(".");

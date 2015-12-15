@@ -3,7 +3,9 @@ package voss.android.setup;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
+import voss.android.parse.Server;
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.ReceiverText;
@@ -20,10 +22,13 @@ public class TextAdder extends BroadcastReceiver{
     }
 
     public void onReceive(Context context, Intent intent){
+        Log.e("TextAdder", "gotem");
         if (intent.getExtras().getString("number") == null){
             manager.updateNarrator(intent);
             return;
         }
+        if(Server.IsLoggedIn())
+            return;
         PhoneNumber number = new PhoneNumber(intent.getExtras().getString("number"));
         String name = intent.getExtras().getString("message");
 

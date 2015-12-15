@@ -144,7 +144,10 @@ public class DayScreenController implements NarratorListener{
 	}
 
 	public void onCancelEndNight(Player p) {
-		if(playerSelected() && !currentPlayer.endedNight())
+		//if someone isn't selected, update the action panel,
+		//if person that just canceled the end night, they need their action panel updated
+		//if current doesn't have their night canceled, also refresh action panel
+		if(playerSelected() && p != currentPlayer && !currentPlayer.endedNight())
 			return;
 		updateActionPanel();
 		setSkipNightText();
@@ -152,7 +155,6 @@ public class DayScreenController implements NarratorListener{
 
 	public void onMessageReceive(Player owner) {
 		updateChatPanel();
-		
 	}
 
 	public void onModKill(Player bad) {
@@ -233,7 +235,7 @@ public class DayScreenController implements NarratorListener{
 	protected void updateActionPanel() {
 		Narrator n = getNarrator();
 		dScreen.setActionButton();
-		if (playerSelected() && (isDay() || !currentPlayer.endedNight())) {
+		if (playerSelected() && currentPlayer.isAlive() &&  (isDay() || !currentPlayer.endedNight())) {
 			if (isDay()) {
 				PlayerList allowedVoteTargets;
 				if (currentPlayer.isBlackmailed()){
@@ -352,7 +354,9 @@ public class DayScreenController implements NarratorListener{
 			else if (currentPlayer.is(Arsonist.ROLE_NAME))
 				dScreen.setButtonText("Burn all doused targets");
 		}else{
-			if (currentPlayer.endedNight())
+			if (currentPlayer.isDead())
+				dScreen.setButtonText("");
+			else if (currentPlayer.endedNight())
 				setCancelSkipNightText();
 			else
 				setSkipNightText();
@@ -374,7 +378,7 @@ public class DayScreenController implements NarratorListener{
 	
 	private int abilityIndex = 0;
 	protected void setNextAbility(int direction){
-		if (isDay() || !playerSelected() || currentPlayer.getAbilities().length < 1)
+		if (isDay() || !playerSelected() || currentPlayer.getAbilities().length < 1 || currentPlayer.isDead())
 			return;
 		if (direction == SimpleGestureFilter.SWIPE_LEFT) {
 			abilityIndex--;

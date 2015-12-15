@@ -1,6 +1,5 @@
 package voss.shared.roles;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -33,28 +32,26 @@ public abstract class Role{
 
 	public abstract String getRoleName();
 	/******/
-	public void setAction(Player owner, Player target, int ability, boolean simulation){
+	public void setAction(Player owner, Player target, int ability){
 		Team t = owner.getTeam();
 		if(getAbilityCount() == 0 || ability != MAIN_ABILITY)
-			t.getSelectionFeedback(owner, target, ability, simulation);
+			t.getSelectionFeedback(owner, target, ability);
 		else if(target.equals(owner.getSkipper())){
 			throw new UnsupportedMethodException("");
 			//t.notifyTeammates(owner, " won't " + getKeyWord() + " anyone.");
 		}else{
 			Event e = Role.selectionEvent(owner);
 			e.setCommand(owner, getKeyWord(), target.getName());
-			if(simulation)
-				return;
 			
 			e.add(owner, " will " + getKeyWord().toLowerCase() + " ", target, ".");
 			owner.getNarrator().addEvent(e);
 			if(t.knowsTeam()){
 				for(Player teamMember: t.getMembers()){
-					teamMember.sendMessage(e.access(teamMember.getID(), false));
+					teamMember.sendMessage(e.access(teamMember, false));
 				}
 			}
 			else
-				owner.sendMessage(e.access(owner.getID(), false));
+				owner.sendMessage(e.access(owner, false));
 			//t.notifyTeammates(owner, " will " + getKeyWord() + " " + target, getKeyWord());
 		}
 
@@ -97,7 +94,7 @@ public abstract class Role{
 	public boolean hasDayAction(){
 		return false;
 	}
-	public void doDayAction(Player owner, Narrator n, boolean simulation){
+	public void doDayAction(Player owner, Narrator n){
 		throw new IllegalActionException();
 	}
 	

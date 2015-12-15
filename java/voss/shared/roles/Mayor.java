@@ -57,12 +57,10 @@ public class Mayor extends Role {
 	public boolean hasDayAction(){
 		return !getRevealed();
 	}
-	public void doDayAction(Player owner, Narrator n, boolean simulation){
+	public void doDayAction(Player owner, Narrator n){
 		Event e = new Event();
 		e.setCommand(owner, REVEAL);
 		
-		if(simulation)
-			return;
 		e.add(owner, " has revealed as the Mayor!");
 		n.addEvent(e);
 		
@@ -70,10 +68,10 @@ public class Mayor extends Role {
 		
 		setRevealed();
 		
-		Player voteTarget = n.getVoteTarget(owner);
+		Player voteTarget = owner.getVoteTarget();
 
 		if (voteTarget != null)
-			owner.unvote(simulation);
+			owner.unvote();
 		
 		owner.setVotes(getVoteCount());
 		

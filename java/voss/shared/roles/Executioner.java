@@ -43,14 +43,25 @@ public class Executioner extends Role{
 	}
 	
 	//private int targetID;
-	public Player getTarget(Narrator n){
-		return n.getPlayerByID(getInt(0));
+	public Player getTarget(Player exec){
+		PlayerList allPlayers = exec.getNarrator().getAllPlayers();
+		allPlayers.sortByName();
+		int indexOfExec = allPlayers.indexOf(exec);
+		int position = indexOfExec - getInt(0);
+		
+		if (position < 0)
+			allPlayers.toString();
+		
+		return allPlayers.get(position);
 	}
 	
 
 
-	public void setTarget(Player target){
-		setInt(0, target.getID());
+	public void setTarget(Player exec, Player target){
+		PlayerList allPlayers = exec.getNarrator().getAllPlayers();
+		allPlayers.sortByName();
+		int difference = allPlayers.indexOf(exec) - allPlayers.indexOf(target);
+		setInt(0, difference);
 	}
 	
 	//private boolean winner = false;
@@ -98,7 +109,7 @@ public class Executioner extends Role{
 		Player target = players.getRandom(n.getRandom());
 		
 		Executioner role = (Executioner) exec.getRole();
-		role.setTarget(target);
+		role.setTarget(exec, target);
 		Event e = new Event();
 		e.add(exec, "'s target ", target, ".");
 		e.setVisibility(exec);

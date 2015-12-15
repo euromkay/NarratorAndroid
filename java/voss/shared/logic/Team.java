@@ -196,7 +196,7 @@ public class Team implements Alignment, ActionTaker{
 	public static final int SEND_ = Role.NIGHT_SEND;
 	public static final int KILL_ = Role.NIGHT_KILL;
 	public static final Team NOT_SUSPICIOUS = null;
-	public void getSelectionFeedback(Player owner, Player target, int ability, boolean simulation) {
+	public void getSelectionFeedback(Player owner, Player target, int ability) {
 		Event e = Role.selectionEvent(owner);
 		e.add(owner);
 		e.setVisibility(members);
@@ -204,14 +204,12 @@ public class Team implements Alignment, ActionTaker{
 			e.add(" will kill ", target, ".");
 			
 			e.setCommand(owner, KILL, target.getName());
-			if(simulation)
-				return;
 			
 			n.addEvent(e);
 
 			if(knowsTeam()){
 				for(Player teamMember: getMembers()){
-					teamMember.sendMessage(e.access(teamMember.getID(), false));
+					teamMember.sendMessage(e.access(teamMember, false));
 				}
 			}
 		}else if(ability == SEND_ && (canKill)){
@@ -225,15 +223,13 @@ public class Team implements Alignment, ActionTaker{
 				e.add(".");
 			}
 			e.setCommand(owner, SEND, target.getName());
-			if(simulation)
-				return;
 			n.addEvent(e);
 			
 			
 
 			if(knowsTeam()){
 				for(Player teamMember: getMembers()){
-					teamMember.sendMessage(e.access(teamMember.getID(), false));
+					teamMember.sendMessage(e.access(teamMember, false));
 				}
 			}
 		}else

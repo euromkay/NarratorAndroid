@@ -16,5 +16,8 @@ public class ParseConstants {
     public static final String ADD_ROLE      = "addRole";
     public static final String REMOVE_ROLE   = "removeRole";
 
+    public static final String PARSE_FILTER = "PARSE_RECEIVED_ACTION";
+
     public static final String STARTGAME = "startGame";
+    public static final String PUSH      = "push";
 }

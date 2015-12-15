@@ -24,19 +24,21 @@ public class CommandHandler {
 		this.n = n;
 	}
 	
-
+	public static final int SYNCH = 1;
+	public static final int ASYNCH = 0;
 	
-	public void parseCommand(String command){
+	public int parseCommand(String command){
 		if(command.length() == 0)
-			return;
+			return -1;
+		
 		int index = command.indexOf(Constants.NAME_SPLIT);
 		
-		int id = Integer.parseInt(command.substring(0, index));
-		Player owner = n.getPlayerByID(id);
+		String name = command.substring(0, index);
+		Player owner = n.getPlayerByName(name);
 		command = command.substring(index + Constants.NAME_SPLIT.length());
 		command = command.replace("\n", "");
 		
-		command(owner, command);
+		return command(owner, command);
 	}
 
     public static final String VOTE = Constants.VOTE;
@@ -46,11 +48,11 @@ public class CommandHandler {
     public static final String END_NIGHT = Constants.END_NIGHT;
     public static final String MODKILL = Constants.MODKILL;
 	
-	public void command(Player owner, String message){
+	public int command(Player owner, String message){
         switch(message.toLowerCase()){
             case MODKILL:
             	owner.modkill();
-            	return;
+            	return SYNCH;
             case END_NIGHT:
                 if(n.isDay())
                 	throw new PhaseException("You can only end night during the day");
@@ -62,47 +64,46 @@ public class CommandHandler {
                         owner.sendMessage( "You have moved to end the night.");
                         owner.endNight();
                     }
+                    return SYNCH;
                 }
-                return;
-
             case SKIP_VOTE:
                 if (dayAttempt()){
                     owner.voteSkip();
+                    return SYNCH;
                 }
-                return;
-
+                break;
             case UNVOTE:
                 if(dayAttempt()){
-                    if(n.getVoteTarget(owner) == null)
+                    if(owner.getVoteTarget() == null)
                     	throw new VotingException("You haven't vote anyone.");
                     else {
                         owner.unvote();
                         owner.sendMessage("Successfully unvoted.");
+                        return SYNCH;
                     }
                 }
-                return;
-
+                break;
             case Mayor.REVEAL:
                 if(dayAttempt()){
                     if (owner.hasDayAction() && owner.is(Mayor.ROLE_NAME)){
                         owner.doDayAction();
-                        //handled onreveal
+                        return SYNCH;
                     }
                     else
                     	throw new IllegalActionException("Only mayors can do this.");
                 }
-                return;
+                break;
             case Arsonist.BURN:
                 if (owner.is(Arsonist.ROLE_NAME)){
                     if(n.isNight()) {
                         if (owner.getTarget(Arsonist.DOUSE_) != null || owner.getTarget(Arsonist.UNDOUSE_) != null){
                         	throw new IllegalActionException("You can't burn if you have someone doused or are going to undouse someone tonight");
                         }else{
-                            tryDoubleCommand(owner, message);
+                            return tryDoubleCommand(owner, message);
                         }
                     }else if(owner.hasDayAction()){
                         owner.doDayAction();
-                        return;
+                        return SYNCH;
                     }else{
                         if (n.getRules().arsonDayIgnite)
                         	throw new IllegalActionException("You can't do this again.");
@@ -112,39 +113,39 @@ public class CommandHandler {
                 }else{
                 	throw new IllegalActionException("Only arsonists can do this.");
                 }
-                return;
-
-            case Veteran.ALERT:
+		case Veteran.ALERT:
                 if (owner.getRoleName().equals(Veteran.ROLE_NAME)){
                     if(n.isNight()) {
                         owner.setTarget(null, (owner.parseAbility(message)));
+                        return ASYNCH;
                     }else{
                     	throw new IllegalActionException("You can't do this during the day.");
                     }
                 }else{
                 	throw new IllegalActionException("Only veterans can do this.");
                 }
-                return;
-
-            case Constants.CANCEL:
+		case Constants.CANCEL:
                 if (!n.isNight())
                 	throw new PhaseException("You can't cancel night actions during the day.");
-                
                 try{
-                    int ability = Integer.parseInt(message);
-                    owner.removeTarget(ability, true);
+                	for(String s: owner.getAbilities()){
+                		owner.removeTarget(owner.parseAbility(s), true);
+                	}
+                	owner.sendMessage(message);
+                	return ASYNCH;
                 }catch(NumberFormatException e){
                     owner.sendMessage("canceling requires a number");
                 }
 
             default:
-            	tryDoubleCommand(owner, message);
+            	return tryDoubleCommand(owner, message);
                 //TODO handle invalid people
                 //TODO driver double handling
         }
+        return -1;
     }
 
-    private void tryDoubleCommand(Player owner, String message){
+    private int tryDoubleCommand(Player owner, String message){
         ArrayList<String> block = new ArrayList<>();
         for(String s: message.split(" "))
         	block.add(s);
@@ -158,34 +159,54 @@ public class CommandHandler {
         if(command.equalsIgnoreCase(SAY)){
         	message = message.substring(SAY.length() + 1);
         	owner.say(message);
-        	return;
+        	return ASYNCH;
         }
-        
+        int untarget = message.indexOf(block.get(0));
+        if(message.substring(untarget).equals(Constants.UNTARGET)){
+        	if (n.isDay()){
+        		throw new IllegalActionException("You can't untarget during the night.");
+        	}else{
+        		int ability = owner.parseAbility(command);
+                if (ability == Role.INVALID_ABILITY){
+                	throw new IllegalActionException();
+                }
+                owner.removeTarget(ability, true);
+            	return ASYNCH;
+        	}
+        }
+        	
         
         Player target = findName(block, n);//removes names from block as well
         if(target == null) //might be framer team at the end
-        	throw new UnknownPlayerException();
+        	throw new UnknownPlayerException(block.toString());
         
+        if(target.equals(n.Skipper) && n.isDay()){
+        	throw new VotingException("You can't vote the skipper directly.!");
+        }
         
         if(n.isDay()){
             if (!command.equalsIgnoreCase(VOTE)) {
                 throw new IllegalActionException();
             }else if(owner == target){
-                owner.sendMessage("You can't vote yourself.");
+                throw new VotingException("You can't vote yourself.");
             }else if(owner.isBlackmailed()){
-                owner.sendMessage("You can't vote people if you're blackmailed.");
-            }else
+                throw new VotingException("You can't vote people if you're blackmailed.");
+            }else{
             	owner.vote(target);
+            	return SYNCH;
+            }
         }else{
             int ability = owner.parseAbility(command);
             if (ability == Role.INVALID_ABILITY){
-            	throw new IllegalActionException();
+            	throw new IllegalActionException("Unknown ability " + command);
             }
             if (framerCheck(ability, target, block, owner))
-                return;
+                return ASYNCH;
 
             owner.setTarget(target, ability);
+            return ASYNCH;
         }
+            
     }
     private boolean framerCheck(int ability, Player target, ArrayList<String> blocks, Player owner){
         if(!owner.is(Framer.ROLE_NAME))
@@ -234,6 +255,8 @@ public class CommandHandler {
             possName = possName.substring(1);
     		Player p = n.getPlayerByName(possName);
     		if(p != null){
+    			if(possName.equals(Constants.UNTARGET))
+    				return n.Skipper;
     			for(String s: possName.split(" "))
     				blocks.remove(s);
     			return p;
@@ -241,4 +264,5 @@ public class CommandHandler {
     	}
     	return null;
     }
+
 }

@@ -25,17 +25,17 @@ public class CommunicatorNull extends Communicator{
 	}
 	
 	
-	
+	public Communicator copy(){
+		return new CommunicatorNull();
+	}
 	
 	
 	public void writeToParcel(Packager p, CommunicatorHandler ch){
 		ch.writeHeading(p, this);
-		//Communicator.GetId(p, this);
 		p.signal("writing communicator null\n\n");
-		//p.write(messages);
 	}
 	public void getFromParcel(Packager p){
-		//messages = p.readStringList();
+		
 	}
 	
 	public boolean equals(Object o){

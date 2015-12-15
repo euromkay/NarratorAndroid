@@ -138,6 +138,34 @@ public class Rules{
 		return true;
 	}
 	
+	public Rules(Rules r){
+		arsonDayIgnite = r.arsonDayIgnite;
+		arsonInvlunerable = r.arsonInvlunerable;
+		blockersCanBeBlocked = r.blockersCanBeBlocked;
+		cultConversionCooldown = r.cultConversionCooldown;
+		cultImplodesOnLeaderDeath = r.cultImplodesOnLeaderDeath;
+		cultKeepsRoles = r.cultKeepsRoles;
+		cultLeaderCanOnlyRecruit = r.cultLeaderCanOnlyRecruit;
+		cultPowerRoleCooldown = r.cultPowerRoleCooldown;
+		DAY_LENGTH = r.DAY_LENGTH;
+		DAY_START = r.DAY_START;
+		DISCUSSION_LENGTH = r.DISCUSSION_LENGTH;
+		doctorCanHealSelf = r.doctorCanHealSelf;
+		doctorKnowsIfTargetIsAttacked = r.doctorKnowsIfTargetIsAttacked;
+		exeuctionerImmune = r.exeuctionerImmune;
+		exeuctionerWinImmune = r.exeuctionerWinImmune;
+		gfInvulnerable = r.gfInvulnerable;
+		gfUndetectable = r.gfUndetectable;
+		mayorVoteCount = r.mayorVoteCount;
+		mmInvulnerable = r.mmInvulnerable;
+		mmSpreeDelay = r.mmSpreeDelay;
+		NIGHT_LENGTH = r.NIGHT_LENGTH;
+		serialKillerIsInvulnerable = r.serialKillerIsInvulnerable;
+		TRIAL_LENGTH = r.TRIAL_LENGTH;
+		vetAlerts = r.vetAlerts;
+		vigilanteShots = r.vigilanteShots;
+		witchLeavesFeedback = r.witchLeavesFeedback;	
+	}
 
 	
 	

@@ -24,6 +24,6 @@ public abstract class Communicator{
 
 	public abstract void writeToParcel(Packager p, CommunicatorHandler ch);
 	public abstract void getFromParcel(Packager p);
-
+	public abstract Communicator copy();
 	
 }

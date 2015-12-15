@@ -7,6 +7,6 @@ public class IllegalActionException extends Error {
 		super(string);
 	}
 
-	public IllegalActionException() {}
+	public IllegalActionException() {super("");}
 
 }

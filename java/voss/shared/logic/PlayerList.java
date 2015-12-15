@@ -41,8 +41,9 @@ public class PlayerList implements Iterable<Player>{
 	}
 
 	public PlayerList add(Player player) {
-		if(player != null)
-			list.add(player);
+		if(player == null)
+			throw new NullPointerException();
+		list.add(player);
 		return this;
 	}
 
@@ -116,6 +117,13 @@ public class PlayerList implements Iterable<Player>{
 		return this;
 	}
 
+	public Player getPlayerByName(String s){
+		for (Player p: list){
+			if(p.getName().equals(s))
+				return p;
+		}
+		return null;
+	}
 
 	public static PlayerList clone(PlayerList list){
 		PlayerList cList = new PlayerList();
@@ -147,7 +155,7 @@ public class PlayerList implements Iterable<Player>{
 
 	private void add(int i, Player p) {
 		if (p == null)
-			return;
+			throw new NullPointerException();
 		list.add(i, p);
 	}
 
@@ -195,10 +203,6 @@ public class PlayerList implements Iterable<Player>{
 		Collections.sort(list, Player.NameSort);
 		return this;
 	}
-	public PlayerList sortById() {
-		Collections.sort(list, Player.IdSort);
-		return this;
-	}
 
 	public String getStringName(){
 		String name = "";
@@ -236,8 +240,8 @@ public class PlayerList implements Iterable<Player>{
 		
 		PlayerList plist = (PlayerList) o;
 		
-		PlayerList p1 = this.copy().sortById();
-		PlayerList p2 = plist.copy().sortById();
+		PlayerList p1 = this.copy().sortByName();
+		PlayerList p2 = plist.copy().sortByName();
 		
 		return p1.list.equals(p2.list);
 	}
@@ -282,6 +286,17 @@ public class PlayerList implements Iterable<Player>{
 
 		return arrayOfNames;
 
+	}
+
+	public boolean has(Player a2) {
+		if (a2 == null)
+			return false;
+		
+		for (Player p: list){
+			if(p == a2)
+				return true;
+		}
+		return false;
 	}
 
 	

@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import voss.android.NarratorService;
+import voss.android.SuccessListener;
+import voss.android.setup.SetupManager;
 import voss.shared.logic.support.RoleTemplate;
 
 public class Server {
@@ -34,7 +37,7 @@ public class Server {
     }
 
     public interface GameRegister{
-        void onSuccess(String id);
+        void onSuccess(GameListing gl);
         void onFailure(String t);
     }
 
@@ -143,7 +146,7 @@ public class Server {
         game.saveInBackground(new SaveCallback() {
             public void done(ParseException e) {
                 if (e == null) {
-                    g.onSuccess(game.getObjectId());
+                    g.onSuccess(new GameListing(game));
                     ParsePush.subscribeInBackground(game.getObjectId());
                 } else
                     g.onFailure(e.getMessage());
@@ -224,9 +227,9 @@ public class Server {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
                     Log.e("Server", e.getMessage());
-                }else{
+                } else {
                     ParsePush.unsubscribeInBackground(gl.getID());
-                    Log.e("Server", parseObject+ "");
+                    Log.e("Server", parseObject + "");
                 }
             }
         });
@@ -264,4 +267,59 @@ public class Server {
             }
         });
     }
+
+
+    public static void Unsuscribe(GameListing l){
+        ParsePush.unsubscribeInBackground(l.getID());
+    }
+
+    public static void StartGame(GameListing gl, final SuccessListener sl){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        params.put(ParseConstants.ROLES, gl.getRoleNames());
+        params.put(ParseConstants.PLAYERS, gl.getPlayerNames());
+        ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    sl.onFailure();
+                } else {
+                    sl.onSuccess();
+                }
+            }
+        });
+    }
+
+    public static void UpdateGame(final NarratorService ns, final SuccessListener sl){
+        GetNarratorInfo(ns.getGameListing().getID(), new GetCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e != null) {
+                    sl.onFailure();
+                } else {
+                    GameListing gl = new GameListing(parseObject);
+                    ns.setGameListing(gl);
+                    ns.local.removeAllPlayers();
+                    ns.local.removeAllRoles();
+                    for (String s : gl.getPlayerNames()) {
+                        ns.local.addPlayer(s);
+                    }
+                    for (String s : gl.getRoleNames()) {
+                        RoleTemplate rt = RoleTemplate.FromIp(s);
+                        rt = SetupManager.TranslateRole(rt);
+                        ns.local.addRole(rt);
+                    }
+                    ns.local.setSeed(gl.getSeed());
+                    sl.onSuccess();
+                }
+            }
+        });
+
+    }
+
+    public static void PushCommand(GameListing gl, final String s){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        params.put(ParseConstants.PUSH, s);
+        ParseCloud.callFunctionInBackground(ParseConstants.PUSH, params);
+    }
+
 }

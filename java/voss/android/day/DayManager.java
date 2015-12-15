@@ -1,9 +1,12 @@
 package voss.android.day;
 
+import android.content.Intent;
+
 import java.util.Random;
 
 import voss.android.NarratorService;
 import voss.android.PhoneBook;
+import voss.android.parse.Server;
 import voss.android.texting.TextController;
 import voss.android.texting.TextHandler;
 import voss.android.texting.TextInput;
@@ -49,6 +52,8 @@ public class DayManager implements TextInput{
 	
 	public void buttonClick(){
 		synchronized(ns.local){
+			if(!dScreenController.playerSelected() || dScreenController.currentPlayer.isDead())
+				return;
 			if (getNarrator().isDay())
 				dayAction(currentPlayer);
 			else{
@@ -62,6 +67,7 @@ public class DayManager implements TextInput{
 	}
 
 	public void dayAction(Player p) {
+
 		if(isHost()){
 			p.doDayAction();
 			tC.doDayAction(p);
@@ -114,7 +120,7 @@ public class DayManager implements TextInput{
 
 	public void talk(Player p, String message) {
 		synchronized(ns.local){
-			
+			p.say(message);
 		tC.say(p, message);
 		
 		}
@@ -143,7 +149,7 @@ public class DayManager implements TextInput{
 	//from gui input
 	//garuntee that someone is selected
 	protected void command(Player target){
-		if (!dScreenController.playerSelected() || (getNarrator().isNight() && getCurrentPlayer().endedNight())) {
+		if (!dScreenController.playerSelected() || (getNarrator().isNight() && getCurrentPlayer().endedNight()) || dScreenController.currentPlayer.isDead()) {
 			dScreenController.updateActionPanel();
 			return;
 		}
@@ -225,12 +231,32 @@ public class DayManager implements TextInput{
 		return ns.socketHost != null;
 	}
 	
-	public void text(Player p, String s){
+	public void text(Player p, String s, boolean sync){
 		s = p.getName() + Constants.NAME_SPLIT + s;
 		if(isHost()){
 			ns.socketHost.write(s);
 		}else{
-			ns.socketClient.send(s);
+			if(Server.IsLoggedIn()) {
+				s = "," + s;
+				if(!sync)
+					s = Server.GetCurrentUserName() + s;
+				else
+					s = " " + s;
+				Server.PushCommand(ns.getGameListing(), s);
+			}else
+				ns.socketClient.send(s);
+
+		}
+	}
+
+	public void parseCommand(Intent i){
+		String message = i.getStringExtra("stuff");
+		String[] command = message.split(",");
+
+		String sender = command[0];
+		message = message.substring(sender.length() + 1);//1 length for comma
+		if(sender.equals(" ") || !sender.equals(Server.GetCurrentUserName())){//everyone should do it.
+			ns.onRead(message, null);//nulll for chat manager, unused in this function, also its synch protected.
 		}
 	}
 }

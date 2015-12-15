@@ -2,6 +2,7 @@ package voss.shared.ai;
 
 import java.util.Random;
 
+import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 
@@ -10,11 +11,11 @@ public class Simulations {
 
     private Brain brain;
     private Controller controller;
-    public Simulations(Controller controller, Random rand){
+    public Simulations(Controller controller, Random rand, Narrator n){
         PlayerList slaves = new PlayerList();
         PlayerList masters = new PlayerList();
         
-        for (Player potential: controller.getNarrator().getLivePlayers()){
+        for (Player potential: n.getLivePlayers()){
             if (potential.isComputer())
                 slaves.add(potential);
             else
@@ -28,8 +29,22 @@ public class Simulations {
         this.controller = controller; 
     }
 
+    private Player getPlayer(){
+    	if (!brain.masters.isEmpty())
+    		return brain.masters.get(0);
+    	if(!brain.slaves.isEmpty())
+    		return brain.slaves.get(0);
+    	
+    	return null;
+    }
+    
     public void next(){
-        if (controller.getNarrator().isDay()) {
+    	Player p = getPlayer();
+    	if(p == null)
+    		return;
+    	
+    	
+        if (p.getNarrator().isDay()) {
         	updateMasters();
             brain.dayAction();
             brain.dayAction();

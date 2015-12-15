@@ -32,6 +32,7 @@ import voss.android.alerts.NamePrompt.NamePromptListener;
 import voss.android.alerts.PhoneBookPopUp;
 import voss.android.alerts.PhoneBookPopUp.AddPhoneListener;
 import voss.android.day.ActivityDay;
+import voss.android.parse.GameListing;
 import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.CommunicatorText;
@@ -61,7 +62,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 		}
 		
-		connectNarrator();
+		connectNarrator(null);
 	}
 	
 	
@@ -101,17 +102,17 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
-					//ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
 					Server.RegisterGame(new Server.GameRegister() {
-						public void onSuccess(String id) {
+						public void onSuccess(GameListing gl) {
+							ns.onStartCommand(null, 0, 0);
 							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
+							start(gl);
 						}
 
 						public void onFailure(String t) {
 							toast(t);
 						}
 					});
-					start();
 				}else{
 					if(buildNumber() < 16)
 						toast("You will not be able to participate in wireless games.");
@@ -126,7 +127,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 					showIpPrompt();
 					//showNamePrompt("Join");
 				}else{
-					toast("Your device isn't capable of internet hostings.");
+					toast("Your device isn't capable of local hosting.");
 				}
 				break;
 
@@ -203,7 +204,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		pList.show(getFragmentManager(), "ipprompt");
 	}
 
-	public void onNamePromptConfirm(NamePrompt np, String name, boolean isHost){
+	public void onNamePromptConfirm(final NamePrompt np, String name, boolean isHost){
 		SharedPreferences.Editor prefs = getPreferences(Context.MODE_PRIVATE).edit();
 		prefs.putString(HOST_NAME, name);
 		prefs.commit();
@@ -221,7 +222,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			ns.submitName(name, new SuccessListener(){
 				public void onSuccess() {
 					np.dismiss();
-					start();
+					start(null);
 				}
 
 				public void onFailure() {
@@ -290,7 +291,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				ns.addPlayer(name, cp);
 			}
 			popup.dismiss();
-			start();
+			start(null);
 		}
 	}
 
@@ -313,9 +314,11 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
-	public void start(){
+	public void start(GameListing gl){
+		if(isLoggedIn())
+			ns.setGameListing(gl);
 		Class<?> activ;
-		if(ns.getNarrator().isInProgress())
+		if(ns.getNarrator().isInProgress() || ns.local.getWinMessage() != null)
 			activ = ActivityDay.class;
 		else {
             activ = ActivityCreateGame.class;

@@ -20,9 +20,11 @@ public class TextController extends Controller {
 
     }
 
+	public static final boolean SYNC = true;
+	public static final boolean ASYNC = false;
 
     public void endNight(Player slave) {
-        texter.text(slave, TextHandler.END_NIGHT);
+        texter.text(slave, TextHandler.END_NIGHT, SYNC);
     }
 
     public void cancelEndNight(Player slave) {
@@ -31,16 +33,16 @@ public class TextController extends Controller {
 
     public void setNightTarget(Player a, Player b, String action) {
     	b = Translate(a.getNarrator(), b);
-        texter.text(a, action + " " + b.getName());
+        texter.text(a, action + " " + b.getName(), ASYNC);
     }
 
     public void setNightTarget(Player a, Player b, String action, String teamName) {
     	b = Translate(a.getNarrator(), b);
-        texter.text(a, action + " " +  b.getName() + " " + teamName);
+        texter.text(a, action + " " +  b.getName() + " " + teamName, ASYNC);
     }
     
     public void removeNightTarget(Player a, String action) {
-		texter.text(a, action + " " + Constants.UNTARGET);
+		texter.text(a, action + " " + Constants.UNTARGET, ASYNC);
 	}
 
     public void vote(Player slave, Player target) {
@@ -48,7 +50,7 @@ public class TextController extends Controller {
     	if(target == slave.getSkipper())
     		skipVote(slave);
     	else
-    		texter.text(slave, TextHandler.VOTE + " " + target.getName());
+    		texter.text(slave, TextHandler.VOTE + " " + target.getName(), SYNC);
         
     }
 
@@ -57,29 +59,29 @@ public class TextController extends Controller {
     }
     
     public void skipVote(Player a){
-    	texter.text(a, TextHandler.SKIP_VOTE);
+    	texter.text(a, TextHandler.SKIP_VOTE, SYNC);
     }
 
 
 	public void say(Player slave, String message) {
-		texter.text(slave, TextHandler.SAY + " " + message);
+		texter.text(slave, TextHandler.SAY + " " + message, ASYNC);
 	}
 
 
 	public void doDayAction(Player p) {
 		if(p.is(Mayor.ROLE_NAME)){
-			texter.text(p, Mayor.REVEAL);
+			texter.text(p, Mayor.REVEAL, SYNC);
 			return;
 		}
 		else if(p.is(Arsonist.ROLE_NAME)){
-			texter.text(p, Arsonist.BURN);
+			texter.text(p, Arsonist.BURN, SYNC);
 			return;
 		}
 		throw new UnsupportedMethodException();
 	}
 
 	public void unvote(Player slave) {
-		texter.text(slave, TextHandler.UNVOTE);
+		texter.text(slave, TextHandler.UNVOTE, SYNC);
 		
 	}
 

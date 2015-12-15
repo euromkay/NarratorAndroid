@@ -2,9 +2,7 @@ package voss.shared.logic;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Narrator;
-import voss.shared.logic.Player;
-import voss.shared.logic.PlayerList;
+import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.listeners.CommandListener;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
@@ -16,17 +14,17 @@ public class Event {
 	public static final int DAY_LABEL = 0;
 	public static final int JESTER_CHANGE = 1;
     public static final int DEATH_DESCRIPTION  = 2;//" changed into a Jester."
-    public static final int CULT_CHANGE = 3;
+    public static final int CULT_CHANGE = 3; //TODO CHECK IF USED
 	
     //VISIBLITY
-	public static final int PRIVATE = Constants.PRIVATE;
-	public static final int PUBLIC = Constants.PUBLIC;
+	public static final String PRIVATE = Constants.PRIVATE;
+	public static final String PUBLIC = Constants.PUBLIC;
     
 	public static int NORMAL_EVENT = 0;
 	public static int PLAYER_EVENT = 1;
 
 	
-	private ArrayList<Integer> access;
+	private ArrayList<String> access;
 	private ArrayList<Object> eventParts;
 	
 	public Event(){
@@ -42,11 +40,14 @@ public class Event {
 		return m;
 	}
 
+	public String access(Player p, boolean html){
+		return access(p.getName(), html);
+	}
 
-	public String access(int level, boolean html){
+	public String access(String level, boolean html){
 		StringBuilder sb = new StringBuilder("");
 		boolean first = true;
-		if ((level == PRIVATE && showInPrivate) || access.contains(level) || isPublic()){
+		if ((level.equals(PRIVATE) && showInPrivate) || access.contains(level) || isPublic()){
 			for(Object o: eventParts){
 				if(o instanceof Player){
 					accessHelper((Player) o, sb, first, level, html);
@@ -72,10 +73,10 @@ public class Event {
 		return sb.toString();
 	}
 	
-	private void accessHelper(Player p, StringBuilder sb, boolean first, int level, boolean html){
-		if (first && level == p.getID()){
+	private void accessHelper(Player p, StringBuilder sb, boolean first, String level, boolean html){
+		if (first && level == p.getName()){
 			sb.append("You");
-		}else if (level == p.getID()){
+		}else if (level == p.getName()){
 			sb.append("yourself");
 		}else if(html){
 			sb.append(toHTML(p));
@@ -91,15 +92,17 @@ public class Event {
 		return access.isEmpty();
 	}
 
+	
+	
 	public void setPrivate(){
-		access.add(Constants.A_SKIP);
+		access.add(PRIVATE);
 	}
 
-	public void setVisibility(int v){
+	public void setVisibility(String v){
 		access.add(v);
 	}
 	public void setVisibility(Player p){
-		access.add(p.getID());
+		access.add(p.getName());
 	}
 
 	public void setVisibility(PlayerList list){
@@ -164,7 +167,7 @@ public class Event {
 			Object o1 = eventParts.get(i);
 			Object o2 = eventParts.get(i);
 			if(o2 instanceof Player && o1 instanceof Player){
-				if (((Player) o1).getID() == ((Player) o2).getID())
+				if (((Player) o1).getName() == ((Player) o2).getName())
 					continue;
 			}
 			if(o2 instanceof PlayerList && o1 instanceof PlayerList){
@@ -196,9 +199,9 @@ public class Event {
 	private String command = "";
 	public void setCommand(Player p, String ... command) {
 		Narrator n = p.getNarrator();
-		int id = p.getID();
+		String name = p.getName();
 		StringBuilder sb = new StringBuilder();
-		sb.append(id+"");
+		sb.append(name);
 		sb.append(Constants.NAME_SPLIT);
 		for(String s : command){
 			sb.append(s + " ");
@@ -214,6 +217,10 @@ public class Event {
 				}
 			}
 		
+	}
+	
+	public boolean hasCommand(){
+		return command.length() != 0;
 	}
 
 	public String getCommand() {

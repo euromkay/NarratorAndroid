@@ -41,7 +41,7 @@ public class Agent extends Role {
 		if(getVisited()){
 			Detective.follow(owner, target, n);
 			Lookout.watch(owner, target, n);
-			Role.event(owner, " stalkd ", target);
+			Role.event(owner, " stalked ", target);
 			return true;
 		}
 		else{

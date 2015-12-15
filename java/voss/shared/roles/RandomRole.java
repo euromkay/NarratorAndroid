@@ -349,6 +349,17 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		return true;
 	}
 	
+	public RandomRole(RandomRole r){
+		this(r.getName(), r.getColor());
+		alignmentCount = r.getAlignmentCount();
+		
+		for(String s: r.list.keySet()){
+			Member oldMem = r.list.get(s);
+			Member newMem = new Member(oldMem.getName(), oldMem.getColor(), oldMem.getWeight());
+			list.put(s, newMem);
+		}
+	}
+	
 	public RandomRole(Packager in){
 		alignmentCount = in.readInt();
 		color = in.readInt();
@@ -361,16 +372,6 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		}
 		
 		name = in.readString();
-
-		
-		
-			
-	}
-	
-	
-	
-	public int describeContents() {
-		return 0;
 	}
 	
 	public String toString(){

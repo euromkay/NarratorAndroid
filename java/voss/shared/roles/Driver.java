@@ -26,8 +26,8 @@ public abstract class Driver extends Role{
 		return "You can pick up any two people to drive around.  Any action that affects one will instead affect the other.";
 	}
 
-	private static String TARGET1 = "Pickup 1";
-	private static String TARGET2 = "Pickup 2";
+	public static String TARGET1 = "Pickup 1";
+	public static String TARGET2 = "Pickup 2";
 	public ArrayList<String> getAbilities() {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add(TEXT1);
@@ -74,10 +74,10 @@ public abstract class Driver extends Role{
 		return false;
 	}
 
-	public void setAction(Player owner, Player target, int ability, boolean simulation) {
+	public void setAction(Player owner, Player target, int ability) {
 		Team t = owner.getTeam();
 		if(ability != MAIN_ABILITY && ability != SECONDARY_ABILITY){
-			t.getSelectionFeedback(owner, target, ability, simulation);
+			t.getSelectionFeedback(owner, target, ability);
 			return;
 		}
 		Player t1 = owner.getTarget(MAIN_ABILITY);
@@ -97,11 +97,8 @@ public abstract class Driver extends Role{
 		else
 			e.setCommand(owner, TEXT1, target.getName());
 		
-		if(simulation)
-			return;
-		
 		if(t1 == null){
-			t.getSelectionFeedback(owner, target, ability, simulation);
+			t.getSelectionFeedback(owner, target, ability);
 			return;
 		}
 		

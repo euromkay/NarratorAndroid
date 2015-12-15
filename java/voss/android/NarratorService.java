@@ -13,6 +13,9 @@ import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
+
+import voss.android.parse.GameListing;
 import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.setup.ClientAdder;
@@ -39,11 +42,14 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	public Narrator local;//this is the one i keep communicators in
 	private CommandHandler ch;
 	public int onStartCommand(Intent i, int flags, int startId){
-		if(local == null){
-			local = Narrator.Default();
-			ch = new CommandHandler(local);
-		}
+		if(local == null)
+			refresh();
         return Service.START_STICKY;
+	}
+	public void refresh(){
+		local = Narrator.Default();
+		ch = new CommandHandler(local);
+
 	}
 	
     private final IBinder mBinder = new MyBinder();
@@ -95,7 +101,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
     }
 
 	public SocketClient socketClient;
-	public void startClient(ActivityHome a, String ip, SocketClient.ClientListener cl) {
+	public void startClient(ActivityHome a, String ip, final SocketClient.ClientListener cl) {
 		Intent intent = new Intent(this, SocketClient.class);
         intent.putExtra(SocketClient.HOST_IP_ADDRESS, ip);
         startService(intent);
@@ -159,10 +165,12 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		ClientAdder.SubmitName(name, socketClient);
 	}
 	
-	private void onRead(String message, ChatManager c){
+	public void onRead(String message, ChatManager c){
 		synchronized(local){
 			if(Server.IsLoggedIn()){
-				
+				try {
+					ch.parseCommand(message);
+				}catch(Throwable e){}
 			}else{
 				if(!local.isStarted()){
 					if(isHost()){
@@ -180,7 +188,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 								socketHost.send(message, c);
 						}
 					}catch(IllegalActionException|PhaseException e){
-						System.err.println(message);
+						Log.e("onRead-NarratorService", e.getMessage());
 						e.printStackTrace();
 					}
 				}
@@ -190,7 +198,11 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	
 	
 	public void disconnect(ServiceConnection sC, Activity a){
-		a.unbindService(sC);
+		try {
+			a.unbindService(sC);
+		}catch(IllegalArgumentException e){
+
+		}
 	}
 
 	
@@ -267,12 +279,15 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	
 	
 	
+	private GameListing gl;
+	public void setGameListing(GameListing gl){
+		if(gl == null)
+			throw new NullPointerException("Game Listing cannot be null.");
+		this.gl = gl;
+	}
 	
-	
-	
-	public String getGameListing() {
-		// TODO Auto-generated method stub
-		return null;
+	public GameListing getGameListing() {
+		return gl;
 	}
 	
 	
@@ -282,7 +297,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		local.setRules(r);
 		local.startGame();
 		
-		if(isHost()){
+		if(!Server.IsLoggedIn() && isHost()){
 			if (socketHost.sockets.isEmpty()){
 				socketHost.onDestroy();
 			}else{
@@ -305,5 +320,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
         return ip_addr;
 	}
 
-	
+	public void onDestroy(){
+		Log.e("NarratorService", "ondestroy triggered");
+	}
 }

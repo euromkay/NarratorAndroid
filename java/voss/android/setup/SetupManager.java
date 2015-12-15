@@ -9,12 +9,12 @@ import android.util.Log;
 import voss.android.ActivitySettings;
 import voss.android.CommunicatorPhone;
 import voss.android.NarratorService;
+import voss.android.SuccessListener;
 import voss.android.day.ActivityDay;
 import voss.android.parse.ParseConstants;
 import voss.android.parse.Server;
 import voss.android.parse.ServerResponder;
 import voss.android.texting.TextHandler;
-import voss.android.wifi.WifiHost;
 import voss.shared.ai.Computer;
 import voss.shared.logic.Member;
 import voss.shared.logic.Narrator;
@@ -29,8 +29,6 @@ import voss.shared.roles.RandomRole;
 
 
 public class SetupManager {
-
-    public WifiHost wifi;
 
     public ActivityCreateGame screen;
 
@@ -58,10 +56,12 @@ public class SetupManager {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("SMS_RECEIVED_ACTION");
-        intentFilter.addAction("PARSE_RECEIVED_ACTION");
+        intentFilter.addAction(ParseConstants.PARSE_FILTER);
 
         textAdder = new TextAdder(this);
-        
+        resumeTexting();
+
+
         screenController = new SetupScreenController(a);
         listeners.add(ns);
         listeners.add(screenController);
@@ -71,8 +71,8 @@ public class SetupManager {
     private HostAdder hAdder;
     //private ClientAdder cAdder;
     public void setupConnection(){
-        if (Server.IsLoggedIn()){ 
-        	sResponder = new ServerResponder(ns.getGameListing(), this);
+        if (Server.IsLoggedIn()){
+            sResponder = new ServerResponder(ns.getGameListing(), this);
         }else{
         	if(isHost()){
         		hAdder = new HostAdder(ns);
@@ -89,6 +89,8 @@ public class SetupManager {
     }
 
     public boolean isHost(){
+        if(Server.IsLoggedIn())
+            return Server.GetCurrentUserName().equals(ns.getGameListing().getHostName());
         return ns.socketClient == null;
     }
 
@@ -146,7 +148,7 @@ public class SetupManager {
     	listeners.remove(sl);
     }
     public synchronized void addPlayer(String name, Communicator c){
-    	if(isHost()){
+    	if(isHost() || Server.IsLoggedIn()){ //c should never be null, so it'll hit the narrator and then the controller
     		for(SetupListener sl: listeners){
     			if(c == null & (sl == ns || sl == hAdder))
     				continue;//will only update the screen with a toast, or the playerpopup
@@ -159,7 +161,8 @@ public class SetupManager {
         				sl.onPlayerAdd(name, c);
         		}
     		}else{//requesting host to add
-    			ns.socketClient.send(Constants.NEW_PLAYER_ADDITION + name);
+                if(!Server.IsLoggedIn())
+    			    ns.socketClient.send(Constants.NEW_PLAYER_ADDITION + name);
     		}
     	}
     }
@@ -180,17 +183,20 @@ public class SetupManager {
 
 
 
-
+    public boolean checkNarrator(){
+        try{
+            ns.local.runSetupChecks();
+            return true;
+        }catch (IllegalGameSettingsException |IllegalRoleCombinationException e) {
+            toast(e.getMessage());
+            return false;
+        }
+    }
 
     public void startGame(long seed){
-        try {
-        	ns.startGame(seed, ActivitySettings.getRules(screen));
-            
-
+        if(checkNarrator()) {
+            ns.startGame(seed, ActivitySettings.getRules(screen));
             startDay();
-
-        } catch (IllegalGameSettingsException |IllegalRoleCombinationException e) {
-            toast(e.getMessage());
         }
     }
     
@@ -311,6 +317,16 @@ public class SetupManager {
                 if (!isHost())
                     removeRole(RoleTemplate.FromIp(command[1]));
                 return;
+            case ParseConstants.STARTGAME:
+                Server.UpdateGame(ns, new SuccessListener() {
+                    public void onSuccess() {
+                        startGame(ns.local.getSeed());
+                    }
+
+                    public void onFailure() {
+                        toast("Game start failed.  Press back and go join again.");
+                    }
+                });
 
         }
     }

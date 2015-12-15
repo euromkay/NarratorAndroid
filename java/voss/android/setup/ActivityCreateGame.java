@@ -20,13 +20,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import voss.android.NActivity;
 import voss.android.R;
+import voss.android.SuccessListener;
 import voss.android.alerts.PlayerPopUp;
 import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
-import voss.packaging.Board;
 import voss.shared.logic.Narrator;
-import voss.shared.logic.Player;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.RoleTemplate;
 import voss.shared.roles.Agent;
@@ -93,11 +92,16 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		super.onResume();
 		setup(null);
 		cataLV.setSelection(0);
-		manager.resumeTexting();
+		if(manager != null)
+			manager.resumeTexting();
 	}
 	
 	public void onBackPressed(){
 		Intent i = new Intent(this, ActivityHome.class);
+		ns.onStartCommand(null, 0, 0);
+		if(Server.IsLoggedIn()){
+			Server.Unsuscribe(ns.getGameListing());
+		}
 		manager.shutdown();
 		startActivity(i);
 		finish();
@@ -133,17 +137,21 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private SetupManager manager;
 	private void setup(Bundle b){
 		if(manager == null){
-			connectNarrator();
+			connectNarrator(new NarratorConnectListener() {
+				public void onConnect() {
+					setupManager();
+				}
+			});
 			setupCategories();
 			setupRoleCatalogue();
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
 			changeRoleType(TOWN);
-			
-			while(ns == null);
-			setupManager();
+
 		}
 	}
 	private void setupManager(){
+		if(manager != null)
+			return;
 		manager = new SetupManager(this, ns);
 
 
@@ -428,10 +436,23 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		switch(v.getId()) {
 
             case R.id.roles_startGame:
-				if (manager.isHost())
+				if (Server.IsLoggedIn()){
+					if(manager.isHost()){
+						if(!manager.checkNarrator())
+							return;
+						Server.StartGame(ns.getGameListing(), new SuccessListener() {
+							public void onSuccess() {
+								toast("Starting game");
+							}
+
+							public void onFailure() {
+								toast("Game start failed");
+							}
+						});
+					} else
+						manager.exitGame();
+				}else if (manager.isHost())
 					manager.startGame(manager.getNarrator().getSeed());
-				else
-					manager.exitGame();
 				break;
 
             case R.id.roles_show_Players:

@@ -67,7 +67,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     public static final String DAY_HELP = "help day";
 
 
-    public void text(Player owner, String message){
+    public void text(Player owner, String message, boolean sync){
         switch(message.toLowerCase()){
             case HELP:
                 sendHelpPrompt(owner);
@@ -92,7 +92,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
                 	synchronized(n){
                 		super.command(owner, message);	
                 		if(tc != null)
-                			tc.text(owner, message);
+                			tc.text(owner, message, sync);
                 	}
                 }catch(IllegalActionException e){
                     if (e.getMessage().length() == 0){

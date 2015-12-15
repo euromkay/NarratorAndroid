@@ -7,7 +7,7 @@ import voss.shared.logic.support.CommandHandler;
 import voss.shared.roles.Framer;
 
 
-public class TestController implements Controller{
+public class TestController extends Controller{
 
 	
 	private Narrator n;
@@ -57,8 +57,20 @@ public class TestController implements Controller{
 	}
 
 	public void say(Player p, String string) {
-		p.say(string);//, simulations);
+		p.say(string);
 		
 	}
 
+	public void doDayAction(Player p){
+		p.doDayAction();
+	}
+
+	public void unvote(Player slave) {
+		slave.unvote();
+	}
+
+	public void removeNightTarget(Player a, String action) {
+		a.removeTarget(a.parseAbility(action), true);
+		
+	}
 }

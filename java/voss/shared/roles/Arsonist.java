@@ -62,7 +62,7 @@ public class Arsonist extends Role {
 	public static final int BURN_ = TERTIARY_ABILITY;
 
 	
-	public void setAction(Player owner, Player target, int ability, boolean simulation){
+	public void setAction(Player owner, Player target, int ability){
 		Team t = owner.getTeam();
 		
 		Event e = new Event();
@@ -70,8 +70,6 @@ public class Arsonist extends Role {
 		e.setPrivate();
 		if(ability == DOUSE_){
 			e.setCommand(owner, DOUSE, target.getName());
-			if(simulation)
-				return;
 			
 			e.add(" will douse ", target, ".");
 			//t.notifyTeammates(owner, " will douse " + target.getName() + ".");
@@ -79,8 +77,7 @@ public class Arsonist extends Role {
 			owner.getNarrator().addEvent(e);
 		}else if(ability == BURN_){
 			e.setCommand(owner, BURN, target.getName());
-			if(simulation)
-				return;
+			
 			
 			e.add(" will ignite those doused.");
 			//t.notifyTeammates(owner, " will ignite those doused.");
@@ -88,13 +85,13 @@ public class Arsonist extends Role {
 			owner.getNarrator().addEvent(e);
 		}else if(ability == UNDOUSE_){
 			e.setCommand(owner, UNDOUSE, target.getName());
-			if(simulation)
-				return;
+
+
 			e.add(" will undouse ", target, ".");
 			//t.notifyTeammates(owner, " will undouse " + target.getName() + ".");
 			owner.getNarrator().addEvent(e);
 		}else
-			t.getSelectionFeedback(owner, target, ability, simulation);
+			t.getSelectionFeedback(owner, target, ability);
 	}
 	
 	public void isAcceptableTarget(Player owner, Player target, int ability) {
@@ -123,13 +120,13 @@ public class Arsonist extends Role {
 	public boolean doNightAction(Player owner, Narrator n) {
 		Player undouse = owner.getTarget(UNDOUSE_);
 		Player douse = owner.getTarget(DOUSE_);
-		Player ignite = owner.getTarget(BURN_);
+		Player burn = owner.getTarget(BURN_);
 		
-		if (undouse == null && douse == null && ignite == null)
+		if (undouse == null && douse == null && burn == null)
 			return true;
 		
 		if(secondRound()){
-			if(ignite != null){
+			if(burn != null){
 				owner.visit(owner);
 				burn(owner, n);
 				setBurnedLastNight();
@@ -137,7 +134,7 @@ public class Arsonist extends Role {
 			return true;
 		}else{
 			setFirstRound(true);
-			if(douse == null && ignite == null){
+			if(douse == null && burn == null){
 				if(undouse.isDoused()){
 					undouse.setDoused(false);
 					Role.event(owner, " undoused ", undouse);
@@ -194,12 +191,9 @@ public class Arsonist extends Role {
 	public boolean hasDayAction(){
 		return hasDayIgnite() && !getBurnedLastNight();
 	}
-	public void doDayAction(Player owner, Narrator n, boolean simulation){
+	public void doDayAction(Player owner, Narrator n){
 		Event e = new Event();
 		e.setCommand(owner, BURN);
-		
-		if(simulation)
-			return;
 		
 		PlayerList burned = burn(owner, n);
 		if(burned.isEmpty())

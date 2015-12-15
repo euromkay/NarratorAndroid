@@ -26,7 +26,7 @@ public class Packager{
 		int size = parcel.readInt();
 		
 		for(int i = 0; i < size; i++){
-			set.add(Narrator.getPlayerByID(players, parcel.readInt()));
+			set.add(players.getPlayerByName(parcel.readString()));
 		}
 		
 		return set;
@@ -44,7 +44,7 @@ public class Packager{
 	public void writeHashSet(PlayerList players) {
 		parcel.writeInt(players.size());
 		for(Player p: players){
-			parcel.writeInt(p.getID());
+			parcel.writeString(p.getName());
 		}
 	}
 
@@ -189,19 +189,19 @@ public class Packager{
 	}
 
 	public Player readPlayer(Narrator n) {
-		int id = parcel.readInt();
-		if(id == NULL_PLAYER)
+		String name = parcel.readString();
+		if(name == NULL_PLAYER)
 			return null;
-		return n.getPlayerByID(id);
+		return n.getPlayerByName(name);
 	}
 	
-	private static final int NULL_PLAYER = -1;
+	private static final String NULL_PLAYER = null;
 	
 	public void write(Player p){
 		if(p == null)
-			parcel.writeInt(NULL_PLAYER);
+			parcel.writeString(NULL_PLAYER);
 		else
-			parcel.writeInt(p.getID());
+			parcel.writeString(p.getName());
 	}
 
 	public void signal(String s) {

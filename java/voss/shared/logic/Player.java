@@ -37,12 +37,11 @@ import voss.shared.roles.Vigilante;
 public class Player implements ActionTaker{
 
 	private Narrator n;
-	protected Player(int id, Communicator comm, Narrator n) {
-		idNumber = id;
+	Player(String name, Communicator comm, Narrator n) {
+		this.name = name;
 		this.comm = comm;
 		this.n = n;
 		role = new UnsetRole(this);
-		//nightTargets[Role.TERTIARY_ABILITY] = this;
 	}
 	
 	
@@ -66,15 +65,6 @@ public class Player implements ActionTaker{
 
 	
 	
-	
-	
-	private int idNumber;
-	public int getID(){
-		return idNumber;
-	}
-	public void setID(int id){
-		idNumber = id;
-	}
 
 	public boolean is(String roleName){
 		return getRoleName().equals(roleName);
@@ -202,11 +192,8 @@ public class Player implements ActionTaker{
 	public static final int MAX_TARGET_NUMBER = Role.MAIN_ABILITY + 1;
 	private Player[] nightTargets = new Player[MAX_TARGET_NUMBER];
 	private int submissionTime;
-	public void setTarget(Player target, int ability){
-		setTarget(target, ability, NOT_SIMULATION);
-	}
 	
-	public void setTarget(Player target, int ability, boolean simulation) {
+	public void setTarget(Player target, int ability) {
 		if(!n.canDoNightAction())
 			throw new PlayerTargetingException("Night actions are not allowed right now!");
 		if(target == null)
@@ -217,20 +204,17 @@ public class Player implements ActionTaker{
 		if(n.endedNight(this))
 			throw new PlayerTargetingException(getName() + " has already ended the night. Cancel end night to change abilities.");
 
-		if(!simulation){
-			if (nightTargets[ability] != null)
-				removeTarget(ability, false);
-			nightTargets[ability] = target;
-		}
+		if (nightTargets[ability] != null)
+			removeTarget(ability, false);//untargets previous person without notificaition, maybe it says 'changes? in logs'
+		nightTargets[ability] = target;
+		
 		if(t != null)
-			t.getSelectionFeedback(this, target, ability, simulation);
+			t.getSelectionFeedback(this, target, ability);
 		else{
 			t = getTeam();
-			role.setAction(this, target, ability, simulation);
+			role.setAction(this, target, ability);
 		}
 
-		if(simulation)
-			return;
 		
 		t.putNightAction(this, ability, target);
 		for (NarratorListener nl: n.getListeners()){
@@ -240,13 +224,9 @@ public class Player implements ActionTaker{
 	public boolean alliesWith(Player p) {
 		return getTeam().getMembers().contains(p);
 	}
-	public void setTarget(Player target, int ability, int alignment){
-		setTarget(target, ability, alignment, NOT_SIMULATION);
-	}
-	public void setTarget(Player target, int ability, int alignment, boolean simulation) {
-		if(!simulation)
-			setOption(alignment);
-		setTarget(target, ability, simulation);
+	public void setTarget(Player target, int ability, int alignment) {
+		setOption(alignment);
+		setTarget(target, ability);
 	}
 	private void setOption(int alignment){
 		if(n.getTeam(alignment) == null)
@@ -274,6 +254,7 @@ public class Player implements ActionTaker{
 		nightTargets[ability] = null;
 
 		Event e = new Event();
+		e.setCommand(this, Constants.CANCEL, ability+"");
 		if(notify){
 			Team t = n.getTeam(alignment);
 			if(t.knowsTeam())
@@ -282,7 +263,7 @@ public class Player implements ActionTaker{
 					e.add(this, " reconsidered.");
 					e.dontShowPrivate();
 					n.addEvent(e);
-					p.sendMessage(e.access(p.getID(), false));
+					p.sendMessage(e.access(p, false));
 				}
 			else {
 				e = new Event();
@@ -290,10 +271,9 @@ public class Player implements ActionTaker{
 				e.dontShowPrivate();
 				n.addEvent(e);
 			}
-		}
-		e.setCommand(this, Constants.CANCEL, ability+"");
-		for (NarratorListener nl: n.getListeners()){
-			nl.onNightTargetRemove(this, prev);
+			for (NarratorListener nl: n.getListeners()){
+				nl.onNightTargetRemove(this, prev);
+			}
 		}
 	}
 	public Player[] getNightTargets(){
@@ -361,47 +341,41 @@ public class Player implements ActionTaker{
 	
 	
 	
-	
-	
-	public void vote(Player target){
-		vote(target, false);
+	public int getVoteCount(){
+		return n.getVoteCountOf(this);
 	}
-	public void vote(Player target, boolean simulation) {
+	public Player getVoteTarget(){
+		return n.getVoteTarget(this);
+	}
+	public PlayerList getVoters(){
+		return n.getVoteListOf(this);
+	}
+	
+	public void vote(Player target) {
 		synchronized (n){
 			if(target == null)
 				throw new NullPointerException(this + " voting for null object");
 			if(target == n.Skipper)
-				voteSkip(simulation);
-			if(n.getVoteTarget(this) != target)
-				n.vote(this, target, simulation);
-		}
-	}
-	public void voteSkip(boolean simulation){
-		synchronized(n){
-			n.skipVote(this, simulation);
+				voteSkip();
+			else if(n.getVoteTarget(this) != target)
+				n.vote(this, target);
 		}
 	}
 	public void voteSkip(){
-		voteSkip(NOT_SIMULATION);
-	}
-	private static final boolean NOT_SIMULATION = false;
-	public Player unvote(boolean simulation){
 		synchronized(n){
-			return n.unVote(this, simulation);
+			n.skipVote(this);
 		}
 	}
 	public Player unvote(){
-		return unvote(NOT_SIMULATION);
+		synchronized(n){
+			return n.unVote(this);
+		}
 	}
+	
 	public void endNight(){
-		endNight(NOT_SIMULATION);
-	}
-	public void endNight(boolean simulation){
 		synchronized (n){
 			Event e = new Event();
 			e.setCommand(this, CommandHandler.END_NIGHT);
-			if(simulation)
-				return;
 			e.setPrivate();
 			e.dontShowPrivate();
 			n.endNight(this);
@@ -409,14 +383,9 @@ public class Player implements ActionTaker{
 		}
 	}
 	public void cancelEndNight(){
-		cancelEndNight(NOT_SIMULATION);
-	}
-	public void cancelEndNight(boolean simulation){
 		synchronized (n){
 			Event e = new Event();
 			e.setCommand(this, CommandHandler.END_NIGHT);
-			if(simulation)
-				return;
 			e.setPrivate();
 			e.dontShowPrivate();
 			n.addEvent(e);
@@ -705,26 +674,16 @@ public class Player implements ActionTaker{
 		return list;
 	}
 	
-	
-	public void doDayAction(){
-		doDayAction(NOT_SIMULATION);
-	}
-	public void doDayAction(boolean simulation) {
+	public void doDayAction() {
 		if(!role.hasDayAction())
 			throw new IllegalActionException(this + " has no day action!");
 		if(n.isNight())
 			throw new PhaseException("Day actions can only be submitted during the day");
-		role.doDayAction(this, n, simulation);
+		role.doDayAction(this, n);
 	}
 	public boolean hasDayAction() {
 		return role.hasDayAction();
 	}
-	
-	
-	
-	
-	
-	
 	
 	
 	public boolean isAlive() {
@@ -754,12 +713,6 @@ public class Player implements ActionTaker{
 	public static Comparator<Player> NameSort = new Comparator<Player>() {
 		public int compare(Player p1, Player p2) {
 			return p1.getName().compareTo(p2.getName());
-		}
-
-	};
-	public static Comparator<Player> IdSort = new Comparator<Player>() {
-		public int compare(Player p1, Player p2) {
-			return Integer.compare(p1.getID(), p2.getID());
 		}
 
 	};
@@ -808,8 +761,6 @@ public class Player implements ActionTaker{
 			return false;
 		if(jesterVote != p.jesterVote)
 			return false;
-		if(idNumber != p.idNumber)
-			return false;
 		if(lives != p.lives)
 			return false;
 		//if(isComputer() != p.isComputer)
@@ -832,7 +783,7 @@ public class Player implements ActionTaker{
 				}else{
 					if(t2 == null)
 						return false;
-					if(t1.idNumber != t2.idNumber)
+					if(!t1.name.equals(t2.name))
 						return false;
 				}
 			}
@@ -855,7 +806,7 @@ public class Player implements ActionTaker{
 	}
 	
 	public int hashCode(){
-		return idNumber;
+		return name.hashCode();
 	}
 	
 	public String toString(){
@@ -957,8 +908,6 @@ public class Player implements ActionTaker{
 			error("jestervote not equal");
 		if(p1.isComputer() != p2.isComputer)
 			error("isCOmputer not equal");
-		if(p1.idNumber != p2.idNumber)
-			error("idnumber not equal");
 		if(p1.lives != p2.lives)
 			error("lives not equal");
 		if(notEqual(p1.name, p2.name))
@@ -979,7 +928,7 @@ public class Player implements ActionTaker{
 				}else{
 					if(t2 == null)
 						error("p2 night target null");
-					if(t1.idNumber != t2.idNumber)
+					if(!t1.name.equals(t2.name))
 						error("night target " + i + " not the same");
 				}
 			}
@@ -1063,10 +1012,9 @@ public class Player implements ActionTaker{
 		isComputer = true;
 		comm = new CommunicatorNull();
 	}
-	public void say(String message, boolean simulations) {
-		n.talk(this, message, false);
-	}
-	public void say(String message){
-		say(message, false);
+	public void say(String message) {
+		synchronized(n){
+			n.talk(this, message);
+		}
 	}
 }

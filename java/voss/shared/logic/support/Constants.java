@@ -26,8 +26,10 @@ public class Constants {
 	public static final String SEPERATOR = "#";
 	public static final String INET_SEPERATOR = "\t:";  //LENGTH OF 2
 
+	public static final String SUBMIT_NAME = "SUBMIT_NAME ";
+	public static final String NAME_OK = "NAME_OKAY ";
+	public static final String NAME_BAD = "NAME_BAD ";
 	public static final String NEW_PLAYER_ADDITION = "NEW_PLAYER ";
-	public static final String CONFIRM_PLAYER_ADD = "CONFIRM_PLAYER_ADD ";
 	public static final String ALLOW_CONTROL = "ALLOW_CONTROL ";
 	public static final String NAME_CHANGE = "NAME_CHANGE ";
 	public static final String REMOVE_PLAYER = "REMOVE_PLAYER ";
@@ -46,6 +48,7 @@ public class Constants {
     public static final String END_NIGHT = "end night";
     public static final String VOTE = "vote";
     public static final String UNVOTE = "unvote";
+    public static final String UNTARGET = "untarget";
     public static final String SKIP_VOTE = "skip day";
     public static final String SAY = "say";
 	
@@ -111,8 +114,10 @@ public class Constants {
 	public static final int A_MM        = -3308226;
 	public static final int A_CULT      = -16711936;
 	public static final int A_ARSONIST  = -29696;
-	public static final int PUBLIC      = -3;
-	public static final int PRIVATE     = -4;
+	
+	public static final String PUBLIC      = "PUBLIC";
+	public static final String PRIVATE     = "PRIVATE";
+
 
 
 

@@ -64,17 +64,16 @@ public class Veteran extends Role {
 		return list;
 	}
 
-	public void setAction(Player owner, Player target, int ability, boolean simulation) {
+	public void setAction(Player owner, Player target, int ability) {
 		if(ability == MAIN_ABILITY){
 			Event e = Role.selectionEvent(owner);
 			e.setCommand(owner, ALERT, owner.getName());
-			if(simulation)
-				return;
+
 			e.add(owner, " will go on alert.");
 			owner.getNarrator().addEvent(e);
 			//owner.getTeam().notifyTeammates(owner, " will go on alert.");
 		}else
-			owner.getTeam().getSelectionFeedback(owner, target, ability, simulation);
+			owner.getTeam().getSelectionFeedback(owner, target, ability);
 		
 	}
 	

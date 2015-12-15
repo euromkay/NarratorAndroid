@@ -14,7 +14,7 @@ import voss.shared.roles.Mayor;
 
 public class Computer {
 
-    public static final String NAME = "Slave ";
+    public static final String NAME = "Slave";
     public static final int NUM_PLAYERS = 10;
 
     protected Player slave;
@@ -60,13 +60,20 @@ public class Computer {
     
     private boolean arsonAction = false;
     private boolean arsonAbility(int ability, PlayerList choices){
-    	if (arsonAction)
-    		return false;
     	if (!slave.getRoleName().equals(Arsonist.ROLE_NAME))
     		return false;
     	
-    	if (ability != Arsonist.BURN_ && ability != Arsonist.DOUSE_ && ability != Arsonist.UNDOUSE_)
+    	boolean arsonAbility = (ability != Arsonist.BURN_ && ability != Arsonist.DOUSE_ && ability != Arsonist.UNDOUSE_);
+    	arsonAbility = !arsonAbility;
+    	
+    	//if arson already performed an arson action and this is an arson ability
+    	if (arsonAction)
+    		return arsonAbility;
+    	
+    	//if arson didn't perform their action yet and this isn't an arson ability
+    	if (!arsonAbility)
     		return false;
+    	
     	arsonAction = true;
     	
     	int choice = brain.random.nextInt(10);
@@ -108,7 +115,7 @@ public class Computer {
             return null;
 
         if (slave.isAcceptableTarget(selection, ability)){
-        	selection = slave.getNarrator().getPlayerByID(selection.getID());
+        	selection = slave.getNarrator().getPlayerByName(selection.getName());
             return selection;
         }
         else
@@ -119,9 +126,10 @@ public class Computer {
     public void doDayAction(){
         Narrator n = slave.getNarrator();
         if (n.isNight())
-            throw new PhaseException(slave.getName() + " trying to do day action during night");
+        	return;
+            //throw new PhaseException(slave.getName() + " trying to do day action during night");
         if (slave.is(Mayor.ROLE_NAME) && slave.hasDayAction())
-        	slave.doDayAction();
+        	controller.doDayAction(slave);
 
         //arson killed himself
         if (slave.isDead())
@@ -129,7 +137,7 @@ public class Computer {
 
         //second time around, vote skip
         if (day == n.getDayNumber()){
-            if (n.getVoteTarget(slave) != slave.getSkipper())
+            if (slave.getVoteTarget() != slave.getSkipper())
             	controller.skipVote(slave);
             return;
         }
@@ -137,9 +145,9 @@ public class Computer {
         day = n.getDayNumber();
 
         Player choiceA = brain.getDayChoices()[0];
-        choiceA = n.getPlayerByID(choiceA.getID());
+        choiceA = n.getPlayerByName(choiceA.getName());
         Player choiceB = brain.getDayChoices()[1];
-        choiceB = n.getPlayerByID(choiceB.getID());
+        choiceB = n.getPlayerByName(choiceB.getName());
         
         controller.say(slave, "What.");
         
@@ -171,9 +179,9 @@ public class Computer {
         }else{
 
             if (brain.mastersExist()) {
-                if (choiceA != null && n.getVoteCountOf(choiceA) + slave.getVotePower() == n.getMinLynchVote())
+                if (choiceA != null && choiceA.getVoteCount() + slave.getVotePower() == n.getMinLynchVote())
                     choiceA = null;
-                if (choiceB != null && n.getVoteCountOf(choiceB) + slave.getVotePower() == n.getMinLynchVote())
+                if (choiceB != null && choiceB.getVoteCount() + slave.getVotePower() == n.getMinLynchVote())
                     choiceB = null;
             }
             if(choiceA == null && choiceB == null)

@@ -53,6 +53,10 @@
             </intent-filter>
         </activity>
         <service
+            android:name="voss.android.NarratorService"
+            android:label="NarratorService" >
+        </service>
+        <service
             android:name="voss.android.wifi.SocketClient"
             android:label="SocketClient" >
         </service>

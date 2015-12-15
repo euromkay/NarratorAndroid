@@ -7,7 +7,9 @@ import voss.shared.packaging.Packager;
 
 public class EventManager {
 
-	private ArrayList<Event> events;
+	private ArrayList<Event> events = new ArrayList<>();
+	
+	public EventManager(){}
 	
 	public synchronized Event add(Event e) {
 		events.add(e);
@@ -18,8 +20,6 @@ public class EventManager {
 	public ArrayList<Event> getEvents(){
 		return events;
 	}
-
-	public EventManager() {events = new ArrayList<>();}
 
 
 	public void writeToPackage(Packager dest) {
@@ -36,7 +36,7 @@ public class EventManager {
 		
 	}
 
-	public synchronized String access(int level, boolean html){
+	public synchronized String access(String level, boolean html){
 		StringBuilder sb = new StringBuilder();
 		for (Event e: events)
 			sb.append(e.access(level, html));
@@ -64,12 +64,17 @@ public class EventManager {
 	}
 
 
-	public String getCommands() {
-		StringBuilder sb = new StringBuilder();
+	public ArrayList<String> getCommands() {
+		ArrayList<String> list = new ArrayList<String>();
+		String comm;
 		for(Event e: events){
-			sb.append(e.getCommand());
+			comm = e.getCommand();
+			if(comm.length() > 0)
+				list.add(comm);
 		}
-		return sb.toString();
+		return list;
 	}
+
+	
 
 }
