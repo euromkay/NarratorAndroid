@@ -35,7 +35,10 @@ public class Member extends RoleTemplate{
 	public RolePackage getRole(Player p){
 		Role r = Role.CREATOR(name, p);
 		return new RolePackage(r, color);
-		//TODO
+	}
+	
+	public String getDescription(){
+		return getRole(new Player("", null, new Narrator())).getRole().getRoleInfo();
 	}
 	
 	public String toString(){

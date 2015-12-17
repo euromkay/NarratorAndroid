@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pinstripewide"
+    android:orientation="horizontal"
+    android:keepScreenOn="true"
+    android:padding="13dp"
+    android:screenOrientation="portrait" >
+
+
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingRight="7dp"
+        android:layout_weight="2" >
+
+        <EditText
+            android:id="@+id/create_chatET"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/white"
+            android:imeOptions="actionDone"
+            android:singleLine="true"
+            android:hint="Send Message"/>
+        <ScrollView
+            android:id="@+id/create_chatHolder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:background="@color/category_tint"
+            android:layout_alignParentStart="true"
+            android:layout_above="@id/create_chatET"
+            android:orientation="vertical"
+            android:scrollbars="vertical" >
+
+            <TextView
+                android:id="@+id/create_chatTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+        </ScrollView>
+
+        <Button
+            android:id="@+id/create_chatButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center"
+            android:text="Send"
+            android:textColor="@color/trimmings"
+            android:textSize="18sp" >
+        </Button>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_marginRight="6dp"
+        android:layout_marginEnd="6dp">
+
+        <TextView
+            android:id="@+id/roles_categories_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="6dp"
+            android:layout_gravity="start"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:text="@string/roles_categoryTitle"
+            android:textColor="@color/white"
+            android:textSize="30sp" />
+
+        <ListView
+            android:id="@+id/roles_categories_LV"
+            android:layout_width="wrap_content"
+            android:background="@color/category_tint"
+            android:layout_height="wrap_content"
+            android:divider="@null"
+            android:padding="6dp"
+            android:dividerHeight="0dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/roles_categories_title" >
+        </ListView>
+
+        <Button
+            android:id="@+id/create_toChat"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_below="@id/roles_categories_LV"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/roles_bottomLV_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/create_toChat"
+            android:layout_gravity="start"
+            android:text="@string/roles_rolesTitle"
+            android:textColor="@color/white"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/roles_hint_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/roles_bottomLV_title"
+            android:layout_gravity="start"
+            android:layout_toLeftOf="@+id/centerShim"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+
+        <ListView
+            android:id="@+id/roles_bottomLV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:divider="@null"
+            android:padding="6dp"
+            android:dividerHeight="0dp"
+            android:background="@color/category_tint"
+            android:layout_below="@id/roles_hint_title" >
+        </ListView>
+
+        <ScrollView
+            android:id="@+id/create_info_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/roles_bottomLV"
+            android:background="@color/category_tint"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical"
+            android:scrollbars="vertical" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/create_info_label"
+                android:padding="6dp"
+                android:layout_marginTop="6dp"
+                android:background="@color/category_tint"
+                android:textSize="13sp"
+                />
+        </ScrollView>
+
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1" >
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/roles_show_Players"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/addpeople"
+            android:padding="5dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:layout_alignParentEnd="false">
+
+        </ImageButton>
+
+
+
+        <TextView
+            android:id="@+id/roles_rightLV_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="6dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="start"
+            android:text="@string/roles_rolesListTitle"
+            android:textColor="@color/white"
+            android:textSize="30sp" />
+
+        <ListView
+            android:id="@+id/roles_rolesList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:divider="@null"
+            android:background="@color/category_tint"
+            android:dividerHeight="0dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/roles_show_Players">
+        </ListView>
+
+
+
+        <Button
+            android:id="@+id/roles_startGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="@string/roles_start"
+            android:textColor="@color/mafia"
+            android:textSize="40sp" />
+
+    </RelativeLayout>
+
+
+
+
+
+
+
+
+</LinearLayout>
+

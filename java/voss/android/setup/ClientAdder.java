@@ -40,7 +40,7 @@ public class ClientAdder implements SetupListener{
         }else if(s.startsWith(Constants.NAME_OK)){
         	ns.sc.onSuccess();//doesn't add the name, an allow control command is incoming
         }else if(s.startsWith(Constants.NAME_BAD)){
-        	ns.sc.onFailure();
+        	ns.sc.onFailure("");
         	
         }else if(s.startsWith(Constants.REMOVE_PLAYER)) {//should never be the client
             String name = s.substring(Constants.REMOVE_PLAYER.length());

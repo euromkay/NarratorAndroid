@@ -141,6 +141,7 @@ public class GUIController extends Controller implements TextInput{
         dScreen.onPlayerClick(slf);
 
         dScreen.closeDrawer();
+        dScreen.onDrawerClosed(null);
     }
 
     public void actionPanelClick(){

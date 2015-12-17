@@ -68,7 +68,7 @@ public class DayScreenController implements NarratorListener{
 
 	public void onEndGame() {
 		//TODO SPEECH LISTENER
-		dScreen.say(getNarrator().getWinMessage());
+		dScreen.say(getNarrator().getWinMessage().access(Event.PUBLIC, false));
 		dScreen.endGame();
 	}
 
@@ -204,7 +204,7 @@ public class DayScreenController implements NarratorListener{
 		Narrator n = getNarrator();
 		PlayerList list;
 		if(Server.IsLoggedIn()){
-			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName()));
+			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName().toLowerCase()));
 		}else if(manager.isHost()) {
 			list = n.getLivePlayers();
 		}else{

@@ -37,7 +37,7 @@ import voss.shared.roles.Vigilante;
 public class Player implements ActionTaker{
 
 	private Narrator n;
-	Player(String name, Communicator comm, Narrator n) {
+	public Player(String name, Communicator comm, Narrator n) {
 		this.name = name;
 		this.comm = comm;
 		this.n = n;
@@ -86,7 +86,7 @@ public class Player implements ActionTaker{
 	}
 	public String getDescription(){
 		boolean isInProgress = n.isInProgress();
-		if(isAlive() && isInProgress)
+		if(isAlive() && isInProgress || !n.isStarted())
 			return name;
 		String roleName;
 		if (isCleaned() && isInProgress)

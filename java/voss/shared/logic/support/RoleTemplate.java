@@ -15,6 +15,8 @@ public abstract class RoleTemplate {
 	public abstract String getName();
 	
 	public abstract int getColor();
+	
+	public abstract String getDescription();
 
 	public static Comparator<? super RoleTemplate> RandomComparator() {
 		return new Comparator<RoleTemplate>(){

@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 
+import voss.android.parse.Server;
+
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
 
@@ -37,6 +39,8 @@ public abstract class NActivity extends FragmentActivity{
     }
     
     protected boolean networkCapable(){
+		if (Server.IsLoggedIn())
+			return true;
 		return Build.VERSION.SDK_INT >= 18;
 	}
 

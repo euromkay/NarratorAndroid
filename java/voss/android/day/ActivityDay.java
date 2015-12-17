@@ -37,6 +37,8 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import voss.android.GUIController;
 import voss.android.NActivity;
 import voss.android.R;
 import voss.android.alerts.ExitGameAlert;
@@ -48,6 +50,7 @@ import voss.android.screens.ListingAdapter;
 import voss.android.screens.MembersAdapter;
 import voss.android.screens.SimpleGestureFilter;
 import voss.android.screens.SimpleGestureFilter.SimpleGestureListener;
+import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.TextHandler;
 import voss.packaging.Board;
@@ -122,9 +125,9 @@ implements
 		if (drawerOut){
 			closeDrawer();
 		}else {
-			if(Server.IsLoggedIn()){
+			if(onePersonActive()){
 				if (manager.getCurrentPlayer() == null){
-					onPlayerClick(manager.getNarrator().getPlayerByName(Server.GetCurrentUserName()));
+					onPlayerClick(playersInDrawer.get(0));
 				} else {
 					onPlayerClick(null);
 				}
@@ -211,8 +214,13 @@ implements
 			endGame();
 			return;
 		}
-		if(Server.IsLoggedIn())
+		if(onePersonActive()) {
 			toast("Press back to switch between general information and your information.");
+			GUIController.selectScreen(this, playersInDrawer.get(0));
+		}
+	}
+	private boolean onePersonActive(){
+		return playersInDrawer.size() == 1;
 	}
 	public Narrator getNarrator(){
 		return manager.getNarrator();
@@ -224,11 +232,13 @@ implements
 		findViewById(id).setOnClickListener(this);
 
 	}
+	private PlayerList playersInDrawer;
 	protected void setupPlayerDrawer(PlayerList livePlayers){
 		LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 		layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 		playerMenu.setLayoutManager(layoutManager);
 		playerMenu.setAdapter(new PlayerDrawerAdapter(livePlayers, this));
+		playersInDrawer = livePlayers;
 	}
 	public ArrayList<String> frameOptions;
 	public void setupFramerSpinner(){
@@ -296,7 +306,10 @@ implements
 
 	protected void updateMembers() {
 		rightTV.setText("Players of Society");
-		rightTV.setTextColor(getResources().getColor(R.color.trimmings));
+
+		int color = ActivityCreateGame.parseColor(this, R.color.trimmings);
+		rightTV.setTextColor(color);
+
 		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers(), this));
 		hideView(roleInfoTV);
 	}
@@ -317,11 +330,12 @@ implements
 
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		
+		if(manager.getCurrentPlayer() == null)
+			return;
 		try {
 			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandsTV.getText().toString() + ") for " + actionList.get(position).getDescription());
 			
-		}catch (IndexOutOfBoundsException e){
+		}catch (IndexOutOfBoundsException|NullPointerException e){
 	
 				log("accessing out of bounds again");
 				e.printStackTrace();
@@ -638,7 +652,18 @@ implements
 		hideView(commandsTV);
 
 		showView(chatLV);
-		setChatPanelText(manager.getNarrator().getEvents(Event.PRIVATE, true)); //false for HTML
+		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Event.PRIVATE, true));
+		happenings.append("\n");
+		happenings.append(manager.getNarrator().getEvents(Event.PRIVATE, true));
+
+		happenings.append("\n");
+		for (Player p: manager.getNarrator().getAllPlayers()){
+			happenings.append("\n");
+			happenings.append(Event.toHTML(p));
+		}
+
+
+		setChatPanelText(happenings.toString());
 
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 

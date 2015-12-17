@@ -38,7 +38,7 @@ public class CommandHandler {
 		command = command.substring(index + Constants.NAME_SPLIT.length());
 		command = command.replace("\n", "");
 		
-		return command(owner, command);
+		return command(owner, command, name);
 	}
 
     public static final String VOTE = Constants.VOTE;
@@ -48,7 +48,7 @@ public class CommandHandler {
     public static final String END_NIGHT = Constants.END_NIGHT;
     public static final String MODKILL = Constants.MODKILL;
 	
-	public int command(Player owner, String message){
+	public int command(Player owner, String message, String name){
         switch(message.toLowerCase()){
             case MODKILL:
             	owner.modkill();
@@ -99,7 +99,7 @@ public class CommandHandler {
                         if (owner.getTarget(Arsonist.DOUSE_) != null || owner.getTarget(Arsonist.UNDOUSE_) != null){
                         	throw new IllegalActionException("You can't burn if you have someone doused or are going to undouse someone tonight");
                         }else{
-                            return tryDoubleCommand(owner, message);
+                            return tryDoubleCommand(owner, message, name);
                         }
                     }else if(owner.hasDayAction()){
                         owner.doDayAction();
@@ -138,14 +138,14 @@ public class CommandHandler {
                 }
 
             default:
-            	return tryDoubleCommand(owner, message);
+            	return tryDoubleCommand(owner, message, name);
                 //TODO handle invalid people
                 //TODO driver double handling
         }
         return -1;
     }
 
-    private int tryDoubleCommand(Player owner, String message){
+    private int tryDoubleCommand(Player owner, String message, String name){
         ArrayList<String> block = new ArrayList<>();
         for(String s: message.split(" "))
         	block.add(s);
@@ -158,6 +158,8 @@ public class CommandHandler {
 
         if(command.equalsIgnoreCase(SAY)){
         	message = message.substring(SAY.length() + 1);
+        	if(owner == null && !n.isStarted())
+        		owner = new Player(name + "[Pregame]", null, n);
         	owner.say(message);
         	return ASYNCH;
         }

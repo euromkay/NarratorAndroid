@@ -104,7 +104,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				if(isLoggedIn()) {
 					Server.RegisterGame(new Server.GameRegister() {
 						public void onSuccess(GameListing gl) {
-							ns.onStartCommand(null, 0, 0);
+							ns.refresh();
 							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
 							start(gl);
 						}
@@ -181,7 +181,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	private void startTutorial(){
 		Intent i = new Intent(this, ActivityTutorial.class);
 		startActivity(i);
-		finish();
+		//finish();
 	}
 
 	
@@ -225,7 +225,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 					start(null);
 				}
 
-				public void onFailure() {
+				public void onFailure(String m) {
 					toast("That name's already taken.");
 				}
 				

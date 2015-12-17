@@ -1,6 +1,7 @@
 package voss.android;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -26,6 +27,7 @@ public class ActivityTutorial extends Activity implements SimpleGestureListener{
     public void onCreate(Bundle b0){
         super.onCreate(b0);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_tutorial);
 
         index = 0;

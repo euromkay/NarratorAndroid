@@ -24,6 +24,14 @@ public class Team implements Alignment, ActionTaker{
 		return this;
 	}
 
+	private String description;
+	public void setDescription(String description){
+		this.description = description;
+	}
+	public String getDescription(){
+		return description;
+	}
+	
 	private boolean canRecruitFrom = true;
 	
 	public void setCanRecruitFrom(boolean b){

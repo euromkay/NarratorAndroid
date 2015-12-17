@@ -102,13 +102,17 @@ public class Narrator{
 		Team mmTeam = narrator.getTeam(Constants.A_MM);
 		mmTeam.setMustBeAliveToWin();
 
+		final String mafDescription = "The informed minority, these roles must eliminate the Town, other Mafia factions, the cult and evil killing neutrals.";
+		
 		Team maf = narrator.getTeam(Constants.A_MAFIA);
 		maf.setKill(true);
 		maf.setKnowsTeam(true);
+		maf.setDescription(mafDescription);
 
 		Team maf2 = narrator.getTeam(Constants.A_YAKUZA);
 		maf2.setKill(true);
 		maf2.setKnowsTeam(true);
+		maf2.setDescription(mafDescription);
 
 		Team town = narrator.getTeam(Constants.A_TOWN);
 		town.addSheriffDetectableTeam(Constants.A_MAFIA);
@@ -117,6 +121,7 @@ public class Narrator{
 		town.addSheriffDetectableTeam(Constants.A_SK);
 		town.addSheriffDetectableTeam(Constants.A_CULT);
 		town.addSheriffDetectableTeam(Constants.A_ARSONIST);
+		town.setDescription("The uninformed majority, these roles must eliminate all Mafia factions, the cult, and all evil neutrals");
 
 		Team sk = narrator.getTeam(Constants.A_SK);
 		sk.setMustBeAliveToWin();
@@ -1209,6 +1214,8 @@ public class Narrator{
 	
 	public Object commandLock = new Object();
 	protected void talk(Player p, String message){
+		if(p.isBlackmailed())
+			return;
 		Event e = new Event();
 		if (isNight()) {
 			e.setVisibility(p.getTeam().getMembers());
@@ -1279,7 +1286,7 @@ public class Narrator{
 	private Object progSync = new Object();
 	public synchronized boolean isInProgress(){
 		synchronized(progSync){
-		if (winString != null)
+		if (win != null)
 			return false;
 		
 		if (players.size() == 0){
@@ -1302,7 +1309,7 @@ public class Narrator{
 				}
 			}
 		}
-		if(winString == null)
+		if(win == null)
 			determineWinners();
 		
 		for(NarratorListener nL: listeners)
@@ -1322,31 +1329,37 @@ public class Narrator{
 		}
 		
 		
-		winString = winMessage(winningPlayers);
+		win = winMessage(winningPlayers); 
 		
-
 		for(Player p: players)
-			p.sendMessage(winString);
+			p.sendMessage(win.access(Event.PUBLIC, false));
 	}
 	
-	private String winString;
-	public String getWinMessage(){
-		return winString;
+	private Event win;
+	public Event getWinMessage(){
+		return win;
 	}
 
-	public static String winMessage(ArrayList<Player> winners){
-		if(winners.size() == 0)
-			return Constants.NO_WINNER;
+	public static Event winMessage(ArrayList<Player> winners){
+		Event e = new Event();
 		
-		String message = "";
-		for(int i = 0; i < winners.size() - 1; i++)
-			message += (winners.get(i) + ", ");
+		if(winners.size() == 0){
+			e.add(Constants.NO_WINNER);
+			return e;
+		}
+		for(int i = 0; i < winners.size() - 1; i++){
+			e.add(winners.get(i));
+			e.add(", ");
+		}
 		
-		String tidbit = "";
 		if(winners.size() != 1)
-			tidbit = "and ";
+			e.add("and ");
 		
-		return message + tidbit + winners.get(winners.size() - 1).toString() + " has won";
+		e.add(winners.get(winners.size() - 1));
+		
+		e.add(" has won!");
+		
+		return e;
 	}
 	
 	
@@ -1603,7 +1616,7 @@ public class Narrator{
 			return false;
 		if(notEqual(voteList, n.voteList))
 			return false;
-		if(notEqual(winString, n.winString))
+		if(notEqual(win, n.win))
 			return false;
 		//if(notEqual(events, n.events))
 			//return false;

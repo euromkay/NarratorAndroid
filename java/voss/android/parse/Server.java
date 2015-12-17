@@ -136,13 +136,13 @@ public class Server {
         game.put(ParseConstants.SEED, 0);
         game.put(ParseConstants.EVENTS, new ArrayList<String>());
 
-
         ArrayList<String> list = new ArrayList<>();
         game.put(ParseConstants.ROLES, list);
 
         list = new ArrayList<>();
         list.add(GetCurrentUserName());
         game.put(ParseConstants.PLAYERS, list);
+
         game.saveInBackground(new SaveCallback() {
             public void done(ParseException e) {
                 if (e == null) {
@@ -163,6 +163,7 @@ public class Server {
         query.whereNotEqualTo(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
         query.whereNotEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());//not in the game
         query.whereEqualTo(ParseConstants.STARTED, Boolean.FALSE);
+        query.whereEqualTo(ParseConstants.ACTIVE, Boolean.TRUE);
         query.setLimit(limit);
 
         GetGames(query, gf);
@@ -184,9 +185,11 @@ public class Server {
                         return;
                     }
                     ArrayList<GameListing> games = new ArrayList<>();
-                    for (ParseObject po : list)
-                        games.add(new GameListing(po));
-
+                    GameListing gl;
+                    for (ParseObject po : list) {
+                        gl = new GameListing(po);
+                        games.add(gl);
+                    }
 
                     gf.onGamesFound(games);
                 } else {
@@ -281,7 +284,7 @@ public class Server {
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
-                    sl.onFailure();
+                    sl.onFailure(e.getMessage());
                 } else {
                     sl.onSuccess();
                 }
@@ -293,7 +296,7 @@ public class Server {
         GetNarratorInfo(ns.getGameListing().getID(), new GetCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
-                    sl.onFailure();
+                    sl.onFailure(e.getMessage());
                 } else {
                     GameListing gl = new GameListing(parseObject);
                     ns.setGameListing(gl);
@@ -321,5 +324,4 @@ public class Server {
         params.put(ParseConstants.PUSH, s);
         ParseCloud.callFunctionInBackground(ParseConstants.PUSH, params);
     }
-
 }

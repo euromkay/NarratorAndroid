@@ -127,15 +127,24 @@ public class Event {
 		return requester != null && requester.getSkipper() == requester;	
 	}
 	
-	public String toHTML(Player p){
+	public static String toHTML(Player p){
 		int color = p.getAlignment();
-		if((p.isAlive() || p.isCleaned()) && p.getNarrator().isInProgress())
+		if (!p.getNarrator().isStarted()) 
+			color = Integer.parseInt("FFFFFF", 16);
+		else if((p.isAlive() || p.isCleaned()) && p.getNarrator().isInProgress())
 			color = Integer.parseInt("FFFFFF", 16);
 		//String red   = toHex(Color.red(color));
 		//String blue  = toHex(Color.blue(color));
 		//String green = toHex(Color.green(color));
+		String hexColor = Integer.toHexString(color);//apparently there are 2 ffs
+		while(hexColor.length() < 6){
+			hexColor = "0" + hexColor;
+		}
+		while(hexColor.length() > 6){
+			hexColor = hexColor.substring(1);
+		}
 
-		return "<font color = #" + Integer.toHexString(color) + ">" +p.getDescription() + "</font>";
+		return "<font color = #" + hexColor + ">" +p.getDescription() + "</font>";
 	}
 	
 	public String toHex(int i){

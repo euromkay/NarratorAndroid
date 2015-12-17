@@ -239,10 +239,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:gravity="center"
         android:text="Send"
         android:textColor="@color/trimmings"
-        android:textSize="18dp" >
+        android:textSize="18sp" >
     </Button>
 
     <ListView

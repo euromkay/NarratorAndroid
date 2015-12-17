@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContextWrapper;
 import voss.android.PhoneBook;
 import voss.android.day.DayManager;
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -90,7 +91,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             default:
                 try{
                 	synchronized(n){
-                		super.command(owner, message);	
+                		super.command(owner, message, "text");	
                 		if(tc != null)
                 			tc.text(owner, message, sync);
                 	}
@@ -197,7 +198,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onEndGame(){
-        getTexters(n.getAllPlayers()).sendMessage( n.getWinMessage());
+        getTexters(n.getAllPlayers()).sendMessage( n.getWinMessage().access(Event.PUBLIC, false));
     }
 
     private void sendHelpPrompt(){

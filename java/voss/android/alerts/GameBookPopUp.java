@@ -152,19 +152,19 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             n.setSeed(gl.getSeed());
             n.setRules(ActivitySettings.getRules(a));
             n.startGame();
-
-            CommandHandler ch = new CommandHandler(n);
-            String[] parts;
-            String sender;
-            for (String s : gl.getCommands()) {
-                parts =  s.split(",");
-                sender = parts[0];
-                s = s.substring(sender.length() + 1);
-                try {
-                    ch.parseCommand(s);
-                }catch(Throwable e){}
-            }
         }
+        CommandHandler ch = new CommandHandler(n);
+        String[] parts;
+        String sender;
+        for (String s : gl.getCommands()) {
+            parts =  s.split(",");
+            sender = parts[0];
+            s = s.substring(sender.length() + 1);
+            try {
+                ch.parseCommand(s);
+            }catch(Throwable e){}
+        }
+
         if (mode == JOIN){
             Server.AddPlayer(gl);
         }

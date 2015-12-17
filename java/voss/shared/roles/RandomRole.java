@@ -27,6 +27,14 @@ public class RandomRole extends RoleTemplate implements Alignment{
 	public String getName(){
 		return name;
 	}
+	
+	private String description;
+	public String getDescription(){
+		return description;
+	}
+	public void setDescription(String description){
+		this.description = description; 
+	}
 
 	private int color;
 	
@@ -198,6 +206,9 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(Bodyguard.ROLE_NAME, Constants.A_TOWN, BODYGUARD_WEIGHT));
 		rm.addMember(new Member(Veteran.ROLE_NAME,   Constants.A_TOWN, VETERAN_WEIGHT));
 		
+
+		rm.setDescription(list(Citizen.ROLE_NAME, Sheriff.ROLE_NAME, Doctor.ROLE_NAME, Lookout.ROLE_NAME, Detective.ROLE_NAME, BusDriver.ROLE_NAME, Escort.ROLE_NAME, Vigilante.ROLE_NAME, Mayor.ROLE_NAME, Bodyguard.ROLE_NAME, Veteran.ROLE_NAME));
+		
 		return rm;
 	}
 	
@@ -208,6 +219,8 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(Lookout.ROLE_NAME,   Constants.A_TOWN, LOOKOUT_WEIGHT));
 		rm.addMember(new Member(Detective.ROLE_NAME, Constants.A_TOWN, DETECTIVE_WEIGHT));
 		
+		rm.setDescription(list(Sheriff.ROLE_NAME, Lookout.ROLE_NAME, Detective.ROLE_NAME));
+		
 		return rm;
 	} 
 	public static RandomRole TownProtective(){
@@ -216,7 +229,8 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(BusDriver.ROLE_NAME, Constants.A_TOWN, BUSDRIVER_WEIGHT));
 		rm.addMember(new Member(Escort.ROLE_NAME,    Constants.A_TOWN, ESCORT_WEIGHT));
 		rm.addMember(new Member(Bodyguard.ROLE_NAME, Constants.A_TOWN, BODYGUARD_WEIGHT));
-		
+
+		rm.setDescription(list(Doctor.ROLE_NAME, BusDriver.ROLE_NAME, Bodyguard.ROLE_NAME, Escort.ROLE_NAME));
 		
 		return rm;
 	} 
@@ -227,6 +241,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(Bodyguard.ROLE_NAME, Constants.A_TOWN, BODYGUARD_WEIGHT));
 		rm.addMember(new Member(Veteran.ROLE_NAME,   Constants.A_TOWN, VETERAN_WEIGHT));
 		
+		rm.setDescription(list(Vigilante.ROLE_NAME, Bodyguard.ROLE_NAME, Veteran.ROLE_NAME));
 		
 		return rm;
 	}
@@ -235,6 +250,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		RandomRole rm = new RandomRole(Constants.TOWN_GOVERNMENT_ROLE_NAME, Constants.A_TOWN);
 		rm.addMember(new Member(Mayor.ROLE_NAME, Constants.A_TOWN, MAYOR_WEIGHT));
 		
+		rm.setDescription(list(Mayor.ROLE_NAME));
 		
 		return rm;
 	}
@@ -253,6 +269,8 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(Chauffeur.ROLE_NAME,   team, CHAUFFEUR_WEIGHT));
 		rm.addMember(new Member(Framer.ROLE_NAME,      team, FRAMER_WEIGHT));
 		rm.addMember(new Member(Godfather.ROLE_NAME,   team, GF_WEIGHT));
+		
+		rm.setDescription(list(Mafioso.ROLE_NAME, Janitor.ROLE_NAME, Agent.ROLE_NAME, Consort.ROLE_NAME, Blackmailer.ROLE_NAME, Chauffeur.ROLE_NAME, Framer.ROLE_NAME, Godfather.ROLE_NAME));
 		
 		return rm;
 	}
@@ -274,6 +292,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(SerialKiller.ROLE_NAME, Constants.A_SK, SK_WEIGHT));
 		rm.addMember(new Member(Arsonist.ROLE_NAME, Constants.A_ARSONIST, ARSON_WEIGHT));
 		
+		rm.setDescription(list(Executioner.ROLE_NAME, Jester.ROLE_NAME, Witch.ROLE_NAME, Cultist.ROLE_NAME, CultLeader.ROLE_NAME, MassMurderer.ROLE_NAME, SerialKiller.ROLE_NAME, Arsonist.ROLE_NAME));
 		
 		return rm;
 	}
@@ -287,7 +306,22 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		rm.addMember(new Member(SerialKiller.ROLE_NAME, Constants.A_SK, SK_WEIGHT));
 		rm.addMember(new Member(Arsonist.ROLE_NAME, Constants.A_ARSONIST, ARSON_WEIGHT));
 		
+		rm.setDescription(list(Witch.ROLE_NAME, Cultist.ROLE_NAME, CultLeader.ROLE_NAME, MassMurderer.ROLE_NAME, SerialKiller.ROLE_NAME, Arsonist.ROLE_NAME));
+		
 		return rm;
+	}
+	
+	public static String list(String ... ss){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Spawns:\n");
+		
+		for(String s: ss){
+			sb.append(s);
+			sb.append("\n");
+		}
+		
+		sb.deleteCharAt(sb.length() - 1);
+		return sb.toString();
 	}
 	
 	public static RandomRole AnyRandom(){
@@ -322,6 +356,8 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		
 		rm.addMember(new Member(Cultist.ROLE_NAME, Constants.A_CULT, CULTIST_WEIGHT));
 		rm.addMember(new Member(CultLeader.ROLE_NAME, Constants.A_CULT, CULTIST_LEADER_WEIGHT));
+		
+		rm.setDescription("Spawns any role.");
 		
 		return rm;
 	}
@@ -358,6 +394,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 			Member newMem = new Member(oldMem.getName(), oldMem.getColor(), oldMem.getWeight());
 			list.put(s, newMem);
 		}
+		this.description = r.description;
 	}
 	
 	public RandomRole(Packager in){
@@ -372,6 +409,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		}
 		
 		name = in.readString();
+		description = in.readString();
 	}
 	
 	public String toString(){
@@ -398,6 +436,7 @@ public class RandomRole extends RoleTemplate implements Alignment{
 		}
 
 		dest.write(name);
+		dest.write(description);
 	}
 	
 	

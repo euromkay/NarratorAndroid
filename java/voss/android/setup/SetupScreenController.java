@@ -17,10 +17,10 @@ public class SetupScreenController implements SetupListener{
     public void onRoleRemove(RoleTemplate listing){ screen.refreshRolesList();}
 
     public void onPlayerAdd(String name, Communicator c){
-    	screen.toast(name + " joined.");
+    	screen.toast(name + " has joined.");
     }
     public void onPlayerRemove(String s){
-    	screen.toast(s + " left.");
+    	screen.toast(s + " has left the lobby.");
 
     }
 }

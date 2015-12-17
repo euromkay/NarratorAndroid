@@ -9,6 +9,10 @@
     android:padding="8dp"
     android:screenOrientation="portrait" >
 
+
+
+
+
     <View
         android:id="@+id/centerShim"
         android:layout_width="16dp"
@@ -36,9 +40,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:paddingBottom="6dp"
         android:layout_gravity="left"
-        android:layout_toLeftOf="@+id/centerShim"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
         android:text="@string/roles_categoryTitle"
         android:textColor="@color/white"
         android:textSize="20sp" />
@@ -53,23 +59,93 @@
         android:dividerHeight="0dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@id/roles_categories_title"
-        android:layout_toLeftOf="@+id/centerShim" >
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim">
     </ListView>
 
-    <View
-        android:id="@+id/shim2"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
+
+
+    <Button
+        android:id="@+id/create_toChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Chat"
+        android:textColor="@color/mafia"
+        android:textSize="14sp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
+        android:minHeight="0dp"
+        android:background="@color/category_tint"
         android:layout_below="@id/roles_categories_LV"
-        android:layout_centerHorizontal="true"
-        android:visibility="invisible" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"/>
+
+    <Button
+        android:visibility="gone"
+        android:id="@+id/create_chatButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@id/centerShim"
+        android:layout_alignEnd="@id/centerShim"
+        android:gravity="center"
+        android:text="Send"
+        android:textColor="@color/trimmings"
+        android:textSize="12sp" >
+    </Button>
+
+
+    <EditText
+        android:id="@+id/create_chatET"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/create_chatButton"
+        android:layout_toLeftOf="@id/create_chatButton"
+        android:textColor="@color/white"
+        android:imeOptions="actionDone"
+        android:textSize="12sp"
+        android:singleLine="true"
+        android:hint="Send Message"/>
+
+    <ScrollView
+        android:id="@+id/create_chatHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:background="@color/category_tint"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/create_toChat"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
+        android:layout_above="@id/create_chatET"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:id="@+id/create_chatTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+    </ScrollView>
+
 
     <TextView
         android:id="@+id/roles_bottomLV_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/shim2"
+        android:layout_below="@id/create_toChat"
         android:layout_gravity="left"
         android:layout_toLeftOf="@+id/centerShim"
         android:text="@string/roles_rolesTitle"
@@ -92,13 +168,38 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:divider="@null"
         android:padding="6dp"
         android:dividerHeight="0dp"
         android:background="@color/category_tint"
         android:layout_below="@id/roles_hint_title"
-        android:layout_toLeftOf="@+id/centerShim" >
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim" >
     </ListView>
+
+    <ScrollView
+        android:id="@+id/create_info_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
+        android:layout_below="@id/roles_bottomLV"
+        android:orientation="vertical"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/create_info_label"
+            android:padding="6dp"
+            android:layout_marginTop="6dp"
+            android:background="@color/category_tint"
+            android:textSize="11sp"
+            />
+    </ScrollView>
 
     <TextView
         android:id="@+id/roles_rightLV_title"

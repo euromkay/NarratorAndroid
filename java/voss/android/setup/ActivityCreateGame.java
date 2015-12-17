@@ -8,6 +8,8 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -15,6 +17,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +29,7 @@ import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
 import voss.shared.logic.Narrator;
+import voss.shared.logic.Team;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.RoleTemplate;
 import voss.shared.roles.Agent;
@@ -50,6 +54,7 @@ import voss.shared.roles.Lookout;
 import voss.shared.roles.Mafioso;
 import voss.shared.roles.MassMurderer;
 import voss.shared.roles.Mayor;
+import voss.shared.roles.Role;
 import voss.shared.roles.SerialKiller;
 import voss.shared.roles.Sheriff;
 import voss.shared.roles.Veteran;
@@ -74,6 +79,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	public ListView cataLV, rolesLV, rolesListLV;
 	public TextView playersInGameTV, rolesLeftTV;
 
+	private Button chatButton;
 
 	protected void onCreate(Bundle b){
 		super.onCreate(b);
@@ -147,6 +153,12 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
 			changeRoleType(TOWN);
 
+			changeFont(R.id.create_info_label);
+
+			chatET = (EditText) findViewById(R.id.create_chatET);
+			chatTV = (TextView) findViewById(R.id.create_chatTV);
+			chatButton = (Button) findViewById(R.id.create_toChat);
+			chatButton.setOnClickListener(this);
 		}
 	}
 	private void setupManager(){
@@ -170,12 +182,16 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			startGameButton.setOnClickListener(this);
 			startGameButton.setText("Exit");
 		}else
-			findViewById(R.id.roles_startGame).setVisibility(View.GONE);
+			startGameButton.setVisibility(View.GONE);
 
-		if(manager.isHost())//only host can add roles
-			rolesLV.setOnItemClickListener(this);
+		rolesLV.setOnItemClickListener(this);
 		
 		setHostCode();
+
+		teamDescription(TOWN);
+
+		findViewById(R.id.create_chatButton).setOnClickListener(this);
+		updateChat();
 	}
 
 	private void changeFont(int id){
@@ -186,6 +202,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	public SetupManager getManager(){
 		return manager;
 	}
+
 
 	private void setupCategories(){
 		cataLV = (ListView) findViewById(R.id.roles_categories_LV);
@@ -211,8 +228,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private void setupRoleList(){
 		rolesListLV = (ListView) findViewById(R.id.roles_rolesList);
 		rolesListLV.setChoiceMode(android.widget.AbsListView.CHOICE_MODE_SINGLE);
-		if(manager.isHost())
-			rolesListLV.setOnItemClickListener(this);
+
+		rolesListLV.setOnItemClickListener(this);
 
 		refreshRolesList();
 		changeFont(R.id.roles_rightLV_title);
@@ -345,13 +362,19 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		case R.id.roles_categories_LV:
 			currentCatalogue = position;
 			changeRoleType(position);
+
+			teamDescription(currentCatalogue);
 			return;
 			
 		case R.id.roles_bottomLV:
 			//position = rolesLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
 				role = getSelectedRole(position);
-				manager.addRole(role);
+
+				if(manager.isHost())
+					manager.addRole(role);
+
+				roleDescription(role);
 			}
 			break;
 			
@@ -359,7 +382,11 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			position = rolesListLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
 				role = manager.ns.local.getAllRoles().get(position);
-				manager.removeRole(role);
+
+				if(manager.isHost())
+					manager.removeRole(role);
+
+				roleDescription(role);
 			}
 			break;
 		}
@@ -367,7 +394,47 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			
 		
  	}
-	
+	private void teamDescription(int i){
+		Team t = null;
+		int color = parseColor(this, R.color.white);
+		String text = "";
+		switch (i) {
+			case TOWN:
+				t = manager.getNarrator().getTeam(Constants.A_TOWN);
+				break;
+			case MAFIA:
+				t = manager.getNarrator().getTeam(Constants.A_MAFIA);
+				break;
+			case YAKUZA:
+				t = manager.getNarrator().getTeam(Constants.A_YAKUZA);
+				break;
+			case NEUTRAL:
+				text = "These roles are the miscellaneous roles without teams.";
+				color = parseColor(this, R.color.neutral);
+				break;
+			case RANDOM:
+				text = "These are random types that will spawn unknown roles.";
+				color = parseColor(this, R.color.white);
+		}
+
+		if (t != null) {
+			text = t.getDescription();
+			color =t.getAlignment();
+		}
+
+		setDescriptionText(text, color);
+	}
+
+	private void roleDescription(RoleTemplate rt){
+		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), rt.getColor());
+	}
+
+	private void setDescriptionText(String text, int color){
+		TextView tv = (TextView) findViewById(R.id.create_info_label);
+		tv.setText(text);
+		tv.setTextColor(color);
+
+	}
 	
 	private void changeRoleType(int position){
 		String[] rolesList;
@@ -430,10 +497,57 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
         return colors;
     }
 
-	
+	private EditText chatET;
+	private TextView chatTV;
+	private void sendMessage(){
+		String message = chatET.getText().toString();
+		if(chatET.length() == 0)
+			return;
+
+		manager.talk(message);
+
+		chatET.setText("");
+	}
+
+	protected void updateChat(){
+		String events = ns.local.getEvents(Server.GetCurrentUserName(), true);
+		events = events.replace("\n", "<br>");
+		chatTV.setText(Html.fromHtml(events));
+	}
+
+	private void switchChat(){
+		int mode1, mode2;
+		if(rolesLV.getVisibility() == View.GONE){
+			mode1 = View.VISIBLE;
+			mode2 = View.GONE;
+			chatButton.setText("View Roles");
+		}else{
+			mode1 = View.GONE;
+			mode2 = View.VISIBLE;
+			chatButton.setText("View Chat");
+		}
+		rolesLV.setVisibility(mode1);
+		findViewById(R.id.roles_bottomLV_title).setVisibility(mode1);
+		findViewById(R.id.create_info_wrapper).setVisibility(mode1);
+
+		chatET.setVisibility(mode2);
+		findViewById(R.id.create_chatHolder).setVisibility(mode2);
+		findViewById(R.id.create_chatButton).setVisibility(mode2);
+
+
+
+	}
 	
 	public void onClick(View v) {
 		switch(v.getId()) {
+
+			case R.id.create_toChat:
+				switchChat();
+				return;
+
+			case R.id.create_chatButton:
+				sendMessage();
+				return;
 
             case R.id.roles_startGame:
 				if (Server.IsLoggedIn()){
@@ -445,8 +559,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 								toast("Starting game");
 							}
 
-							public void onFailure() {
-								toast("Game start failed");
+							public void onFailure(String message) {
+								toast("Game start failed.");
+								Log.e("CreateGame st fail", message);
 							}
 						});
 					} else
@@ -506,7 +621,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		
 		String s = rolesList[position];
 		
-		return RoleTemplate.Creator(s, colorToTeam(s, currentCatalogue == YAKUZA)) ;
+		RoleTemplate rt = RoleTemplate.Creator(s, colorToTeam(s, currentCatalogue == YAKUZA)) ;
+		return SetupManager.TranslateRole(rt);
 	}
 
 

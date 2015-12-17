@@ -21,6 +21,7 @@ import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.exceptions.IllegalGameSettingsException;
 import voss.shared.logic.exceptions.IllegalRoleCombinationException;
+import voss.shared.logic.support.CommandHandler;
 import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
@@ -196,7 +197,7 @@ public class SetupManager {
     public void startGame(long seed){
         if(checkNarrator()) {
             ns.startGame(seed, ActivitySettings.getRules(screen));
-            startDay();
+            //startDay();
         }
     }
     
@@ -297,6 +298,19 @@ public class SetupManager {
         }
     }
 
+    public void talk(String message){
+        if(!Server.IsLoggedIn())
+            return;
+
+        ns.local.getPlayerByName(Server.GetCurrentUserName()).say(message);
+
+        message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + message;
+        Server.PushCommand(ns.getGameListing(), message);
+
+        screen.updateChat();
+
+    }
+
 
     public void updateNarrator(Intent i){
         String message = i.getStringExtra("stuff");
@@ -323,11 +337,17 @@ public class SetupManager {
                         startGame(ns.local.getSeed());
                     }
 
-                    public void onFailure() {
+                    public void onFailure(String message) {
                         toast("Game start failed.  Press back and go join again.");
+                        Log.e("SetupManagerGameStartFailure", message);
                     }
                 });
-
+                return;
+            default:
+                if(command[0].equals(Server.GetCurrentUserName()))
+                    return;
+                message = message.substring(command[0].length() + 1);//1 length for comma
+                ns.onRead(message, null);//adds it to my narrator
         }
     }
 }
