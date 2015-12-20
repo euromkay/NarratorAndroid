@@ -288,6 +288,7 @@ public class Server {
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
         params.put(ParseConstants.ROLES, gl.getRoleNames());
         params.put(ParseConstants.PLAYERS, gl.getPlayerNames());
+        Log.i("Server start game", gl.getPlayerNames().size() + "/" + gl.getRoleNames().size());
         params.put(ParseConstants.WHEN, dayStart);
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {

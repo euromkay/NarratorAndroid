@@ -9,7 +9,6 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -76,10 +75,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	private void setText(int id){
-		TextView text = (TextView) findViewById(id);
-		Typeface font = Typeface.createFromAsset(getAssets(), "AbrilFatface-Regular.ttf");
-		text.setTypeface(font);
-		text.setOnClickListener(this);
+		SetFont(id, this, true);
+		findViewById(id).setOnClickListener(this);
 	}
 
 	

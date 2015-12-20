@@ -1,6 +1,7 @@
 package voss.android.screens;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -14,10 +15,12 @@ public class MembersAdapter extends BaseAdapter{
 
     private PlayerList data;
     private Activity c;
+    private Typeface font;
 
     public MembersAdapter(PlayerList data, Activity c){
         this.data = data;
         this.c = c;
+        font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
     }
 
     public int getCount() {
@@ -61,6 +64,7 @@ public class MembersAdapter extends BaseAdapter{
         }
 
         result.setText(name);
+        result.setTypeface(font);
         result.setTextColor(color);
 
         return result;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -56,7 +55,6 @@ import voss.shared.roles.Lookout;
 import voss.shared.roles.Mafioso;
 import voss.shared.roles.MassMurderer;
 import voss.shared.roles.Mayor;
-import voss.shared.roles.Role;
 import voss.shared.roles.SerialKiller;
 import voss.shared.roles.Sheriff;
 import voss.shared.roles.Veteran;
@@ -119,22 +117,12 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		manager.stopTexting();
 		super.onPause();
 	}
-
-
-	public static int parseColor(Context context, int id) {
-		final int version = Build.VERSION.SDK_INT;
-		if (version >= 23) {
-			return ContextCompat.getColor(context, id);
-		} else {
-			return context.getResources().getColor(id);
-		}
-	}
 	
 	private int[] getColorArray(int ... values){
 		int[] array = new int[values.length];
 
 		for(int i = 0; i < values.length; i++){
-			array[i] = parseColor(this, values[i]);
+			array[i] = ParseColor(this, values[i]);
 		}
 			
 		
@@ -155,12 +143,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
 			changeRoleType(TOWN);
 
-			changeFont(R.id.create_info_label);
+			SetFont(R.id.create_info_label, this, false);
 
 			chatET = (EditText) findViewById(R.id.create_chatET);
 			chatTV = (TextView) findViewById(R.id.create_chatTV);
 			chatButton = (Button) findViewById(R.id.create_toChat);
 			chatButton.setOnClickListener(this);
+			SetFont(R.id.create_toChat, this, false);
+			SetFont(R.id.create_chatButton, this, false);
 		}
 	}
 	private void setupManager(){
@@ -197,9 +187,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	private void changeFont(int id){
-		TextView tv = (TextView) findViewById(id);
-		Typeface font = Typeface.createFromAsset(getAssets(), "Trocchi-Regular.ttf");
-		tv.setTypeface(font);
+		SetFont(id, this, true);
 	}
 	public SetupManager getManager(){
 		return manager;
@@ -362,6 +350,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		switch(parent.getId()){
 		
 		case R.id.roles_categories_LV:
+			if(chatVisible())
+				switchChat();
 			currentCatalogue = position;
 			changeRoleType(position);
 
@@ -398,7 +388,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
  	}
 	private void teamDescription(int i){
 		Team t = null;
-		int color = parseColor(this, R.color.white);
+		int color = ParseColor(this, R.color.white);
 		String text = "";
 		switch (i) {
 			case TOWN:
@@ -412,11 +402,11 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				break;
 			case NEUTRAL:
 				text = "These roles are the miscellaneous roles without teams.";
-				color = parseColor(this, R.color.neutral);
+				color = ParseColor(this, R.color.neutral);
 				break;
 			case RANDOM:
 				text = "These are random types that will spawn unknown roles.";
-				color = parseColor(this, R.color.white);
+				color = ParseColor(this, R.color.white);
 		}
 
 		if (t != null) {
@@ -489,7 +479,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
     private int readColorPointer(int colorPointer){
-        return parseColor(this, colorPointer);
+        return ParseColor(this, colorPointer);
     }
 
     private int[] fillIntArray(int[] colorPointers){
@@ -512,14 +502,22 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	protected void updateChat(){
+		if(!Server.IsLoggedIn())
+			return;
+
+
 		String events = ns.local.getEvents(Server.GetCurrentUserName(), true);
 		events = events.replace("\n", "<br>");
 		chatTV.setText(Html.fromHtml(events));
 	}
 
+	private boolean chatVisible(){
+		return rolesLV.getVisibility() == View.GONE;
+	}
+
 	private void switchChat(){
 		int mode1, mode2;
-		if(rolesLV.getVisibility() == View.GONE){
+		if(chatVisible()){
 			mode1 = View.VISIBLE;
 			mode2 = View.GONE;
 			chatButton.setText("View Chat");

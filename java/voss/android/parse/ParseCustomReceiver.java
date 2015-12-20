@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import voss.android.R;
 import voss.android.screens.ActivityHome;
+import voss.android.setup.ActivityCreateGame;
 
 public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
 
@@ -58,7 +59,8 @@ public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.home)
                         .setContentTitle("Mafia")
-                        .setContentText(s);
+                        .setContentText(s)
+                        .setColor(ActivityCreateGame.ParseColor(context, R.color.mafia));
 
         Intent result = new Intent(context, ActivityHome.class);
 

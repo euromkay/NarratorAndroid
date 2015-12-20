@@ -24,7 +24,7 @@ public class ListingAdapter extends BaseAdapter{
 	public ListingAdapter(Activity c){
 		this.c = c;
 		this.layoutID = R.layout.create_roles_right_item;
-		color = ActivityCreateGame.parseColor(c, R.color.white);
+		color = ActivityCreateGame.ParseColor(c, R.color.white);
 		font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
 	}
 

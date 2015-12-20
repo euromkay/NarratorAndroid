@@ -106,7 +106,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
                 persistant.remove(name);
                 contactList.remove(name);
             }else{
-                tv.setTextColor(ActivityCreateGame.parseColor(mListener.passContext(), R.color.trimmings));
+                tv.setTextColor(ActivityCreateGame.ParseColor(mListener.passContext(), R.color.trimmings));
                 persistant.add(name);
 
             }
@@ -144,7 +144,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
     }
 
     public int parseColor(int id){
-        return ActivityCreateGame.parseColor(mListener.passContext(), id);
+        return ActivityCreateGame.ParseColor(mListener.passContext(), id);
     }
 
 

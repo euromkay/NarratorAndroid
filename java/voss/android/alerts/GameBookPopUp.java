@@ -16,8 +16,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 
-import com.parse.ParsePush;
-
 import voss.android.ActivitySettings;
 import voss.android.R;
 import voss.android.parse.GameListing;
@@ -77,8 +75,8 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         ArrayList<String> toAdd = new ArrayList<>();
 
         ArrayList<Integer> colors = new ArrayList<>();
-        final int started = ActivityCreateGame.parseColor(a,R.color.green);
-        final int waiting = ActivityCreateGame.parseColor(a, R.color.yellow);
+        final int started = ActivityCreateGame.ParseColor(a, R.color.green);
+        final int waiting = ActivityCreateGame.ParseColor(a, R.color.yellow);
 
         for(GameListing gl : games) {
             hostToGame.put(gl.getHostName(), gl);

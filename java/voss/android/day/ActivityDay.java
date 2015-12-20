@@ -193,14 +193,24 @@ implements
 		addOnClickListener(R.id.day_playerDrawerButton);
 		addOnClickListener(R.id.day_chatET);
 
+		setHeaderFonts(R.id.day_title, R.id.day_currentPlayerTV, R.id.day_actionButton, R.id.day_messagesButton, R.id.day_infoButton, R.id.day_rolesList_label, R.id.day_membersLabel, R.id.day_button);
+		setLowerFonts(R.id.day_chatButton, R.id.day_commandsLabel);
+
 
 		speaker = new TextToSpeech(this, this);
 		speaker.setLanguage(Locale.UK);
 		speaker.setSpeechRate(0.9f);
 
-		
-
-
+	}
+	private void setLowerFonts(int ... ids){
+		for (int id: ids){
+			SetFont(id, this, false);
+		}
+	}
+	private void setHeaderFonts(int ... ids){
+		for (int id: ids){
+			SetFont(id, this, true);
+		}
 	}
 	private void continueSetup(){
 		if(manager != null)
@@ -287,7 +297,7 @@ implements
 		else
 			s = "Night";
 		s += " " + dayNumber;
-		((TextView) findViewById(R.id.day_title)).setText(s);
+		((TextView) findViewById(R.id.day_title)).setText(Html.fromHtml("<u>" + s + "</u>"));
 	}
 
 
@@ -301,13 +311,12 @@ implements
 
 	protected void setCommand(String command){
 		commandsTV.setText(command);
-		
 	}
 
 	protected void updateMembers() {
 		rightTV.setText("Players of Society");
 
-		int color = ActivityCreateGame.parseColor(this, R.color.trimmings);
+		int color = ActivityCreateGame.ParseColor(this, R.color.trimmings);
 		rightTV.setTextColor(color);
 
 		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers(), this));
@@ -436,6 +445,7 @@ implements
 				log("Message button clicked.");
 
 				panel = v;
+				setSelected(R.id.day_messagesButton);
 				hideActionPanel();
 				hideInfoPanel();
 				showMessagesPanel();
@@ -445,6 +455,7 @@ implements
 				log("Info button clicked.");
 
 				panel = v;
+				setSelected(R.id.day_infoButton);
 				hideActionPanel();
 				hideMessagePanel();
 				showInfoPanel();
@@ -459,12 +470,24 @@ implements
 				log("Actions button clicked.");
 
 				panel = v;
+				setSelected(R.id.day_actionButton);
 				hideMessagePanel();
 				hideInfoPanel();
 				showActionPanel();
 		}
 	}
-	
+	private void setSelected(int id){
+		Button b = (Button) findViewById(id);
+		b.setTextColor(ParseColor(this, R.color.redBlood));
+		int blackColor = ParseColor(this, R.color.black);
+		if(id != R.id.day_actionButton)
+			actionButton.setTextColor(blackColor);
+		if(id != R.id.day_messagesButton)
+			messagesButton.setTextColor(blackColor);
+		if(id != R.id.day_infoButton)
+			infoButton.setTextColor(blackColor);
+	}
+
 	public void toast(String s){
 		Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 	}
@@ -556,7 +579,7 @@ implements
 		if(manager.getNarrator().isDay()){
 			actionButton.setText("Voting");
 		}else{
-			actionButton.setText("Night Actions");
+			actionButton.setText("Actions");
 		}
 	}
 
@@ -690,9 +713,9 @@ implements
 		TextHandler.stopTexting(this, intentReceiver);
 	}
 
-	public void setRolesListHeader(){
+	public void setRolesListHeader(int color){
 		leftTV.setText("Roles");
-		leftTV.setTextColor(getResources().getColor(R.color.trimmings));
+		leftTV.setTextColor(color);
 	}
 	public void setAlliesHeader(int color){
 		leftTV.setText("Allies");

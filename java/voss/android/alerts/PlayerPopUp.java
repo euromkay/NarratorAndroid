@@ -71,7 +71,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         	activity.getManager().requestRemovePlayer(clicked.getName());
         }else{
             TextView tv = (TextView) v;
-            tv.setTextColor(ActivityCreateGame.parseColor(activity, R.color.redBlood));
+            tv.setTextColor(ActivityCreateGame.ParseColor(activity, R.color.redBlood));
             clicked.setComputer();
         }
 

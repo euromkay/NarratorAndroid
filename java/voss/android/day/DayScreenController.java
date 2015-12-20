@@ -3,6 +3,8 @@ package voss.android.day;
 import java.util.ArrayList;
 
 import voss.android.CommunicatorPhone;
+import voss.android.NActivity;
+import voss.android.R;
 import voss.android.parse.Server;
 import voss.android.screens.SimpleGestureFilter;
 import voss.shared.logic.Event;
@@ -303,38 +305,46 @@ public class DayScreenController implements NarratorListener{
 	protected void updateInfoPanel(){
 		Narrator n = getNarrator();
 		if (playerSelected()) {
-			dScreen.setAlliesHeader(currentPlayer.getAlignment());
-			int color = currentPlayer.getTeam().getAlignment();
-			ArrayList<String> names = new ArrayList<>();
-			ArrayList<Integer> colors = new ArrayList<>();
-			if (currentPlayer.getTeam().knowsTeam()) {
-				for (Player teamMember : currentPlayer.getTeam().getMembers()) {
-					if (teamMember.isAlive()) {
-						names.add(teamMember.toString());
-						colors.add(color);
-					}
-				}
-			}
-			dScreen.setListView(dScreen.alliesLV, names, colors);
-
+			if(currentPlayer.getTeam().getMembers().getLivePlayers().size() > 1)
+				setAllies();
+			else
+				setRolesList(currentPlayer.getAlignment());
 			dScreen.updateRoleInfo(currentPlayer, currentPlayer.getAlignment());
 			setButtonText();
 		}
 		else{
-			dScreen.setRolesListHeader();
-			ArrayList<RoleTemplate> roles = n.getAllRoles();
-			ArrayList<String> names = new ArrayList<>();
-			ArrayList<Integer> colors = new ArrayList<>();
-			for (RoleTemplate r: roles){
-				names.add(r.getName());
-				colors.add(r.getColor());
-			}
-			dScreen.setListView(dScreen.rolesLV, names, colors);
-
+			setRolesList(NActivity.ParseColor(dScreen, R.color.trimmings));
 			dScreen.updateMembers();
 		}
 	}
-	
+	private void setAllies(){
+		dScreen.setAlliesHeader(currentPlayer.getAlignment());
+
+		int color = currentPlayer.getTeam().getAlignment();
+		ArrayList<String> names = new ArrayList<>();
+		ArrayList<Integer> colors = new ArrayList<>();
+		if (currentPlayer.getTeam().knowsTeam()) {
+			for (Player teamMember : currentPlayer.getTeam().getMembers()) {
+				if (teamMember.isAlive()) {
+					names.add(teamMember.toString());
+					colors.add(color);
+				}
+			}
+		}
+		dScreen.setListView(dScreen.alliesLV, names, colors);
+
+	}
+	private void setRolesList(int color){
+		dScreen.setRolesListHeader(color);
+		ArrayList<RoleTemplate> roles = getNarrator().getAllRoles();
+		ArrayList<String> names = new ArrayList<>();
+		ArrayList<Integer> colors = new ArrayList<>();
+		for (RoleTemplate r: roles){
+			names.add(r.getName());
+			colors.add(r.getColor());
+		}
+		dScreen.setListView(dScreen.rolesLV, names, colors);
+	}
 	private static boolean HTML = false;
 	private void updateChatPanel(){
 		String text;

@@ -1090,7 +1090,7 @@ public class Narrator{
 		if(prevTarget == Skipper)
 			e.add(" decided against skipping the lynch" + numberOfVotesNeeded(difference));
 		else
-			e.add(voter, " unvoted " + prevTarget + numberOfVotesNeeded(difference));
+			e.add(voter, " unvoted ", prevTarget, numberOfVotesNeeded(difference));
 		addEvent(e);
 
 		for(NarratorListener nl: listeners){

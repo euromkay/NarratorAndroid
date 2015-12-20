@@ -8,8 +8,9 @@
 <RelativeLayout
     android:id="@+id/day_primary"
     android:layout_width="match_parent"
+    android:padding="6dp"
     android:layout_height="match_parent"
-    android:background="@color/backgroundApp"
+    android:background="@drawable/pinstripe"
     android:keepScreenOn="true"
     android:screenOrientation="portrait"
     android:scrollbars="vertical" >
@@ -20,8 +21,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/day_title"
-        android:paddingTop="3dp"
-        android:textColor="@color/trimmings"
+        android:layout_marginBottom="2dp"
+        android:textColor="@color/white"
         android:textSize="30sp"
         android:textStyle="bold" >
     </TextView>
@@ -32,24 +33,25 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:text="(Player 1)"
-        android:layout_marginRight="5sp"
-        android:paddingTop="3dp"
-        android:textColor="@color/white"
-        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:textSize="17sp"
         android:textStyle="bold" >
     </TextView>
 
-    <Button
+    <ImageButton
         android:id="@+id/day_playerDrawerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:text="@string/day_playerLabel"
+        android:src="@drawable/rsz_addpeople"
         android:minHeight="0dp"
+        android:scaleType="fitXY"
+        android:padding="5dp"
+        android:adjustViewBounds="true"
         android:minWidth="0dp"
         android:textColor="@color/trimmings"
         android:textSize="15sp" >
-    </Button>
+    </ImageButton>
 
 
 
@@ -59,9 +61,14 @@
         android:text="Actions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/trimmings"
-        android:layout_below="@id/day_playerDrawerButton"
+        android:textColor="@color/black"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp"
+        android:layout_below="@id/day_title"
         android:layout_alignParentLeft="true"
+        android:background="@layout/main_button"
         />
 
 
@@ -69,9 +76,14 @@
     <Button
         android:id="@+id/day_infoButton"
         android:text="Info"
+        android:background="@layout/main_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/trimmings"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp"
+        android:textColor="@color/black"
         android:layout_alignTop="@id/day_actionButton"
         android:layout_centerHorizontal="true"
         />
@@ -79,9 +91,14 @@
     <Button
         android:id="@+id/day_messagesButton"
         android:text="Messages"
+        android:background="@layout/main_button"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/trimmings"
+        android:textColor="@color/black"
         android:layout_alignTop="@id/day_actionButton"
         android:layout_alignParentRight="true"
         />
@@ -90,6 +107,7 @@
         android:id="@+id/day_horizontalShimmy"
         android:layout_width="match_parent"
         android:layout_height="10dp"
+        android:visibility="invisible"
         android:layout_below="@id/day_infoButton"
         android:background="@color/trimmings" />
 
@@ -130,7 +148,8 @@
     <TextView
         android:id="@+id/day_role_info"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@color/category_tint"
         android:layout_alignLeft="@id/centerShim"
         android:layout_below="@id/day_membersLabel"
         android:scrollbars="vertical"
@@ -172,6 +191,7 @@
         android:id="@+id/day_rolesList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/category_tint"
         android:divider="@null"
         android:dividerHeight="0dp"
         android:layout_alignRight="@id/day_rolesList_label"
@@ -181,19 +201,27 @@
 
     <Button
         android:id="@+id/day_button"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="center"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
+        android:minHeight="0dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/black"
         android:text="@string/day_mayor_label"
-        android:textColor="@color/trimmings"
-        android:textSize="18dp" >
+        android:background="@layout/main_button"
+        android:textSize="18sp" >
     </Button>
 
     <ListView
         android:id="@+id/day_actionList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/category_tint"
         android:divider="@null"
         android:dividerHeight="0dp"
         android:layout_below="@id/day_commandsLabel"
@@ -203,14 +231,37 @@
 
     <!-- chat -->
 
-    <EditText
-        android:id="@+id/day_chatET"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/day_chatButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:background="@layout/main_button"
+        android:gravity="center"
+        android:text="Send"
+        android:minHeight="0dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_marginBottom="1dp"
+        android:textColor="@color/black"
+        android:textSize="18sp" >
+    </Button>
+
+    <EditText
+        android:id="@+id/day_chatET"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@color/category_tint"
+        android:layout_toStartOf="@id/day_chatButton"
+        android:layout_toLeftOf="@id/day_chatButton"
         android:textColor="@color/white"
         android:imeOptions="actionDone"
+        android:layout_marginBottom="2dp"
         android:singleLine="true"
         android:hint="Send Message"/>
     <ScrollView
@@ -218,8 +269,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@id/day_horizontalShimmy"
-        android:layout_above="@id/day_chatET"
+        android:layout_above="@id/day_chatButton"
+        android:background="@color/category_tint"
         android:orientation="vertical"
         android:scrollbars="vertical" >
 
@@ -233,23 +286,13 @@
     </ScrollView>
 
 
-    <Button
-        android:id="@+id/day_chatButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:gravity="center"
-        android:text="Send"
-        android:textColor="@color/trimmings"
-        android:textSize="18sp" >
-    </Button>
+
 
     <ListView
         android:id="@+id/day_membersLV"
         android:layout_width="match_parent"
         android:divider="@null"
+        android:background="@color/category_tint"
         android:dividerHeight="0dp"
         android:layout_height="match_parent"
         android:layout_alignLeft="@id/day_membersLabel"
@@ -271,7 +314,7 @@
         android:layout_gravity="left|start"
         android:choiceMode="singleChoice"
         android:divider="@null"
-        android:backgroundTint="@color/grey"
+        android:backgroundTint="@color/white"
         />
 
 </android.support.v4.widget.DrawerLayout>
