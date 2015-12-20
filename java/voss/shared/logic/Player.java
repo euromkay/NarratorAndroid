@@ -256,21 +256,19 @@ public class Player implements ActionTaker{
 		Event e = new Event();
 		e.setCommand(this, Constants.CANCEL, ability+"");
 		if(notify){
+			e = new Event();
+			e.dontShowPrivate();
+			e.add(this, " reconsidered.");
 			Team t = n.getTeam(alignment);
-			if(t.knowsTeam())
+			if(t.knowsTeam()){
+				e.setVisibility(t.getMembers());
 				for(Player p: t.getMembers()) {
-					e = new Event();
-					e.add(this, " reconsidered.");
-					e.dontShowPrivate();
-					n.addEvent(e);
 					p.sendMessage(e.access(p, false));
 				}
-			else {
-				e = new Event();
-				e.add(this, " reconsidered.");
-				e.dontShowPrivate();
-				n.addEvent(e);
+			}else {
+				e.setVisibility(this);
 			}
+			n.addEvent(e);
 			for (NarratorListener nl: n.getListeners()){
 				nl.onNightTargetRemove(this, prev);
 			}

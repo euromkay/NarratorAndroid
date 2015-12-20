@@ -55,6 +55,10 @@ public class Server {
         ParseUser.logOut();
     }
 
+    public static void Subscribe(GameListing gl){
+        ParsePush.subscribeInBackground(gl.getHostName());
+    }
+
     public static void Login(String username, String password, final LoginListener loginListener){
         if (username.length() == 0 || password.length() == 0){
             return;
@@ -134,6 +138,7 @@ public class Server {
         game.put(ParseConstants.ACTIVE, true);
         game.put(ParseConstants.STARTED, false);
         game.put(ParseConstants.SEED, 0);
+        game.put(ParseConstants.WHEN, 0);
         game.put(ParseConstants.EVENTS, new ArrayList<String>());
 
         ArrayList<String> list = new ArrayList<>();
@@ -146,8 +151,9 @@ public class Server {
         game.saveInBackground(new SaveCallback() {
             public void done(ParseException e) {
                 if (e == null) {
-                    g.onSuccess(new GameListing(game));
-                    ParsePush.subscribeInBackground(game.getObjectId());
+                    GameListing gl = new GameListing(game);
+                    g.onSuccess(gl);
+                    ParsePush.subscribeInBackground(gl.getHostName());
                 } else
                     g.onFailure(e.getMessage());
             }
@@ -172,6 +178,7 @@ public class Server {
     public static void GetMyGames(final GameFoundListener gf){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
         query.whereEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());
+        query.whereEqualTo(ParseConstants.ACTIVE, Boolean.TRUE);
 
         GetGames(query, gf);
     }
@@ -205,7 +212,7 @@ public class Server {
     }
 
     public static void AddPlayer(final GameListing gl){
-        ParsePush.subscribeInBackground(gl.getID(), new SaveCallback() {
+        ParsePush.subscribeInBackground(gl.getHostName(), new SaveCallback() {
             public void done(ParseException e) {
                 HashMap<String, Object> params = new HashMap<>();
                 params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
@@ -213,7 +220,7 @@ public class Server {
                     public void done(ParseObject parseObject, ParseException e) {
                         if (e != null) {
                             Log.e("Server", e.getMessage());
-                            ParsePush.unsubscribeInBackground(gl.getID());
+                            ParsePush.unsubscribeInBackground(gl.getHostName());
                         } else {
                             Log.e("Server", parseObject + "");
                         }
@@ -231,7 +238,7 @@ public class Server {
                 if (e != null) {
                     Log.e("Server", e.getMessage());
                 } else {
-                    ParsePush.unsubscribeInBackground(gl.getID());
+                    ParsePush.unsubscribeInBackground(gl.getHostName());
                     Log.e("Server", parseObject + "");
                 }
             }
@@ -273,14 +280,15 @@ public class Server {
 
 
     public static void Unsuscribe(GameListing l){
-        ParsePush.unsubscribeInBackground(l.getID());
+        ParsePush.unsubscribeInBackground(l.getHostName());
     }
 
-    public static void StartGame(GameListing gl, final SuccessListener sl){
+    public static void StartGame(boolean dayStart, GameListing gl, final SuccessListener sl){
         HashMap<String, Object> params = new HashMap<>();
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
         params.put(ParseConstants.ROLES, gl.getRoleNames());
         params.put(ParseConstants.PLAYERS, gl.getPlayerNames());
+        params.put(ParseConstants.WHEN, dayStart);
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
@@ -318,10 +326,17 @@ public class Server {
 
     }
 
-    public static void PushCommand(GameListing gl, final String s){
+    public static void PushCommand(GameListing gl, final String s, final double when){
         HashMap<String, Object> params = new HashMap<>();
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
         params.put(ParseConstants.PUSH, s);
+        params.put(ParseConstants.WHEN, when);
         ParseCloud.callFunctionInBackground(ParseConstants.PUSH, params);
+    }
+
+
+    public static void SetGameInactive(GameListing gl){
+        gl.getParseObject().put(ParseConstants.ACTIVE, false);
+        gl.getParseObject().saveInBackground();
     }
 }

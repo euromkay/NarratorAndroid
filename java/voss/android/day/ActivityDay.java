@@ -330,8 +330,12 @@ implements
 
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		if(manager.getCurrentPlayer() == null)
-			return;
+		if(manager.getCurrentPlayer() == null) {
+			if(onePersonActive()){
+				onBackPressed();
+			}else
+				return;
+		}
 		try {
 			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandsTV.getText().toString() + ") for " + actionList.get(position).getDescription());
 			
@@ -470,16 +474,19 @@ implements
 		if (message.length() == 0)
 			return;
 
-		if(manager.getCurrentPlayer() == null){
-			if(message.startsWith(TextHandler.MODKILL + " ")){
+		if(manager.getCurrentPlayer() == null && !onePersonActive()) {
+			if (message.startsWith(TextHandler.MODKILL + " ")) {
 				String name = message.substring(TextHandler.MODKILL.length() + 1);
 				Player baddy = manager.phoneBook.getByName(name);
-				if(baddy != null)
+				if (baddy != null)
 					baddy.modkill();
 			}
-				
-		}else if(manager.getCurrentPlayer().isAlive())
+		} else if(manager.getCurrentPlayer() == null) {
+			onBackPressed();
 			manager.talk(manager.getCurrentPlayer(), message);
+		}else if(manager.getCurrentPlayer().isAlive()) {
+			manager.talk(manager.getCurrentPlayer(), message);
+		}
 		chatET.setText("");
 	}
 
@@ -537,6 +544,7 @@ implements
 	public void onExitGame(){
 		stopTexting();
 		speaker.shutdown();
+		unbindNarrator();
 		finish();
 	}
 
@@ -671,6 +679,12 @@ implements
 		speaker.shutdown();
 		stopTexting();
 
+		if(Server.IsLoggedIn()) {
+			if (Server.GetCurrentUserName().equals(ns.getGameListing().getHostName())) {
+				Server.SetGameInactive(ns.getGameListing());
+			}
+			Server.Unsuscribe(ns.getGameListing());
+		}
 	}
 	private void stopTexting(){
 		TextHandler.stopTexting(this, intentReceiver);

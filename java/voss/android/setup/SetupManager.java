@@ -305,7 +305,7 @@ public class SetupManager {
         ns.local.getPlayerByName(Server.GetCurrentUserName()).say(message);
 
         message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + message;
-        Server.PushCommand(ns.getGameListing(), message);
+        Server.PushCommand(ns.getGameListing(), message, 0);
 
         screen.updateChat();
 

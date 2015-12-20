@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import voss.android.ActivitySettings;
 import voss.android.NActivity;
 import voss.android.R;
 import voss.android.SuccessListener;
@@ -520,11 +522,11 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		if(rolesLV.getVisibility() == View.GONE){
 			mode1 = View.VISIBLE;
 			mode2 = View.GONE;
-			chatButton.setText("View Roles");
+			chatButton.setText("View Chat");
 		}else{
 			mode1 = View.GONE;
 			mode2 = View.VISIBLE;
-			chatButton.setText("View Chat");
+			chatButton.setText("View Roles");
 		}
 		rolesLV.setVisibility(mode1);
 		findViewById(R.id.roles_bottomLV_title).setVisibility(mode1);
@@ -554,7 +556,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 					if(manager.isHost()){
 						if(!manager.checkNarrator())
 							return;
-						Server.StartGame(ns.getGameListing(), new SuccessListener() {
+						Server.StartGame(ActivitySettings.getRules(this).DAY_START, ns.getGameListing(), new SuccessListener() {
 							public void onSuccess() {
 								toast("Starting game");
 							}

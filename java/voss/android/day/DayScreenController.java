@@ -112,7 +112,10 @@ public class DayScreenController implements NarratorListener{
 	
 	public void onNightTarget(Player owner, Player target) {
 		if (owner == currentPlayer) {
+			for(Player selected: dScreen.getCheckedPlayers())
+				dScreen.uncheck(selected);
 			dScreen.check(target);
+
 		}
 		if (!playerSelected())
 			dScreen.check(owner);

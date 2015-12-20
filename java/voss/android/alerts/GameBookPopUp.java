@@ -134,7 +134,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
     }
 
     private synchronized void joinGame(GameListing gl){
-        ParsePush.subscribeInBackground(gl.getID());
+        Server.Subscribe(gl);
 
         a.ns.refresh();
         Narrator n = a.ns.local;
@@ -170,7 +170,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         }
 
         a.start(gl);//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
-
+        dismiss();
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

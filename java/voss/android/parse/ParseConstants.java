@@ -20,4 +20,6 @@ public class ParseConstants {
 
     public static final String STARTGAME = "startGame";
     public static final String PUSH      = "push";
+
+    public static final String WHEN = "when";
 }

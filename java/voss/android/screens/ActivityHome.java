@@ -325,7 +325,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
         }
 		Intent i = new Intent(this, activ);
 		startActivity(i);
-		finish();
+		//finish();
 	}
 	
 	public void onBackPressed(){

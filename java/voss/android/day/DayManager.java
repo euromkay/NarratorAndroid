@@ -242,7 +242,10 @@ public class DayManager implements TextInput{
 					s = Server.GetCurrentUserName() + s;
 				else
 					s = " " + s;
-				Server.PushCommand(ns.getGameListing(), s);
+				double day = ns.local.getDayNumber();
+				if(ns.local.isNight())
+					day += 0.5;
+				Server.PushCommand(ns.getGameListing(), s, day);
 			}else
 				ns.socketClient.send(s);
 

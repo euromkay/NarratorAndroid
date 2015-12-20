@@ -31,11 +31,10 @@ public abstract class NActivity extends FragmentActivity{
 		};
 		bindService(i, sC, Context.BIND_AUTO_CREATE);
 	}
-    public void finish(){
+    public void unbindNarrator(){
 		try {
 			unbindService(sC);
 		}catch(IllegalArgumentException e){}
-    	super.finish();
     }
     
     protected boolean networkCapable(){
