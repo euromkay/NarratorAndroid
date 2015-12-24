@@ -16,6 +16,7 @@
 
     <!--<color name = "mafia">#AF111C</color> -->
     <color name = "category_tint">#66000000</color>
+    <color name = "category_tintdark">#99000000</color>
     <color name = "redBlood">#AF111C</color>
     <color name = "mafia">#FF0000</color>
     <color name = "black" >#000000</color>
@@ -126,7 +127,7 @@
     <string name = "day_button_name">Go</string>
     <string name = "day_last_will">Last Will</string>
     <string name = "day_graveYard_label_name">Grave Yard</string>
-    <string name = "day_rolesList_label_name">Roles List</string>
+    <string name = "day_rolesList_label_name">Roles</string>
     <string name = "day_night_spinner">Commands</string>
     <string name = "day_live_label_name">Players of Society</string>
     <string name = "day_mayor_label">Reveal</string>

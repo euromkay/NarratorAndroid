@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
+import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.exceptions.IllegalGameSettingsException;
 import voss.shared.logic.exceptions.IllegalRoleCombinationException;
 import voss.shared.logic.exceptions.PhaseException;
@@ -196,6 +197,8 @@ public class Narrator{
 	
 	private Rules rules = new Rules();
 	public void setRules(Rules rules){
+		if(gameStarted)
+			throw new IllegalActionException();
 		this.rules = rules;
 	}
 	public Rules getRules() {
@@ -800,7 +803,15 @@ public class Narrator{
 		for(Player dead: newDeadList){
 			Event e = new Event();
 			e.dontShowPrivate();
-			e.add(dead, " was found ", dead.getDeathType().toString());
+			
+			StringChoice sc = new StringChoice(dead);
+			sc.add(dead, "You");
+			e.add(sc, " ");
+			
+			sc = new StringChoice("was");
+			sc.add(dead, "were");
+			
+			e.add(sc, " found ", dead.getDeathType().toString());
 			addEvent(e);
 		}
 		
@@ -1034,7 +1045,9 @@ public class Narrator{
 
 		Player prevTarget = null;
 		Event e = new Event();
-		e.add(voter);
+		StringChoice sc = new StringChoice(voter);
+		sc.add(voter, "You");
+		e.add(sc);
 		
 		e.setCommand(voter, CommandHandler.VOTE, target.getName());
 		
@@ -1084,13 +1097,16 @@ public class Narrator{
 		e.setCommand(voter, CommandHandler.SKIP_VOTE);
 		
 		Player prevTarget = unVoteHelper(voter);
+		StringChoice sc = new StringChoice(voter);
+		sc.add(voter, "You");
+		e.add(sc);
 
 		int difference = getMinLynchVote() - getVoteCountOf(Skipper);
 		
 		if(prevTarget == Skipper)
 			e.add(" decided against skipping the lynch" + numberOfVotesNeeded(difference));
 		else
-			e.add(voter, " unvoted ", prevTarget, numberOfVotesNeeded(difference));
+			e.add(" unvoted ", prevTarget, numberOfVotesNeeded(difference));
 		addEvent(e);
 
 		for(NarratorListener nl: listeners){
@@ -1117,7 +1133,10 @@ public class Narrator{
 		Event e = new Event();
 		e.setCommand(p, CommandHandler.SKIP_VOTE);
 		
-		e.add(p);
+
+		StringChoice sc = new StringChoice(p);
+		sc.add(p, "You");
+		e.add(sc);
 		if(prevTarget == Skipper)
 			throw new VotingException(p + " is already skipping the day");
 		
@@ -1218,9 +1237,17 @@ public class Narrator{
 			return;
 		Event e = new Event();
 		if (isNight()) {
+			if(p.getTeam().getMembers().size() <= 1)
+				return;
+			if(!p.getTeam().knowsTeam())
+				return;
 			e.setVisibility(p.getTeam().getMembers());
 		}
-		e.add(p, ": ", message);
+
+		StringChoice sc = new StringChoice(p);
+		sc.add(p, "You");
+		
+		e.add(sc, ": ", message);
 		addEvent(e);
 		//e.setCommand(p, CommandHandler.SAY, message);
 		for(NarratorListener nl: listeners){
@@ -1245,7 +1272,12 @@ public class Narrator{
 					e.add("\n");
 					first = false;
 				}
-				e.add(lynched, " was lynched by ", voteList.get(lynched));
+				StringChoice lyn = new StringChoice(lynched);
+				lyn.add(lynched, "You");
+				e.add(lyn, " ");
+				StringChoice was = new StringChoice("was");
+				was.add(lynched, "were");
+				e.add(was," lynched by ", voteList.get(lynched), ".");
 				addEvent(e);
 			}
 		}

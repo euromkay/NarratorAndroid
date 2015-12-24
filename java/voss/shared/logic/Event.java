@@ -2,7 +2,6 @@ package voss.shared.logic;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.listeners.CommandListener;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
@@ -46,18 +45,21 @@ public class Event {
 
 	public String access(String level, boolean html){
 		StringBuilder sb = new StringBuilder("");
-		boolean first = true;
 		if ((level.equals(PRIVATE) && showInPrivate) || access.contains(level) || isPublic()){
 			for(Object o: eventParts){
 				if(o instanceof Player){
-					accessHelper((Player) o, sb, first, level, html);
+					accessHelper((Player) o, sb, level, html);
 				} else if (o instanceof StringChoice){
 					StringChoice sc = (StringChoice) o;
-					sb.append(sc.getString(level));
+					Object object = sc.getString(level);
+					if(object instanceof String)
+						sb.append(object.toString());
+					else
+						accessHelper((Player) object, sb, level, html);
 				}
 				else if (o instanceof PlayerList){
 					for (Player p: (PlayerList) o){
-						accessHelper(p, sb, first, level, html);
+						accessHelper(p, sb, level, html);
 						sb.append(", ");
 					}
 					sb.deleteCharAt(sb.length()-1);
@@ -65,7 +67,6 @@ public class Event {
 				}else{
 					sb.append(o.toString());
 				}
-				first = false;
 			}
 			if(sb.length() > 2)
 				sb.append("\n");
@@ -73,12 +74,8 @@ public class Event {
 		return sb.toString();
 	}
 	
-	private void accessHelper(Player p, StringBuilder sb, boolean first, String level, boolean html){
-		if (first && level == p.getName()){
-			sb.append("You");
-		}else if (level == p.getName()){
-			sb.append("yourself");
-		}else if(html){
+	private void accessHelper(Player p, StringBuilder sb, String level, boolean html){
+		if(html){
 			sb.append(toHTML(p));
 		}else if(level == PRIVATE || !p.getNarrator().isInProgress()){
 			sb.append(p);

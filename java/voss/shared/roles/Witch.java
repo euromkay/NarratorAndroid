@@ -6,6 +6,7 @@ import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
+import voss.shared.logic.support.StringChoice;
 
 public class Witch extends Role {
 
@@ -36,7 +37,9 @@ public class Witch extends Role {
 			return;
 		}
 		Event e = Role.selectionEvent(owner);
-		e.add(owner);
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		e.add(sc);
 		
 		
 			

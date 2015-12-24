@@ -8,6 +8,7 @@ import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 import voss.shared.logic.Team;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.StringChoice;
 
 public class Veteran extends Role {
 
@@ -69,7 +70,10 @@ public class Veteran extends Role {
 			Event e = Role.selectionEvent(owner);
 			e.setCommand(owner, ALERT, owner.getName());
 
-			e.add(owner, " will go on alert.");
+			StringChoice sc = new StringChoice(owner);
+			sc.add(owner, "You");
+			
+			e.add(sc, " will go on alert.");
 			owner.getNarrator().addEvent(e);
 			//owner.getTeam().notifyTeammates(owner, " will go on alert.");
 		}else

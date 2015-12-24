@@ -13,6 +13,7 @@ import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.exceptions.UnknownRoleException;
 import voss.shared.logic.exceptions.UnsupportedMethodException;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.StringChoice;
 import voss.shared.packaging.Packager;
 
 
@@ -41,9 +42,13 @@ public abstract class Role{
 			//t.notifyTeammates(owner, " won't " + getKeyWord() + " anyone.");
 		}else{
 			Event e = Role.selectionEvent(owner);
+			
+			StringChoice sc = new StringChoice(owner);
+			sc.add(owner, "You");
+			
 			e.setCommand(owner, getKeyWord(), target.getName());
 			
-			e.add(owner, " will " + getKeyWord().toLowerCase() + " ", target, ".");
+			e.add(sc, " will " + getKeyWord().toLowerCase() + " ", target, ".");
 			owner.getNarrator().addEvent(e);
 			if(t.knowsTeam()){
 				for(Player teamMember: t.getMembers()){

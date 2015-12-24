@@ -7,6 +7,7 @@ import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.listeners.NarratorListener;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.StringChoice;
 
 public class Mayor extends Role {
 
@@ -61,7 +62,14 @@ public class Mayor extends Role {
 		Event e = new Event();
 		e.setCommand(owner, REVEAL);
 		
-		e.add(owner, " has revealed as the Mayor!");
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		e.add(sc, " ");
+		
+		sc = new StringChoice("has");
+		sc.add(owner, "have");
+		
+		e.add(sc, "revealed as the Mayor!");
 		n.addEvent(e);
 		
 		

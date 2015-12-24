@@ -7,15 +7,15 @@ import voss.shared.logic.Player;
 
 public class StringChoice {
 
-    private String def;
-    private HashMap<String, String> idToString = new HashMap<>();
+    private Object def;
+    private HashMap<String, Object> idToString = new HashMap<>();
 
-    public StringChoice(String def){
+    public StringChoice(Object def){
         this.def = def;
     }
 
-    public String getString(String level){
-        String ret = idToString.get(level);
+    public Object getString(String level){
+        Object ret = idToString.get(level);
         if(ret == null)
             ret = def;
         return ret;

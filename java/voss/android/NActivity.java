@@ -17,23 +17,26 @@ import voss.android.parse.Server;
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
 
-	private ServiceConnection sC;
+	private ServiceConnection sC = null;
     protected void connectNarrator(final NarratorConnectListener ncl){
 		Intent i = new Intent(this, NarratorService.class);
 		startService(i);
-		sC = new ServiceConnection(){
-			public void onServiceConnected(ComponentName className, IBinder binder) {
-				NarratorService.MyBinder b = (NarratorService.MyBinder) binder;
-                ns = b.getService();
-				if(ncl != null)
-					ncl.onConnect();
-			}
+		if(sC == null) {
+			sC = new ServiceConnection() {
+				public void onServiceConnected(ComponentName className, IBinder binder) {
+					NarratorService.MyBinder b = (NarratorService.MyBinder) binder;
+					ns = b.getService();
+					if (ncl != null)
+						ncl.onConnect();
 
-			public void onServiceDisconnected(ComponentName className) {
-				//toast("narrator background service disconnected");
-			}
-		};
-		bindService(i, sC, Context.BIND_AUTO_CREATE);
+				}
+
+				public void onServiceDisconnected(ComponentName className) {
+					//toast("narrator background service disconnected");
+				}
+			};
+			bindService(i, sC, Context.BIND_AUTO_CREATE);
+		}
 	}
     public void unbindNarrator(){
 		try {

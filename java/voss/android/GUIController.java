@@ -94,7 +94,7 @@ public class GUIController extends Controller implements TextInput{
         	swipe = SimpleGestureFilter.SWIPE_LEFT;
         
         for (int i = 0; i < cycles; i++){
-            if (dScreen.commandsTV.getText().toString().equals(action))
+            if (dScreen.commandTV.getText().toString().equals(action))
                 return true;
             else
                 dScreen.onSwipe(swipe);

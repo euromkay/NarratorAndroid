@@ -23,6 +23,7 @@ import voss.android.parse.Server;
 import voss.android.screens.ActivityHome;
 import voss.android.screens.ListingAdapter;
 import voss.android.setup.ActivityCreateGame;
+import voss.android.setup.SetupManager;
 import voss.shared.logic.Member;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.support.CommandHandler;
@@ -96,6 +97,10 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         a.toast("No games found");
     }
 
+    public void onInvalidToken(){
+        a.toast("Something strange happened. Log out and log back in again.");
+    }
+
     public void onError(String error){
         a.toast(error);
     }
@@ -132,7 +137,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
     }
 
     private synchronized void joinGame(GameListing gl){
-        Server.Subscribe(gl);
+        Server.Channel(gl);
 
         a.ns.refresh();
         Narrator n = a.ns.local;
@@ -141,6 +146,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         }
         for (String roleCompact: gl.getRoleNames()){
             RoleTemplate rt = RoleTemplate.FromIp(roleCompact);
+            rt = SetupManager.TranslateRole(rt);
             if (Role.isRole(rt.getName()))
                 n.addRole((Member) rt);
             else

@@ -6,6 +6,7 @@ import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
+import voss.shared.logic.support.StringChoice;
 
 public abstract class Driver extends Role{
 	
@@ -90,7 +91,9 @@ public abstract class Driver extends Role{
 			t2 = temp;
 		}
 		Event e = Role.selectionEvent(owner);
-		e.add(owner);
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		e.add(sc);
 		
 		if(ability == MAIN_ABILITY)
 			e.setCommand(owner, TEXT2, target.getName());
@@ -132,8 +135,10 @@ public abstract class Driver extends Role{
 		bd.visit(t2);
 		
 		Event e = new Event();
+		
 		e.add(bd, " switched ", t1, " and ", t2, ".");
 		e.setPrivate();
+		
 		n.addEvent(e);
 		
 		

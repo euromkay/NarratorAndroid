@@ -11,6 +11,7 @@ import voss.shared.logic.Team;
 import voss.shared.logic.exceptions.UnsupportedMethodException;
 import voss.shared.logic.listeners.NarratorListener;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.StringChoice;
 
 public class Arsonist extends Role {
 
@@ -66,7 +67,9 @@ public class Arsonist extends Role {
 		Team t = owner.getTeam();
 		
 		Event e = new Event();
-		e.add(owner);
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		e.add(sc);
 		e.setPrivate();
 		if(ability == DOUSE_){
 			e.setCommand(owner, DOUSE, target.getName());

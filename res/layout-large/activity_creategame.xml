@@ -29,6 +29,7 @@
             android:imeOptions="actionDone"
             android:singleLine="true"
             android:hint="Send Message"/>
+
         <ScrollView
             android:id="@+id/create_chatHolder"
             android:layout_width="match_parent"

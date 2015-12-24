@@ -9,6 +9,7 @@ import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.support.ActionTaker;
 import voss.shared.logic.support.Alignment;
 import voss.shared.logic.support.Equals;
+import voss.shared.logic.support.StringChoice;
 import voss.shared.packaging.Packager;
 import voss.shared.roles.Role;
 
@@ -206,7 +207,11 @@ public class Team implements Alignment, ActionTaker{
 	public static final Team NOT_SUSPICIOUS = null;
 	public void getSelectionFeedback(Player owner, Player target, int ability) {
 		Event e = Role.selectionEvent(owner);
-		e.add(owner);
+
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		
+		e.add(sc);
 		e.setVisibility(members);
 		if(ability == KILL_  && canKill){
 			e.add(" will kill ", target, ".");

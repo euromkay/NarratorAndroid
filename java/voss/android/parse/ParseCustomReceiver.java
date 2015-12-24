@@ -16,7 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import voss.android.R;
-import voss.android.screens.ActivityHome;
+import voss.android.day.ActivityDay;
 import voss.android.setup.ActivityCreateGame;
 
 public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
@@ -25,21 +25,24 @@ public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
         Bundle b = intent.getExtras();
         Intent i = new Intent();
         try {
+
             JSONObject obj = new JSONObject(b.get("com.parse.Data").toString());
             i.putExtra("stuff", obj.getString("alert"));
+            Log.e("parsenotif", obj.getString("alert"));
+            i.putExtra(GameListing.ID, obj.getString("key"));
 
             if(obj.has("phase")){
-                notify(getPhaseString(obj.getString("phase")), context);
+                notify(getPhaseString(obj.getString("phase")), context, obj.getString("key"));
             }
             if(obj.has("start")){
-                notify("Game by " + obj.getString("start") + " has started!", context);
+                notify("Game by " + obj.getString("start") + " has started!", context, obj.getString("key"));
             }
 
 
         }catch(JSONException je){
             Log.e("ParseCustomReceiver", je.getMessage());
         }
-        i.setAction("PARSE_RECEIVED_ACTION");
+        i.setAction(ParseConstants.PARSE_FILTER);
         context.sendBroadcast(i);
 
 
@@ -54,7 +57,7 @@ public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
         }
     }
 
-    private void notify(String s, Context context){
+    private void notify(String s, Context context, String key){
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.home)
@@ -62,7 +65,8 @@ public class ParseCustomReceiver extends ParsePushBroadcastReceiver{
                         .setContentText(s)
                         .setColor(ActivityCreateGame.ParseColor(context, R.color.mafia));
 
-        Intent result = new Intent(context, ActivityHome.class);
+        Intent result = new Intent(context, ActivityDay.class);
+        result.putExtra(GameListing.ID, key);
 
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(

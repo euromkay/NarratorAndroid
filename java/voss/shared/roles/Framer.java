@@ -6,6 +6,7 @@ import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
+import voss.shared.logic.support.StringChoice;
 
 public class Framer extends Role {
 
@@ -51,7 +52,9 @@ public class Framer extends Role {
 		}else {
 			Team parse = owner.getNarrator().getTeam(getAlignment());
 			Event e = Role.selectionEvent(owner);
-			e.add(owner, " will " + getKeyWord().toLowerCase() + " ", target);
+			StringChoice sc = new StringChoice(owner);
+			sc.add(owner, "You");
+			e.add(sc, " will " + getKeyWord().toLowerCase() + " ", target);
 			if (parse != null){
 				e.setCommand(owner, getKeyWord(), target.getName(), parse.getName());
 				e.add(" as ", parse.getName());

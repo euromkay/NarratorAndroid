@@ -1,11 +1,14 @@
 package voss.android.day;
 
+import android.view.Gravity;
+
 import java.util.ArrayList;
 
 import voss.android.CommunicatorPhone;
 import voss.android.NActivity;
 import voss.android.R;
 import voss.android.parse.Server;
+import voss.android.screens.ListingAdapter;
 import voss.android.screens.SimpleGestureFilter;
 import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
@@ -26,35 +29,43 @@ public class DayScreenController implements NarratorListener{
 		this.dScreen = dScreen;
 		this.manager = manager;
 
-		dScreen.setupFramerSpinner();
 
-		setDayLabel();
-		
-		setupPlayerDrawer();
-		updatePlayerControlPanel();
 		//setNarratorInfoView();
 	}
-	
+
+	public void init(){
+		dScreen.setupFramerSpinner();
+		dScreen.updateMembers();//will only get updated when someone has the potential for dying
+
+		setDayLabel();
+
+		setupPlayerDrawer();
+		updatePlayerControlPanel();
+		setRoles();
+	}
+
 	public Narrator getNarrator(){
 		return manager.getNarrator();
 	}
-	
+
 
 	private static final String SKIP_NIGHT_TEXT = "End Night";
 	private static final String CANCEL_SKIP_NIGHT_TEXT = "Cancel End Night";
 	public static final String PlayerMenuHeader = "General Info";
-	
+
 	public void onNightStart(PlayerList lynched) {
 		deadCurrentPlayerCheck(lynched);//if the current player died or was lynched
 
 		setDayLabel();
-		
+		dScreen.updateMembers();
+
 		updatePlayerControlPanel();
 		setupPlayerDrawer();
+
 	}
 
-	
-	
+
+
 	public void onDayStart(PlayerList newDead) {
 		deadCurrentPlayerCheck(newDead);
 
@@ -62,7 +73,9 @@ public class DayScreenController implements NarratorListener{
 		setVotesToLynch();//starts off at 0
 
 		updatePlayerControlPanel();
-		
+
+		dScreen.updateMembers();
+
 		//no one died
 		if(!newDead.isEmpty())
 			setupPlayerDrawer();
@@ -79,10 +92,10 @@ public class DayScreenController implements NarratorListener{
 		if (currentPlayer == mayor)
 			dScreen.hideDayButton();
 		updateChatPanel();
-		
+
 	}
 
-	
+
 	public void onArsonDayBurn(Player arson, PlayerList burned) {
 		setupPlayerDrawer();
 		if (currentPlayer == arson)
@@ -93,7 +106,8 @@ public class DayScreenController implements NarratorListener{
 			setNarratorInfoView();
 		}
 		updatePlayerControlPanel();
-		
+		dScreen.updateMembers();
+
 	}
 
 	public void onVote(Player voter, Player target, int voteCount) {
@@ -101,17 +115,17 @@ public class DayScreenController implements NarratorListener{
 		updateChatPanel();
 	}
 
-	
+
 	public void onUnvote(Player voter, Player prev, int voteCountToLynch) {
 		onVote(voter, prev, voteCountToLynch);
 	}
 
-	
+
 	public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch) {
-		onVote(voter, target, toLynch);	
+		onVote(voter, target, toLynch);
 	}
 
-	
+
 	public void onNightTarget(Player owner, Player target) {
 		if (owner == currentPlayer) {
 			for(Player selected: dScreen.getCheckedPlayers())
@@ -121,7 +135,7 @@ public class DayScreenController implements NarratorListener{
 		}
 		if (!playerSelected())
 			dScreen.check(owner);
-		
+
 		Team t = owner.getTeam();
 		if(t.hasMember(currentPlayer))
 			updateChatPanel();
@@ -133,11 +147,11 @@ public class DayScreenController implements NarratorListener{
 		}
 		if (!playerSelected())
 			dScreen.uncheck(owner);
-		
+
 		Team t = owner.getTeam();
 		if(t.hasMember(currentPlayer))
 			updateChatPanel();
-		
+
 	}
 
 	public void onEndNight(Player p) {
@@ -145,7 +159,7 @@ public class DayScreenController implements NarratorListener{
 			return;
 		updateActionPanel();
 		setCancelSkipNightText();
-		
+
 	}
 
 	public void onCancelEndNight(Player p) {
@@ -167,44 +181,44 @@ public class DayScreenController implements NarratorListener{
 		setupPlayerDrawer();
 		dScreen.onClick(dScreen.chatButton);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	public boolean playerSelected(){
 		return currentPlayer != null;
 	}
-	
-	
+
+
 	private void deadCurrentPlayerCheck(PlayerList possibleDeadList){
 		if(possibleDeadList.contains(currentPlayer))
 			setNarratorInfoView();
 	}
-	
+
 	public void setNarratorInfoView(){
 		currentPlayer = null;
 		dScreen.onClick(dScreen.infoButton);
 	}
-	
+
 	public void setDayLabel(){
 		Narrator n = getNarrator();
 		dScreen.setDayLabel(isDay(), n.getDayNumber());
 	}
-	
+
 	private void setupPlayerDrawer() {
 		Narrator n = getNarrator();
 		PlayerList list;
@@ -226,17 +240,23 @@ public class DayScreenController implements NarratorListener{
 		if (dScreen.drawerOut())//when the drawer closes, it'll update, so no need to do it now, you don't even know who you're supposed to udpate it for!
 			return;
 
-		if (playerSelected())
+		int color;
+		if (playerSelected()) {
 			dScreen.setPlayerLabel(currentPlayer.getName());
-		else
+			color = currentPlayer.getAlignment();
+		}else {
 			dScreen.setPlayerLabel(PlayerMenuHeader);
+			color = NActivity.ParseColor(dScreen, R.color.trimmings);
+		}
+		dScreen.setTrimmings(color);
+		dScreen.showButton();
 		updateActionPanel();
 		updateInfoPanel();
 		updateChatPanel();
 		if(dScreen.panel != null)//restore panel
 			dScreen.onClick(dScreen.panel);
 	}
-	
+
 	protected void updateActionPanel() {
 		Narrator n = getNarrator();
 		dScreen.setActionButton();
@@ -250,7 +270,6 @@ public class DayScreenController implements NarratorListener{
 					allowedVoteTargets = n.getLivePlayers().remove(currentPlayer).add(n.Skipper);
 				}
 				dScreen.setActionList(allowedVoteTargets, Narrator.DAY_START);
-				//dScreen.clearTargetList();
 				dScreen.check(currentPlayer.getVoteTarget());
 				setVotesToLynch();
 			} else { //isNight
@@ -275,7 +294,6 @@ public class DayScreenController implements NarratorListener{
 					dScreen.setActionList(new PlayerList(), isDay());
 				}
 
-				dScreen.showFrameSpinner();
 				setButtonText();
 
 			}
@@ -298,27 +316,21 @@ public class DayScreenController implements NarratorListener{
 				dScreen.setCommand("People who haven't voted:");
 			else
 				dScreen.setCommand("People who haven't ended the night:");
-		
+
 		}
+		dScreen.showFrameSpinner();
 	}
-	
+
 	protected void updateInfoPanel(){
 		Narrator n = getNarrator();
 		if (playerSelected()) {
-			if(currentPlayer.getTeam().getMembers().getLivePlayers().size() > 1)
-				setAllies();
-			else
-				setRolesList(currentPlayer.getAlignment());
-			dScreen.updateRoleInfo(currentPlayer, currentPlayer.getAlignment());
+			setAllies();
+			dScreen.updateRoleInfo(currentPlayer);
 			setButtonText();
 		}
-		else{
-			setRolesList(NActivity.ParseColor(dScreen, R.color.trimmings));
-			dScreen.updateMembers();
-		}
+		dScreen.showAllies();
 	}
 	private void setAllies(){
-		dScreen.setAlliesHeader(currentPlayer.getAlignment());
 
 		int color = currentPlayer.getTeam().getAlignment();
 		ArrayList<String> names = new ArrayList<>();
@@ -331,11 +343,10 @@ public class DayScreenController implements NarratorListener{
 				}
 			}
 		}
-		dScreen.setListView(dScreen.alliesLV, names, colors);
+		dScreen.setListView(dScreen.alliesLV, names, colors, 5);
 
 	}
-	private void setRolesList(int color){
-		dScreen.setRolesListHeader(color);
+	private void setRoles(){
 		ArrayList<RoleTemplate> roles = getNarrator().getAllRoles();
 		ArrayList<String> names = new ArrayList<>();
 		ArrayList<Integer> colors = new ArrayList<>();
@@ -343,13 +354,15 @@ public class DayScreenController implements NarratorListener{
 			names.add(r.getName());
 			colors.add(r.getColor());
 		}
+
+
 		dScreen.setListView(dScreen.rolesLV, names, colors);
 	}
-	private static boolean HTML = false;
+
 	private void updateChatPanel(){
 		String text;
 		if (!playerSelected())
-			text = manager.getNarrator().getEvents(Event.PUBLIC, HTML);
+			text = manager.getNarrator().getEvents(Event.PUBLIC, true);
 		else
 			text = getNarrator().getEvents(currentPlayer, true);
 		dScreen.updateChatPanel(text);

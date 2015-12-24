@@ -20,6 +20,7 @@ public class ListingAdapter extends BaseAdapter{
 	private int layoutID;
 	private Activity c;
 	private Typeface font;
+	private int length;
 
 	public ListingAdapter(Activity c){
 		this.c = c;
@@ -31,13 +32,15 @@ public class ListingAdapter extends BaseAdapter{
 	public ListingAdapter(ArrayList<String> data, Activity c){
 		this(c);
 		this.data = data;
-
+		length = data.size();
 	}
 	public ListingAdapter(String[] data, Activity c){
 		this(c);
 		this.data = new ArrayList<>();
 		for(String s: data)
 			this.data.add(s);
+
+		length = data.length;
 	}
 
 	public ListingAdapter setColors(ArrayList<Integer> list){
@@ -50,6 +53,11 @@ public class ListingAdapter extends BaseAdapter{
 			colors.add(i);
 	}
 
+	public void setLimit(int limit){
+		if(limit < length)
+			length = limit;
+	}
+
 	public void setColor(int color){
 		this.color = color;
 	}
@@ -59,7 +67,7 @@ public class ListingAdapter extends BaseAdapter{
 	}
 
 	public int getCount() {
-		return data.size();
+		return length;
 	}
 
 	public String getItem(int position) {
@@ -84,12 +92,15 @@ public class ListingAdapter extends BaseAdapter{
 	    }
 
 	    String item = getItem(position);
-	    int viewColor;
+		int viewColor;
 		if (colors != null)
 			viewColor = colors.get(position);
 		else
 			viewColor = this.color;
 		result.setTypeface(font);
+
+
+
 
 		if (textSize != null){
 			result.setTextSize(textSize);

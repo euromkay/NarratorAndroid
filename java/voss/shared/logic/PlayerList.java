@@ -203,6 +203,11 @@ public class PlayerList implements Iterable<Player>{
 		Collections.sort(list, Player.NameSort);
 		return this;
 	}
+	
+	public PlayerList sortByDeath(){
+		Collections.sort(list, Player.Deaths);
+		return this;
+	}
 
 	public String getStringName(){
 		String name = "";

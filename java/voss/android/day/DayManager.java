@@ -6,6 +6,7 @@ import java.util.Random;
 
 import voss.android.NarratorService;
 import voss.android.PhoneBook;
+import voss.android.parse.GameListing;
 import voss.android.parse.Server;
 import voss.android.texting.TextController;
 import voss.android.texting.TextHandler;
@@ -34,6 +35,7 @@ public class DayManager implements TextInput{
 	}
 	public void initiate(ActivityDay dScreen){
 		dScreenController = new DayScreenController(dScreen, this);
+		dScreenController.init();
 		dScreenController.setNarratorInfoView();
 		ns.local.addListener(dScreenController);
 		
@@ -84,6 +86,8 @@ public class DayManager implements TextInput{
 	}
 
 	public void vote(Player owner, Player target) {
+		if(owner == target)
+			return;
 		if(isHost()){
 			owner.vote(target);
 		}
@@ -253,6 +257,10 @@ public class DayManager implements TextInput{
 	}
 
 	public void parseCommand(Intent i){
+		//check if someone else is pinging this
+		if(!i.getStringExtra(GameListing.ID).equals(ns.getGameListing().getID()))
+			return;
+
 		String message = i.getStringExtra("stuff");
 		String[] command = message.split(",");
 

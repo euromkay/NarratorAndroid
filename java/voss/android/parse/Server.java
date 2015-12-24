@@ -16,15 +16,17 @@ import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.parse.SignUpCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import voss.android.ActivitySettings;
 import voss.android.NarratorService;
 import voss.android.SuccessListener;
 import voss.android.setup.SetupManager;
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
 import voss.shared.logic.support.RoleTemplate;
 
 public class Server {
@@ -34,6 +36,7 @@ public class Server {
         void onBadPassword();
         void onBadEmail();
         void onEmailTaken();
+        void onUsernameTaken();
     }
 
     public interface GameRegister{
@@ -44,6 +47,7 @@ public class Server {
     public interface GameFoundListener{
         void onGamesFound(ArrayList<GameListing> list);
         void noGamesFound();
+        void onInvalidToken();
         void onError(String s);
     }
 
@@ -55,9 +59,7 @@ public class Server {
         ParseUser.logOut();
     }
 
-    public static void Subscribe(GameListing gl){
-        ParsePush.subscribeInBackground(gl.getHostName());
-    }
+
 
     public static void Login(String username, String password, final LoginListener loginListener){
         if (username.length() == 0 || password.length() == 0){
@@ -86,19 +88,25 @@ public class Server {
         });
     }
 
-    public static void SignUp(String username, String password, String email, final LoginListener loginListener){
+    public static void SignUp(final String username, final String password, String email, final LoginListener loginListener){
         if (username.length() == 0 || password.length() == 0){
             return;
         }
-        ParseUser user = new ParseUser();
-        user.setUsername(username.toLowerCase());
-        user.setEmail(email);
-        user.setPassword(password);
-        user.signUpInBackground(new SignUpCallback() {
-            public void done(ParseException e) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("username", username);
+        params.put("password", password);
+        params.put("email", email);
+        ParseCloud.callFunctionInBackground("signup", params, new FunctionCallback<ParseObject>() {
+            public void done(ParseObject x, ParseException e) {
                 if (e == null) {
+                    try {
+                        ParseUser.logIn(username, password);
+                    } catch (ParseException f) {
+                        Log.e("Server login", f.getMessage());
+                    }
                     loginListener.onSuccess();
                 } else {
+                    Log.e("Server signup error", e.getMessage() + e.getCode());
                     switch (e.getCode()) {
                         case ParseException.INVALID_EMAIL_ADDRESS:
                             loginListener.onBadEmail();
@@ -106,6 +114,13 @@ public class Server {
                         case ParseException.EMAIL_TAKEN:
                             loginListener.onEmailTaken();
                             break;
+                        case 141:
+                            loginListener.onUsernameTaken();
+                            break;
+                        case ParseException.USERNAME_TAKEN:
+                            loginListener.onUsernameTaken();
+                            break;
+
                     }
                 }
             }
@@ -153,7 +168,7 @@ public class Server {
                 if (e == null) {
                     GameListing gl = new GameListing(game);
                     g.onSuccess(gl);
-                    ParsePush.subscribeInBackground(gl.getHostName());
+                    Channel(gl);
                 } else
                     g.onFailure(e.getMessage());
             }
@@ -199,6 +214,8 @@ public class Server {
                     }
 
                     gf.onGamesFound(games);
+                } else if (e.getCode() == ParseException.INVALID_SESSION_TOKEN) {
+                    gf.onInvalidToken();
                 } else {
                     gf.onError(e.getMessage());
                 }
@@ -212,7 +229,7 @@ public class Server {
     }
 
     public static void AddPlayer(final GameListing gl){
-        ParsePush.subscribeInBackground(gl.getHostName(), new SaveCallback() {
+        Channel(gl, new SaveCallback() {
             public void done(ParseException e) {
                 HashMap<String, Object> params = new HashMap<>();
                 params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
@@ -220,7 +237,7 @@ public class Server {
                     public void done(ParseObject parseObject, ParseException e) {
                         if (e != null) {
                             Log.e("Server", e.getMessage());
-                            ParsePush.unsubscribeInBackground(gl.getHostName());
+                            Unchannel(gl);
                         } else {
                             Log.e("Server", parseObject + "");
                         }
@@ -238,7 +255,7 @@ public class Server {
                 if (e != null) {
                     Log.e("Server", e.getMessage());
                 } else {
-                    ParsePush.unsubscribeInBackground(gl.getHostName());
+                    Unchannel(gl);
                     Log.e("Server", parseObject + "");
                 }
             }
@@ -279,15 +296,36 @@ public class Server {
     }
 
 
-    public static void Unsuscribe(GameListing l){
-        ParsePush.unsubscribeInBackground(l.getHostName());
+    public static void Unchannel(GameListing l){
+        ParsePush.unsubscribeInBackground("c" + l.getID());
     }
 
-    public static void StartGame(boolean dayStart, GameListing gl, final SuccessListener sl){
+    public static void Channel(GameListing gl){
+        Channel(gl, new SaveCallback() {
+            public void done(ParseException e) {
+
+            }
+        });
+    }
+
+    public static void Channel(GameListing gl, SaveCallback sc){
+        ParsePush.subscribeInBackground("c" + gl.getID(), sc);
+    }
+
+    public static void StartGame(Narrator narrator, boolean dayStart, GameListing gl, final SuccessListener sl){
+        List<String> players = new ArrayList<String>();
+        List<String> roles = new ArrayList<String>();
+        for(Player p: narrator.getAllPlayers())
+            players.add(p.getName());
+
+        for(RoleTemplate rt: narrator.getAllRoles())
+            roles.add(rt.toIpForm());
+
+
         HashMap<String, Object> params = new HashMap<>();
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
-        params.put(ParseConstants.ROLES, gl.getRoleNames());
-        params.put(ParseConstants.PLAYERS, gl.getPlayerNames());
+        params.put(ParseConstants.ROLES, roles);
+        params.put(ParseConstants.PLAYERS, players);
         Log.i("Server start game", gl.getPlayerNames().size() + "/" + gl.getRoleNames().size());
         params.put(ParseConstants.WHEN, dayStart);
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
@@ -309,8 +347,7 @@ public class Server {
                 } else {
                     GameListing gl = new GameListing(parseObject);
                     ns.setGameListing(gl);
-                    ns.local.removeAllPlayers();
-                    ns.local.removeAllRoles();
+                    ns.refresh();
                     for (String s : gl.getPlayerNames()) {
                         ns.local.addPlayer(s);
                     }
@@ -340,4 +377,38 @@ public class Server {
         gl.getParseObject().put(ParseConstants.ACTIVE, false);
         gl.getParseObject().saveInBackground();
     }
+
+
+    public static void ResumeGame(String id, final NarratorService ns, final SuccessListener ls){
+        GetNarratorInfo(id, new GetCallback<ParseObject>() {
+            public void done(ParseObject parseObject, ParseException e) {
+                if(e == null){
+                    ns.refresh();
+                    GameListing gl = new GameListing(parseObject);
+                    ns.setGameListing(gl);
+
+                    for(String p: gl.getPlayerNames())
+                        ns.local.addPlayer(p);
+
+                    for(String r: gl.getRoleNames())
+                        ns.local.addRole(SetupManager.TranslateRole(RoleTemplate.FromIp(r)));
+
+                    ns.local.setSeed(gl.getSeed());
+                    ns.local.setRules(ActivitySettings.getRules(ns));
+                    ns.local.startGame();
+
+                    int i;
+                    for(String c: gl.getCommands()){
+                        i = c.indexOf(",");
+                        c = c.substring(i+1);
+                        ns.onRead(c, null);
+                    }
+                    ls.onSuccess();
+                }
+                else
+                    ls.onFailure(e.getMessage());
+            }
+        });
+    }
+
 }

@@ -16,6 +16,7 @@ import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
 import voss.shared.logic.support.Shuffler;
+import voss.shared.logic.support.StringChoice;
 import voss.shared.roles.Arsonist;
 import voss.shared.roles.Blocker;
 import voss.shared.roles.Bodyguard;
@@ -258,7 +259,11 @@ public class Player implements ActionTaker{
 		if(notify){
 			e = new Event();
 			e.dontShowPrivate();
-			e.add(this, " reconsidered.");
+
+			StringChoice sc = new StringChoice(this);
+			sc.add(this, "You");
+			
+			e.add(sc, " reconsidered.");
 			Team t = n.getTeam(alignment);
 			if(t.knowsTeam()){
 				e.setVisibility(t.getMembers());
@@ -605,6 +610,14 @@ public class Player implements ActionTaker{
 		//dead
 		Shuffler.shuffle(feedback, n.getRandom());
 		sendMessage(feedback);
+		Event e;
+		for(String s: feedback){
+			e = new Event();
+			e.setVisibility(this);
+			e.dontShowPrivate();
+			e.add(s);
+			n.addEvent(e);
+		}
 	}
 	private static String determineKillFeedback(int role){
 		if(role == Constants.A_MAFIA || role == Constants.A_YAKUZA)
@@ -702,15 +715,36 @@ public class Player implements ActionTaker{
 	}
 	
 	
-	public static Comparator<ActionTaker> SubmissionTime = new Comparator<ActionTaker>() {
+	public static final Comparator<ActionTaker> SubmissionTime = new Comparator<ActionTaker>() {
 		public int compare(ActionTaker p1, ActionTaker p2) {
 			return p1.getSubmissionTime() - p2.getSubmissionTime();
 		}
 
 	};
-	public static Comparator<Player> NameSort = new Comparator<Player>() {
+	public static final Comparator<Player> NameSort = new Comparator<Player>() {
 		public int compare(Player p1, Player p2) {
 			return p1.getName().compareTo(p2.getName());
+		}
+
+	};
+	public static final Comparator<Player> Deaths = new Comparator<Player>() {
+		public int compare(Player p1, Player p2) {
+			if (p1.isAlive() && p2.isAlive())
+				return p1.getName().compareTo(p2.getName());
+			if(p1.isAlive())
+				return -1;
+			if(p2.isAlive())
+				return 1;
+			if( p1.getDeathDay() == p2.getDeathDay()){
+				if(p1.getDeathType().isLynch() != p2.getDeathType().isLynch()){
+					if(p1.getDeathType().isLynch())
+						return -1;
+					if(p2.getDeathType().isLynch())
+						return 1;
+				}
+				return p1.getName().compareTo(p2.getName());
+			}else
+				return p2.getDeathDay() - p1.getDeathDay();
 		}
 
 	};

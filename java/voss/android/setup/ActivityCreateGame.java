@@ -105,9 +105,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	public void onBackPressed(){
 		Intent i = new Intent(this, ActivityHome.class);
 		ns.onStartCommand(null, 0, 0);
-		if(Server.IsLoggedIn()){
-			Server.Unsuscribe(ns.getGameListing());
-		}
 		manager.shutdown();
 		startActivity(i);
 		finish();
@@ -554,7 +551,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 					if(manager.isHost()){
 						if(!manager.checkNarrator())
 							return;
-						Server.StartGame(ActivitySettings.getRules(this).DAY_START, ns.getGameListing(), new SuccessListener() {
+						Server.StartGame(ns.local, ActivitySettings.getRules(this).DAY_START, ns.getGameListing(), new SuccessListener() {
 							public void onSuccess() {
 								toast("Starting game");
 							}

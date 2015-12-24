@@ -94,6 +94,10 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         setHeader("Email is already in use!");
     }
 
+    public void onUsernameTaken(){
+        setHeader("Username is already taken!");
+    }
+
     public void setHeader(String s){
         TextView tv = (TextView) mainView.findViewById(R.id.home_loginErrorHandler);
         tv.setText(s);

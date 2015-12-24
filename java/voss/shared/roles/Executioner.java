@@ -7,6 +7,7 @@ import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 import voss.shared.logic.exceptions.UnsupportedMethodException;
+import voss.shared.logic.support.StringChoice;
 
 public class Executioner extends Role{
 
@@ -111,7 +112,11 @@ public class Executioner extends Role{
 		Executioner role = (Executioner) exec.getRole();
 		role.setTarget(exec, target);
 		Event e = new Event();
-		e.add(exec, "'s target ", target, ".");
+		
+		StringChoice sc = new StringChoice(exec);
+		sc.add(exec, "You");
+		
+		e.add(sc, "'s target ", target, ".");
 		e.setVisibility(exec);
 		n.addEvent(e);
 	}

@@ -20,6 +20,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,16 +42,17 @@ import android.widget.Toast;
 import voss.android.GUIController;
 import voss.android.NActivity;
 import voss.android.R;
+import voss.android.SuccessListener;
 import voss.android.alerts.ExitGameAlert;
 import voss.android.alerts.ExitGameAlert.ExitGameListener;
 import voss.android.day.PlayerDrawerAdapter.OnPlayerClickListener;
+import voss.android.parse.GameListing;
 import voss.android.parse.ParseConstants;
 import voss.android.parse.Server;
 import voss.android.screens.ListingAdapter;
 import voss.android.screens.MembersAdapter;
 import voss.android.screens.SimpleGestureFilter;
 import voss.android.screens.SimpleGestureFilter.SimpleGestureListener;
-import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.TextHandler;
 import voss.packaging.Board;
@@ -65,7 +67,7 @@ import voss.shared.logic.support.Constants;
 import voss.shared.roles.Framer;
 
 
-public class ActivityDay extends NActivity 
+public class ActivityDay extends NActivity
 implements 
 	ExitGameListener, 
 	OnClickListener, 
@@ -81,7 +83,7 @@ implements
 	private IntentFilter iF;
 	private TextToSpeech speaker;
 	protected ListView rolesLV, membersLV, actionLV, alliesLV;
-	public TextView leftTV, rightTV, roleInfoTV, commandsTV, skipTV, chatTV, playerLabelTV;
+	public TextView membersTV, rolesTV, roleTV, roleInfoTV, alliesTV, commandTV, chatTV, playerLabelTV;
 	public Spinner framerSpinner;
 	private ScrollView chatLV;
 	public EditText chatET;
@@ -97,7 +99,6 @@ implements
 		super.onCreate(b);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_day);
-
 
 		setup(b);
 
@@ -126,16 +127,17 @@ implements
 			closeDrawer();
 		}else {
 			if(onePersonActive()){
-				if (manager.getCurrentPlayer() == null){
+				if (manager.getCurrentPlayer() == null)
 					onPlayerClick(playersInDrawer.get(0));
-				} else {
+				else
 					onPlayerClick(null);
-				}
 			}else
 				onPlayerClick(null);
 			onDrawerClosed(null);
+
 			if(!Server.IsLoggedIn())
 				onClick(infoButton);
+
 		}
 	}
 	
@@ -145,8 +147,26 @@ implements
 			return;
 		connectNarrator(new NarratorConnectListener() {
 			public void onConnect() {
-				continueSetup();
-			}
+				if(!getIntent().hasExtra(GameListing.ID)){
+					connectManager();
+					return;
+				}
+				String key = getIntent().getStringExtra(GameListing.ID);
+				if(ns.getGameListing() != null && key.equals(ns.getGameListing().getID())) {
+					log("this");
+					finish();
+					return;
+				}
+
+
+				Server.ResumeGame(getIntent().getStringExtra(GameListing.ID), ns, new SuccessListener() {
+					public void onSuccess() {
+						connectManager();
+					}
+					public void onFailure(String message) {log(message);}
+					});
+				}
+
 		});
 		playerMenu = (RecyclerView) findViewById(R.id.day_playerNavigationPane);
 
@@ -158,29 +178,39 @@ implements
 		chatLV         = (ScrollView) findViewById(R.id.day_chatHolder);
 		chatET         = (EditText) findViewById(R.id.day_chatET);
 
-		commandsTV     = (TextView) findViewById(R.id.day_commandsLabel);
-		skipTV         = commandsTV;
+		commandTV = (TextView) findViewById(R.id.day_commandsLabel);
+		actionLV       = (ListView) findViewById(R.id.day_actionList);
 
-		leftTV         = (TextView) findViewById(R.id.day_rolesList_label);
-		rightTV        = (TextView) findViewById(R.id.day_membersLabel);
+		roleTV         = (TextView) findViewById(R.id.day_roleLabel);
 		roleInfoTV     = (TextView) findViewById(R.id.day_role_info);
+		roleInfoTV.setText("Players of Society");
+		int color = ParseColor(this, R.color.trimmings);
+		roleInfoTV.setTextColor(color);
 
 		chatTV         = (TextView) findViewById(R.id.day_chatTV);
 		playerLabelTV  = (TextView) findViewById(R.id.day_currentPlayerTV);
 
+		membersTV      = (TextView) findViewById(R.id.day_membersLabel);
 		membersLV      = (ListView) findViewById(R.id.day_membersLV);
-		actionLV       = (ListView) findViewById(R.id.day_actionList);
+
+		rolesTV        = (TextView) findViewById(R.id.day_rolesList_label);
 		rolesLV        = (ListView) findViewById(R.id.day_rolesList);
-		alliesLV       = rolesLV;
+
+		alliesTV       = (TextView) findViewById(R.id.day_alliesLabel);
+		alliesLV       = (ListView) findViewById(R.id.day_alliesList);
+
 		button         = findButton(R.id.day_button);
 		messagesButton = findButton(R.id.day_messagesButton);
 		infoButton     = findButton(R.id.day_infoButton);
 		actionButton   = findButton(R.id.day_actionButton);
-		chatButton     = (Button) findViewById(R.id.day_chatButton);
+		chatButton     = findButton(R.id.day_chatButton);
 
 		framerSpinner  = (Spinner) findViewById(R.id.day_frameSpinner);
 		framerSpinner.setOnItemSelectedListener(this);
-
+		if(wideMode())
+			framerSpinner.setGravity(Gravity.CENTER);
+		else
+			framerSpinner.setGravity(Gravity.END);
 
 		detector = new SimpleGestureFilter(this, this);
 
@@ -193,7 +223,7 @@ implements
 		addOnClickListener(R.id.day_playerDrawerButton);
 		addOnClickListener(R.id.day_chatET);
 
-		setHeaderFonts(R.id.day_title, R.id.day_currentPlayerTV, R.id.day_actionButton, R.id.day_messagesButton, R.id.day_infoButton, R.id.day_rolesList_label, R.id.day_membersLabel, R.id.day_button);
+		setHeaderFonts(R.id.day_title, R.id.day_currentPlayerTV, R.id.day_actionButton, R.id.day_roleLabel, R.id.day_messagesButton, R.id.day_infoButton, R.id.day_alliesLabel, R.id.day_rolesList_label, R.id.day_membersLabel, R.id.day_button);
 		setLowerFonts(R.id.day_chatButton, R.id.day_commandsLabel);
 
 
@@ -212,9 +242,10 @@ implements
 			SetFont(id, this, true);
 		}
 	}
-	private void continueSetup(){
+	private void connectManager(){
 		if(manager != null)
 			return;
+
 		manager = new DayManager(ns);
 		manager.initiate(this);
 
@@ -226,7 +257,8 @@ implements
 		}
 		if(onePersonActive()) {
 			toast("Press back to switch between general information and your information.");
-			GUIController.selectScreen(this, playersInDrawer.get(0));
+			if(playersInDrawer.get(0).isAlive())
+				GUIController.selectScreen(this, playersInDrawer.get(0));
 		}
 	}
 	private boolean onePersonActive(){
@@ -288,7 +320,7 @@ implements
 		button.setText(s);
 	}
 	protected String getSelectedAbility(){
-		return commandsTV.getText().toString();
+		return commandTV.getText().toString();
 	}
 	protected void setDayLabel(boolean day, int dayNumber){
 		String s;
@@ -310,17 +342,11 @@ implements
 
 
 	protected void setCommand(String command){
-		commandsTV.setText(command);
+		commandTV.setText(command);
 	}
 
 	protected void updateMembers() {
-		rightTV.setText("Players of Society");
-
-		int color = ActivityCreateGame.ParseColor(this, R.color.trimmings);
-		rightTV.setTextColor(color);
-
-		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers(), this));
-		hideView(roleInfoTV);
+		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers().sortByDeath(), this));
 	}
 
 	protected void uncheck(Player p){
@@ -339,21 +365,22 @@ implements
 
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		if(manager.getCurrentPlayer() == null) {
-			if(onePersonActive()){
-				onBackPressed();
-			}else
-				return;
-		}
 		try {
-			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandsTV.getText().toString() + ") for " + actionList.get(position).getDescription());
-			
+			Player selected = actionList.get(position);
+			if(manager.getCurrentPlayer() == null) {
+				if(onePersonActive()){
+					onBackPressed();
+				}else
+					return;
+			}
+			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
+
+			manager.command(selected);
 		}catch (IndexOutOfBoundsException|NullPointerException e){
 	
 				log("accessing out of bounds again");
 				e.printStackTrace();
 		}
-		manager.command(actionList.get(position));
 		
 	}
 	
@@ -405,8 +432,6 @@ implements
 			else
 				targetables.add(aP.getName());
 		}
-
-		
 		
 		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.vote_item, targetables);
 		adapter.setDropDownViewResource(R.layout.create_roles_right_item);
@@ -444,6 +469,9 @@ implements
 			case R.id.day_messagesButton:
 				log("Message button clicked.");
 
+				if(wideMode())
+					return;
+
 				panel = v;
 				setSelected(R.id.day_messagesButton);
 				hideActionPanel();
@@ -453,6 +481,9 @@ implements
 
 			case R.id.day_infoButton:
 				log("Info button clicked.");
+
+				if(wideMode())
+					return;
 
 				panel = v;
 				setSelected(R.id.day_infoButton);
@@ -469,12 +500,19 @@ implements
 			case R.id.day_actionButton:
 				log("Actions button clicked.");
 
+
+				if(wideMode())
+					return;
+
 				panel = v;
 				setSelected(R.id.day_actionButton);
 				hideMessagePanel();
 				hideInfoPanel();
 				showActionPanel();
 		}
+	}
+	protected boolean wideMode(){
+		return infoButton.getVisibility() == View.GONE;
 	}
 	private void setSelected(int id){
 		Button b = (Button) findViewById(id);
@@ -489,7 +527,7 @@ implements
 	}
 
 	public void toast(String s){
-		Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, s, Toast.LENGTH_LONG).show();
 	}
 
 	public void sendMessage(){
@@ -530,22 +568,43 @@ implements
 	}
 
 	public void showInfoPanel(){
-		showView(leftTV);
+		showView(rolesTV);
 		showView(rolesLV);
 
-		showView(rightTV);
+		//showView(rightTV);
 		if (manager.dScreenController != null && manager.dScreenController.playerSelected()){
 			if (manager.getCurrentPlayer().hasDayAction() && manager.getNarrator().isDay())
 				showView(button);
 			else
 				hideView(button);
 
+			if(manager.getCurrentPlayer().getTeam().getMembers().getLivePlayers().size() > 1){
+				showView(alliesTV);
+				showView(alliesLV);
+				hideView(rolesTV);
+				hideView(rolesLV);
+			}else{
+				hideView(alliesTV);
+				hideView(alliesLV);
+				showView(rolesTV);
+				showView(rolesLV);
+			}
+
+			showView(roleTV);
 			showView(roleInfoTV);
+
+			hideView(membersTV);
 			hideView(membersLV);
 		}else{
+			showView(membersTV);
 			showView(membersLV);
+
+			hideView(roleTV);
 			hideView(roleInfoTV);
 			hideView(button);
+
+			hideView(alliesTV);
+			hideView(alliesLV);
 		}
 	}
 
@@ -559,7 +618,7 @@ implements
 		manager.setCurrentPlayer(p);
 	}
 
-	public void onExitAttempt(){
+	public void onExitAttempt() {
 		DialogFragment newFragment = new ExitGameAlert();
 		newFragment.show(getFragmentManager(), "missiles");
 	}
@@ -584,50 +643,83 @@ implements
 	}
 
 	public void hideActionPanel(){
-		((RelativeLayout.LayoutParams)actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, commandsTV.getId());
+		((RelativeLayout.LayoutParams)actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, commandTV.getId());
 		hideView(actionLV);
-		hideView(commandsTV);
+		hideView(commandTV);
 		hideView(button);
 		hideView(framerSpinner);
 	}
 
 	public void showActionPanel() {
 		showView(actionLV);
-		showView(commandsTV);
+		showView(commandTV);
 
-		if (manager.dScreenController.playerSelected() && manager.dScreenController.currentPlayer.isAlive() && manager.getNarrator().isNight()){
-			showView(button);
-			showFrameSpinner();
-		}else{
-			hideView(button);
-		}
+		showFrameSpinner();
+		showButton();
 	}
 
 	public void showFrameSpinner(){
-		if (!manager.dScreenController.playerSelected()) {
+		if (!manager.dScreenController.playerSelected() || ns.local.isDay()) {
 			hideView(framerSpinner);
 			return;
 		}
 		if (manager.getCurrentPlayer().is(Framer.ROLE_NAME) && manager.getCurrentPlayer().isAlive() && isFrameActionSelected()) {
 			showView(framerSpinner);
-			((RelativeLayout.LayoutParams) actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, framerSpinner.getId());
+			if(!wideMode())
+				((RelativeLayout.LayoutParams) actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, framerSpinner.getId());
 		}else
 			hideView(framerSpinner);
 	}
 
+	public void showButton() {
+		if (wideMode()) {
+			if(manager.getCurrentPlayer() != null && manager.getCurrentPlayer().isAlive()){
+				if(ns.local.isNight())
+					showView(button);
+				else if(manager.getCurrentPlayer().hasDayAction())
+					showView(button);
+				else
+					hideView(button);
+			}else{
+				hideView(button);
+			}
+		}else{
+			if(manager.getCurrentPlayer() != null && manager.getCurrentPlayer().isDead())
+				hideView(button);
+			else if(messagesButton == panel){
+				hideView(button);
+			}else if(panel == actionButton){
+				if(manager.getCurrentPlayer() == null || ns.local.isDay())
+					hideView(button);
+				else
+					showView(button);
+			}else{ //panel == infoButton
+				if(manager.getCurrentPlayer() == null || ns.local.isNight() || !manager.getCurrentPlayer().hasDayAction())
+					hideView(button);
+				else
+					showView(button);
+			}
+		}
+	}
+
 	private boolean isFrameActionSelected(){
-		String command = commandsTV.getText().toString();
+		String command = commandTV.getText().toString();
 		int abilityID = manager.getCurrentPlayer().parseAbility(command);
 		int frameAbilityID = Framer.MAIN_ABILITY;
 		return abilityID == frameAbilityID;
 	}
 
 	public void hideInfoPanel(){
-		hideView(leftTV);
+		hideView(rolesTV);
 		hideView(rolesLV);
 
-		hideView(rightTV);
+		hideView(membersTV);
 		hideView(membersLV);
+
+		hideView(alliesLV);
+		hideView(alliesTV);
+
+		hideView(roleTV);
 		hideView(roleInfoTV);
 		hideView(button);
 	}
@@ -641,7 +733,7 @@ implements
 		pushChatDown();
 	}
 
-	public void pushChatDown(){
+	public void pushChatDown() {
 		chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
@@ -649,7 +741,7 @@ implements
 		});
 	}
 
-	public void setPlayerLabel(String name){
+	public void setPlayerLabel(String name) {
 		playerLabelTV.setText(name);
 	}
 
@@ -665,7 +757,13 @@ implements
 	}
 
 	protected void setListView(ListView v, ArrayList<String> texts, ArrayList<Integer> colors){
-		v.setAdapter(new ListingAdapter(texts, this).setColors(colors));
+		setListView(v, texts, colors, texts.size());
+	}
+
+	protected void setListView(ListView v, ArrayList<String> texts, ArrayList<Integer> colors, int limit){
+		ListingAdapter ad = new ListingAdapter(texts, this).setColors(colors);
+		ad.setLimit(limit);
+		v.setAdapter(ad);
 	}
 
 	public void endGame(){
@@ -680,7 +778,10 @@ implements
 		hideView(messagesButton);
 		hideView(actionButton);
 		hideView(infoButton);
-		hideView(commandsTV);
+		hideView(commandTV);
+
+		hideView(roleInfoTV);
+		hideView(roleTV);
 
 		showView(chatLV);
 		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Event.PRIVATE, true));
@@ -706,28 +807,53 @@ implements
 			if (Server.GetCurrentUserName().equals(ns.getGameListing().getHostName())) {
 				Server.SetGameInactive(ns.getGameListing());
 			}
-			Server.Unsuscribe(ns.getGameListing());
+			Server.Unchannel(ns.getGameListing());
 		}
 	}
 	private void stopTexting(){
 		TextHandler.stopTexting(this, intentReceiver);
 	}
-
-	public void setRolesListHeader(int color){
-		leftTV.setText("Roles");
-		leftTV.setTextColor(color);
-	}
-	public void setAlliesHeader(int color){
-		leftTV.setText("Allies");
-		leftTV.setTextColor(color);
-	}
-
-	public void updateRoleInfo(Player r, int color){
-		rightTV.setText(r.getRoleName());
-		rightTV.setTextColor(color);
-		roleInfoTV.setText(r.getRoleInfo());
+	public void setTrimmings(int color){
+		rolesTV.setTextColor(color);
+		roleTV.setTextColor(color);
+		alliesTV.setTextColor(color);
 		roleInfoTV.setTextColor(color);
+		membersTV.setTextColor(color);
+		commandTV.setTextColor(color);
 	}
+
+	public void updateRoleInfo(Player r){
+		roleTV.setText(r.getRoleName());
+		roleInfoTV.setText(r.getRoleInfo());
+	}
+
+
+	public void showAllies(){
+		if(manager.getCurrentPlayer() == null){
+			hideView(alliesTV);
+			hideView(alliesLV);
+			hideView(roleInfoTV);
+			hideView(roleTV);
+		}else{
+			showView(roleTV);
+			showView(roleInfoTV);
+			Team t = manager.getCurrentPlayer().getTeam();
+			if(t.knowsTeam() && t.getMembers().getLivePlayers().size() > 1){
+				showView(alliesLV);
+				if(wideMode()) {
+					hideView(alliesTV);
+				}else{
+					hideView(rolesLV);
+					hideView(rolesTV);
+					showView(alliesTV);
+				}
+			} else{
+				hideView(alliesTV);
+				hideView(alliesLV);
+			}
+		}
+	}
+
 
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		manager.command(manager.getCurrentPlayer().getTarget(Framer.MAIN_ABILITY));
@@ -738,7 +864,7 @@ implements
 	}
 
 	public void setVotesToLynch(int votes){
-		skipTV.setText("Number of votes to lynch - " + votes);
+		commandTV.setText("Number of votes to lynch - " + votes);
 	}
 
 	public void closeDrawer(){

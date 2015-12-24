@@ -7,6 +7,8 @@ import com.parse.ParseObject;
 
 public class GameListing {
 
+    public static final String ID = "keyToStartActivityDay";
+
     private ParseObject parse;
     public GameListing(ParseObject parse){
         this.parse = parse;

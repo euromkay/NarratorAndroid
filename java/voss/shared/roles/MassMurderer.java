@@ -8,6 +8,7 @@ import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
 import voss.shared.logic.Team;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.StringChoice;
 
 public class MassMurderer extends Role {
 
@@ -25,15 +26,18 @@ public class MassMurderer extends Role {
 		return ROLE_NAME;
 	}
 
-	private static final String SELECTION_PROMPT = " will murder all targets at ";
+	private static final String SELECTION_PROMPT = " will murder all players at ";
 	public void setAction(Player owner, Player target, int ability) {
 		if(ability != MAIN_ABILITY){
 			owner.getTeam().getSelectionFeedback(owner, target, ability);
 			return;
 		}
+		StringChoice sc = new StringChoice(owner);
+		sc.add(owner, "You");
+		
 		Event e = Role.selectionEvent(owner);
 		e.setCommand(owner, COMMAND, target.getName());
-		e.add(owner, SELECTION_PROMPT, target, ".");
+		e.add(sc, SELECTION_PROMPT, target, ".");
 		owner.getNarrator().addEvent(e);
 			//owner.getTeam().notifyTeammates(owner, SELECTION_PROMPT + target.getName() + ".");
 	}
