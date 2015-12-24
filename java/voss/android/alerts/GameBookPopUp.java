@@ -171,6 +171,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
 
         if (mode == JOIN){
             Server.AddPlayer(gl);
+            n.addPlayer(Server.GetCurrentUserName());
         }
 
         a.start(gl);//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));

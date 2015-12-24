@@ -339,7 +339,7 @@ public class SetupManager {
 
                     public void onFailure(String message) {
                         toast("Game start failed.  Press back and go join again.");
-                        Log.e("SetupManagerGameStartFailure", message);
+                        Log.e("SetupManagerGamailure", message);
                     }
                 });
                 return;
@@ -348,6 +348,7 @@ public class SetupManager {
                     return;
                 message = message.substring(command[0].length() + 1);//1 length for comma
                 ns.onRead(message, null);//adds it to my narrator
+                screen.updateChat();
         }
     }
 }

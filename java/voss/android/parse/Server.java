@@ -88,7 +88,8 @@ public class Server {
         });
     }
 
-    public static void SignUp(final String username, final String password, String email, final LoginListener loginListener){
+    public static void SignUp(String usern, final String password, String email, final LoginListener loginListener){
+        final String username = usern.replaceAll("\\s","");
         if (username.length() == 0 || password.length() == 0){
             return;
         }

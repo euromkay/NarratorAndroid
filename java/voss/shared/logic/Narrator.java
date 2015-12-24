@@ -571,8 +571,7 @@ public class Narrator{
 			Event e = new Event();
 			e.dontShowPrivate();
 			e.setVisibility(player);
-			e.add(player);
-			e.add(" are a " + player.getRoleName() + ".");
+			e.add("You are a " + player.getRoleName() + ".");
 			addEvent(e);
 		}
 	}

@@ -799,6 +799,21 @@ implements
 
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
+		if(wideMode()){
+			findViewById(R.id.day_chatHolder).setVisibility(View.VISIBLE);
+			findViewById(R.id.day_chatTV).setVisibility(View.VISIBLE);
+			int in = android.os.Build.VERSION.SDK_INT;
+			if(in >= 17){
+				((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_END);
+				((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_START);
+			}else{
+				((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			}
+			((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		}
+
+
 		speaker.stop();
 		speaker.shutdown();
 		stopTexting();

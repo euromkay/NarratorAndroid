@@ -298,7 +298,10 @@
             android:singleLine="true"
             android:hint="Send Message"/>
 
-
+        <View
+            android:id="@id/day_horizontalShimmy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"/>
 
         <ScrollView
             android:id="@+id/day_chatHolder"

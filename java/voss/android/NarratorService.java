@@ -171,7 +171,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 				try {
 					ch.parseCommand(message);
 				}catch(Throwable e){
-					Log.e("NarratorService reading", e.getMessage());
+					Log.e("NarratorService reading", "" + e.getMessage());
 				}
 			}else{
 				if(!local.isStarted()){
