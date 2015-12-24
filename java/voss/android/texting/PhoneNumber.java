@@ -1,8 +1,7 @@
 package voss.android.texting;
 
-/**
- * Created by Michael on 9/26/2015.
- */
+import android.telephony.PhoneNumberUtils;
+
 public class PhoneNumber implements Comparable<PhoneNumber>{
 
     String number;
@@ -19,10 +18,8 @@ public class PhoneNumber implements Comparable<PhoneNumber>{
             return false;
         if(o.getClass() != getClass())
             return false;
-        if(!number.equals(((PhoneNumber) o).number))
-            return false;
 
-        return true;
+        return PhoneNumberUtils.compare(number, ((PhoneNumber) o).number);
     }
 
     public int compareTo(PhoneNumber t){

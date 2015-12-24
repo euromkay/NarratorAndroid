@@ -302,7 +302,8 @@ public class SetupManager {
         if(!Server.IsLoggedIn())
             return;
 
-        ns.local.getPlayerByName(Server.GetCurrentUserName()).say(message);
+        Player p = ns.local.getPlayerByName(Server.GetCurrentUserName());
+        p.say(message);
 
         message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + message;
         Server.PushCommand(ns.getGameListing(), message, 0);

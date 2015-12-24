@@ -122,8 +122,11 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
 
 
     public void onClick(View v) {
-
-        mListener.startGame(this, contactList, isHost);
+        HashMap<String, PhoneNumber> toInvite = new HashMap<String, PhoneNumber>();
+        for(String name: persistant){
+            toInvite.put(name, contactList.get(name));
+        }
+        mListener.startGame(this, toInvite, isHost);
     }
 
     public void refreshAdapter(ArrayList<String> newPeople){
@@ -168,8 +171,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
 
         // BEGIN_INCLUDE(uri_with_query)
         String query = args.getString(QUERY_KEY);
-        Uri uri = Uri.withAppendedPath(
-                ContactsContract.CommonDataKinds.Contactables.CONTENT_FILTER_URI, query);
+        Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Contactables.CONTENT_FILTER_URI, query);
         // END_INCLUDE(uri_with_query)
 
 

@@ -114,9 +114,13 @@ public class Executioner extends Role{
 		Event e = new Event();
 		
 		StringChoice sc = new StringChoice(exec);
-		sc.add(exec, "You");
+		sc.add(exec, "Your");
+		e.add(sc);
 		
-		e.add(sc, "'s target ", target, ".");
+		sc = new StringChoice("'s");
+		sc.add(exec, "");
+		
+		e.add(sc, " target is ", target, ".");
 		e.setVisibility(exec);
 		n.addEvent(e);
 	}

@@ -102,11 +102,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			manager.resumeTexting();
 	}
 	
-	public void onBackPressed(){
-		Intent i = new Intent(this, ActivityHome.class);
-		ns.onStartCommand(null, 0, 0);
-		manager.shutdown();
-		startActivity(i);
+	public void onBackPressed() {
+		if(Server.IsLoggedIn())
+			ns.refresh();
 		finish();
 	}
 
@@ -144,9 +142,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 			chatET = (EditText) findViewById(R.id.create_chatET);
 			chatTV = (TextView) findViewById(R.id.create_chatTV);
+
 			chatButton = (Button) findViewById(R.id.create_toChat);
-			chatButton.setOnClickListener(this);
-			SetFont(R.id.create_toChat, this, false);
+			if(Server.IsLoggedIn()) {
+				chatButton.setOnClickListener(this);
+				SetFont(R.id.create_toChat, this, false);
+			}else
+				chatButton.setVisibility(View.GONE);
 			SetFont(R.id.create_chatButton, this, false);
 		}
 	}
@@ -242,7 +244,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
     private void setHostCode(){
 		if(manager.isHost() && !Server.IsLoggedIn())
-        	rolesLeftTV.setText(manager.ns.getIp().replace(".", "*"));
+        	rolesLeftTV.setText("Host Code: " + manager.ns.getIp().replace(".", "*"));
 		else
 			rolesLeftTV.setVisibility(View.GONE);
     }
@@ -626,7 +628,12 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 
 
-
+	public void onDestroy(){
+		if(ns!=null)
+			ns.removeSetupManager();
+		this.unbindNarrator();
+		super.onDestroy();
+	}
 
 }
 

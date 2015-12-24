@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -36,6 +37,7 @@ import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
 import voss.android.texting.CommunicatorText;
 import voss.android.texting.PhoneNumber;
+import voss.android.texting.ReceiverText;
 import voss.android.wifi.SocketClient;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
@@ -211,10 +213,15 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			ns.addPlayer(name, new CommunicatorPhone());
 			if(networkCapable())
 				ns.startHost(this, name);
-			
-			PhoneBookPopUp pList = new PhoneBookPopUp();
-			pList.setIsHost();
-			pList.show(getFragmentManager(), "phoneBookPopup");
+
+			if(Build.VERSION.SDK_INT >= 18) {
+				PhoneBookPopUp pList = new PhoneBookPopUp();
+				pList.setIsHost();
+				pList.show(getFragmentManager(), "phoneBookPopup");
+				toast("Clicking people and pressing invite will send them texts.");
+			}else{
+				start(null);
+			}
 		}else{
 			ns.submitName(name, new SuccessListener(){
 				public void onSuccess() {
@@ -282,8 +289,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		if(isHost) {
 			PhoneNumber number;
 			for (String name : contacts.keySet()) {
+				Log.e("PhoneInvite", name);
 				number = contacts.get(name);
-				//ReceiverText.sendText(number, "You have been invited to the Narrator.  You are " + name + ". If that's not who you are, tell me your name.");
+				ReceiverText.sendText(number, "You have been invited to the Narrator.  You are " + name + ". If that's not who you are, tell me your name.");
 				CommunicatorText cp = new CommunicatorText(number);
 				ns.addPlayer(name, cp);
 			}
@@ -354,4 +362,12 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	public static final String PLAYER_NAME = "player_name_forwifihost";
+
+	public void onDestroy(){
+
+		if(ns!=null) {
+			ns.onDestroy();
+		}this.unbindNarrator();
+		super.onDestroy();
+	}
 }

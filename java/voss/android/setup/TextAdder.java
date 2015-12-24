@@ -91,9 +91,10 @@ public class TextAdder extends BroadcastReceiver{
             return true;
         }
         for(Player p: TextHandler.getTexters(allPlayers)){
-            if(((CommunicatorText) p.getCommunicator()).getNumber().equals(number)) {
+            CommunicatorText ct = (CommunicatorText) p.getCommunicator();
+            if(ct.getNumber().equals(number)) {
             	manager.removePlayer(p.getName(), false);
-                manager.addPlayer(p.getName(), p.getCommunicator());
+                manager.addPlayer(name, p.getCommunicator());
                 p.sendMessage("You are now " + name + ".");
                 return true;
             }

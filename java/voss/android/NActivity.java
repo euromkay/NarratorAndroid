@@ -32,16 +32,18 @@ public abstract class NActivity extends FragmentActivity{
 				}
 
 				public void onServiceDisconnected(ComponentName className) {
-					//toast("narrator background service disconnected");
+					ns = null;
 				}
 			};
 			bindService(i, sC, Context.BIND_AUTO_CREATE);
 		}
 	}
     public void unbindNarrator(){
+		if(ns!=null)
 		try {
 			unbindService(sC);
-		}catch(IllegalArgumentException e){}
+			sC = null;
+		}catch(IllegalArgumentException|NullPointerException e){}
     }
     
     protected boolean networkCapable(){

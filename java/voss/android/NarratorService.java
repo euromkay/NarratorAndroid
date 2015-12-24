@@ -77,11 +77,12 @@ public class NarratorService extends Service implements Callback, SetupListener{
 //	public static final boolean LOCAL = true;
 
 	public SocketHost socketHost;
+	private ServiceConnection socketHostServiceConnection;
 	public void startHost(Activity activity, String name) {
         Intent intent = new Intent(activity, SocketHost.class);
         intent.putExtra(ChatManager.NAME, name);
         activity.startService(intent);
-        activity.bindService(intent, new ServiceConnection(){
+        activity.bindService(intent, socketHostServiceConnection = new ServiceConnection(){
 			public void onServiceConnected(ComponentName className, IBinder binder) {
                 SocketHost.MyBinder b = (SocketHost.MyBinder) binder;
                 socketHost = b.getService();
@@ -89,7 +90,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 			}
 
 			public void onServiceDisconnected(ComponentName className) {
-				
+				socketHost = null;
 			}
         }, Context.BIND_AUTO_CREATE);
 		
@@ -101,12 +102,13 @@ public class NarratorService extends Service implements Callback, SetupListener{
     }
 
 	public SocketClient socketClient;
+	private ServiceConnection socketClientServiceConnection;
 	public void startClient(ActivityHome a, String ip, final SocketClient.ClientListener cl) {
 		Intent intent = new Intent(this, SocketClient.class);
         intent.putExtra(SocketClient.HOST_IP_ADDRESS, ip);
         startService(intent);
 
-        bindService(intent, new ServiceConnection(){
+        bindService(intent, socketClientServiceConnection = new ServiceConnection(){
 			public void onServiceConnected(ComponentName className, IBinder binder) {
 				SocketClient.MyBinder b = (SocketClient.MyBinder) binder;
 				socketClient = b.getService();
@@ -116,7 +118,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 			}
 
 			public void onServiceDisconnected(ComponentName className) {
-				
+				socketClient = null;
 			}
         }, Context.BIND_AUTO_CREATE);
 	}
@@ -323,6 +325,15 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	}
 
 	public void onDestroy(){
+		if(socketClient!=null)
+			try{
+				unbindService(socketClientServiceConnection);
+			}catch(IllegalArgumentException|NullPointerException e){}
+		if(socketHost!=null) {
+			try {
+				unbindService(socketHostServiceConnection);
+			} catch (IllegalArgumentException|NullPointerException e) {}
+		}
 		Log.e("NarratorService", "ondestroy triggered");
 	}
 }

@@ -934,4 +934,10 @@ implements
 		}
 		return ret;
 	}
+
+	public void onDestroy(){
+		this.unbindNarrator();
+		speaker.shutdown();
+		super.onDestroy();
+	}
 }
