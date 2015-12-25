@@ -296,10 +296,12 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	
 	
 	
-	public void startGame(long seed, Rules r){
-		local.setSeed(seed);
-		local.setRules(r);
-		local.startGame();
+	public synchronized void startGame(long seed, Rules r){
+		if(!local.isStarted()) {
+			local.setSeed(seed);
+			local.setRules(r);
+			local.startGame();
+		}
 
 		if (Server.IsLoggedIn()) {
 			sManager.startDay();
