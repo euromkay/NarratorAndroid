@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -51,6 +53,22 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }
         setTitle();
 
+        EditText edit_txt = (EditText) mainView.findViewById(R.id.addPlayerContent);
+
+        edit_txt.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    onClick(null);
+                    return true;
+                }
+                if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    onClick(null);
+                    return true;
+                }
+                return false;
+            }
+        });
+
         return mainView;
     }
 
@@ -74,7 +92,6 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             tv.setTextColor(ActivityCreateGame.ParseColor(activity, R.color.redBlood));
             clicked.setComputer();
         }
-
     }
 
     private ArrayAdapter<String> getAdapter(String[] players){

@@ -101,7 +101,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
-					Server.RegisterGame(new Server.GameRegister() {
+					Server.RegisterGame(this, new Server.GameRegister() {
 						public void onSuccess(GameListing gl) {
 							ns.refresh();
 							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
@@ -134,7 +134,10 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				if(isLoggedIn()){
 					displayGames(GameBookPopUp.RESUME);
 				}else{
-					toast("Not implemented yet.");
+					if(ns.local.getAllPlayers().isEmpty())
+						onClick(findViewById(R.id.home_host));
+					else
+						start(null);
 				}
 				break;
 
@@ -207,6 +210,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		SharedPreferences.Editor prefs = getPreferences(Context.MODE_PRIVATE).edit();
 		prefs.putString(HOST_NAME, name);
 		prefs.commit();
+
+		ns.refresh();
 
 		if (isHost){
 			np.dismiss();
@@ -320,7 +325,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
 	public void start(GameListing gl){
-		if(isLoggedIn())
+		if(isLoggedIn() && gl != null)
 			ns.setGameListing(gl);
 		Class<?> activ;
 		if(ns.getNarrator().isInProgress() || ns.local.getWinMessage() != null)

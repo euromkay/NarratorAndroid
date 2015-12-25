@@ -303,9 +303,10 @@ public class NarratorService extends Service implements Callback, SetupListener{
 			local.startGame();
 		}
 
-		if (Server.IsLoggedIn()) {
-			sManager.startDay();
-		}else if(isHost()){
+
+		sManager.startDay();
+
+		if(!Server.IsLoggedIn() && isHost()){
 			if (socketHost.sockets.isEmpty()){
 				socketHost.onDestroy();
 			}else{

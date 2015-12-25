@@ -313,7 +313,7 @@
         android:textColor="@color/white"
         android:imeOptions="actionDone"
         android:layout_marginBottom="2dp"
-        android:singleLine="true"
+        android:inputType="text"
         android:hint="Send Message"/>
     <ScrollView
         android:id="@+id/day_chatHolder"

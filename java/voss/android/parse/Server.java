@@ -24,6 +24,8 @@ import java.util.List;
 import voss.android.ActivitySettings;
 import voss.android.NarratorService;
 import voss.android.SuccessListener;
+import voss.android.alerts.GameBookPopUp;
+import voss.android.screens.ActivityHome;
 import voss.android.setup.SetupManager;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
@@ -129,7 +131,7 @@ public class Server {
     }
 
 
-    public static void RegisterGame(final GameRegister g){
+    public static void RegisterGame(final ActivityHome a, final GameRegister g){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
         query.whereEqualTo(ParseConstants.INSTANCE_HOST_KEY, ParseUser.getCurrentUser().getUsername());
         query.whereEqualTo(ParseConstants.ACTIVE, true);
@@ -139,7 +141,8 @@ public class Server {
                     if (gameLists.size() == 0) {
                         CreateGame(g);
                     } else {
-                        g.onFailure("You can't host more then one game at a time!");
+                        GameListing gl = new GameListing(gameLists.get(0));
+                        GameBookPopUp.joinGame(gl, a, GameBookPopUp.RESUME);
                     }
                 } else {
                     g.onFailure(e.getMessage());

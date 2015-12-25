@@ -293,6 +293,7 @@
             android:layout_toStartOf="@id/day_chatButton"
             android:layout_toLeftOf="@id/day_chatButton"
             android:textColor="@color/white"
+            android:focusableInTouchMode="true"
             android:imeOptions="actionDone"
             android:layout_marginBottom="2dp"
             android:singleLine="true"
@@ -323,6 +324,7 @@
                 android:id="@+id/day_chatTV"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
                 android:gravity="left"
                 android:textColor="@color/white"
                 android:textSize="19sp" />

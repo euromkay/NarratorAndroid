@@ -112,8 +112,10 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
 
         if (!hostToGame.containsKey(potentialHostName)){
             a.toast("No games are being run by that host");
-        }else
-            joinGame(hostToGame.get(potentialHostName));
+        }else {
+            joinGame(hostToGame.get(potentialHostName), a, mode);
+            dismiss();
+        }
     }
 
     public void onItemClick(AdapterView<?> av, View v, int i, long l){
@@ -123,7 +125,8 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         String hostName = gameSelected.getHostName();
 
         if(hostName.equals(prevText)) {
-            joinGame(gameSelected);
+            joinGame(gameSelected, a, mode);
+            dismiss();
         }
         setSearchBar(hostName);
     }
@@ -136,7 +139,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         searchBar.setText(s);
     }
 
-    private synchronized void joinGame(GameListing gl){
+    public static synchronized void joinGame(GameListing gl, ActivityHome a, int mode){
         Server.Channel(gl);
 
         a.ns.refresh();
@@ -175,7 +178,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         }
 
         a.start(gl);//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));
-        dismiss();
+
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

@@ -21,10 +21,14 @@ import android.text.Html;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -121,6 +125,8 @@ implements
 	public void onBackPressed(){
 		if (!manager.getNarrator().isInProgress()){
 			stopTexting();
+			speaker.stop();
+			speaker.shutdown();
 			finish();
 		}
 		if (drawerOut){
@@ -143,7 +149,7 @@ implements
 	
 	
 	private void setup(Bundle b){
-		if (manager != null)
+		if (playerMenu != null)
 			return;
 		connectNarrator(new NarratorConnectListener() {
 			public void onConnect() {
@@ -177,6 +183,20 @@ implements
 
 		chatLV         = (ScrollView) findViewById(R.id.day_chatHolder);
 		chatET         = (EditText) findViewById(R.id.day_chatET);
+		chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					sendMessage();
+					return true;
+				}
+				else if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+					sendMessage();
+					return true;
+				}
+				return false;
+			}
+		});
+
 
 		commandTV = (TextView) findViewById(R.id.day_commandsLabel);
 		actionLV       = (ListView) findViewById(R.id.day_actionList);
@@ -625,6 +645,7 @@ implements
 
 	public void onExitGame(){
 		stopTexting();
+		speaker.stop();
 		speaker.shutdown();
 		unbindNarrator();
 		finish();
@@ -737,6 +758,13 @@ implements
 		chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
+			}
+		});
+		chatET.post(new Runnable() {
+			public void run() {
+				chatET.requestFocusFromTouch();
+				InputMethodManager lManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				lManager.showSoftInput(chatET, 0);
 			}
 		});
 	}
@@ -937,6 +965,7 @@ implements
 
 	public void onDestroy(){
 		this.unbindNarrator();
+		speaker.stop();
 		speaker.shutdown();
 		super.onDestroy();
 	}
