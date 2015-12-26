@@ -35,6 +35,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     public View mainView;
     ListView lv;
     public PlayerList players;
+    private boolean first = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
@@ -81,16 +82,24 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         if(clicked.getCommunicator().getClass() == CommunicatorInternet.class)
             return;
-        if(clicked.getCommunicator().getClass() == CommunicatorNull.class)
-            return;
+        if(clicked.getCommunicator().getClass() == CommunicatorNull.class){
+            if(clicked.isComputer())
+                activity.getManager().removePlayer(clicked.getName(), false);//gotta be a host delete
+            else
+                return;
+        }
         if(clicked.isComputer()){
         	activity.getManager().removePlayer(clicked.getName(), false);//gotta be a host delete
         }else if(!activity.getManager().isHost()) {
         	activity.getManager().requestRemovePlayer(clicked.getName());
-        }else{
+        }else {
             TextView tv = (TextView) v;
             tv.setTextColor(ActivityCreateGame.ParseColor(activity, R.color.redBlood));
             clicked.setComputer();
+            if (first){
+                activity.toast(clicked.getName() + " is now a computer. Click again to delete.");
+                first = false;
+            }
         }
     }
 

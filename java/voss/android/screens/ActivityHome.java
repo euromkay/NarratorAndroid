@@ -9,6 +9,8 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +20,10 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.parse.FunctionCallback;
+import com.parse.ParseException;
+
 import voss.android.ActivityTutorial;
 import voss.android.CommunicatorPhone;
 import voss.android.NActivity;
@@ -62,10 +68,26 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		}else{
 
 		}
-		
+
+
+		try {
+			final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+			Server.CheckVersion(pInfo.versionCode, new FunctionCallback() {
+				public void done(Object o, ParseException e) {
+					displayUpdate();
+				}
+
+				public void done(Object o, Throwable throwable) {
+					displayUpdate();
+				}
+			});
+		}catch(PackageManager.NameNotFoundException e){}
 		connectNarrator(null);
 	}
-	
+
+	private void displayUpdate(){
+		findViewById(R.id.home_update).setVisibility(View.VISIBLE);
+	}
 	
 	public Narrator getNarrator(){
 		return ns.getNarrator();

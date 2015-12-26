@@ -11,6 +11,8 @@
     android:paddingTop="16dp"
     tools:context=".ActivityHome" >
 
+
+
     <ImageView
         android:id="@+id/home_logoimage"
         android:layout_width="wrap_content"
@@ -112,4 +114,16 @@
         android:layout_toStartOf="@+id/home_logoimage" />
 
 
+    <TextView
+        android:id="@+id/home_update"
+        android:layout_width="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
+        android:text="Your version of Mafia isn't updated anymore and may not work correctly"
+        android:textSize="23sp"
+        android:textColor="@color/black"
+        android:background="@color/oranegRed"
+        />
 </RelativeLayout>

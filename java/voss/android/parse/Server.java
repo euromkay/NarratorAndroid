@@ -415,4 +415,17 @@ public class Server {
         });
     }
 
+    public static final void CheckVersion(int version, final FunctionCallback t){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("v", version);
+        ParseCloud.callFunctionInBackground("checkVersion", params, new FunctionCallback<Object>() {
+            public void done(Object o, ParseException e) {
+                if(e == null) {
+                    if(o.getClass() == Boolean.class)
+                        if(!(Boolean) o)
+                            t.done(null, null);
+                }
+            }
+        });
+    }
 }
