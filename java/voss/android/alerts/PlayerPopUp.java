@@ -3,6 +3,7 @@ package voss.android.alerts;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -11,11 +12,13 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import voss.android.CommunicatorPhone;
+import voss.android.NActivity;
 import voss.android.R;
 import voss.android.parse.Server;
 import voss.android.setup.ActivityCreateGame;
@@ -43,7 +46,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         lv = (ListView) mainView.findViewById(R.id.listView1);
 
-        ArrayAdapter<String> adapter = getAdapter(players.getNamesToStringArray());
+        ListAdapter adapter = getAdapter(players);
         lv.setAdapter(adapter);
         if (Server.IsLoggedIn()) {
             mainView.findViewById(R.id.addPlayerContent).setVisibility(View.GONE);
@@ -103,9 +106,13 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }
     }
 
-    private ArrayAdapter<String> getAdapter(String[] players){
-        return new ArrayAdapter<>(getActivity().getApplicationContext(), android.R.layout.simple_list_item_1, players);
+    private ListAdapter getAdapter(PlayerList players){
+        return new ListAdapter(players, activity);
     }
+
+
+
+
 
 
     public void onClick(View v) {
@@ -131,7 +138,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
     public void updatePlayerList(){
         players = mListener.getNarrator().getAllPlayers();
-        lv.setAdapter(getAdapter(players.getNamesToStringArray()));
+        lv.setAdapter(getAdapter(players));
     }
 
     public void pushPlayersDown(){
@@ -167,14 +174,11 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         this.activity = (ActivityCreateGame) a;
         activity.getManager().addListener(this);
         try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (AddPlayerListener) a;
             mListener.onPopUpCreate(this);
             players = mListener.getNarrator().getAllPlayers();
         } catch (ClassCastException e) {
-            // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException(a.toString()
-                    + " must implement AddPlayerListenerListener");
+            throw new ClassCastException(a.toString() + " must implement AddPlayerListenerListener");
         }
     }
 
@@ -197,5 +201,61 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     public void onPlayerRemove(String name){
         updatePlayerList();
         setTitle();
+    }
+
+
+    public class ListAdapter extends BaseAdapter{
+
+        private PlayerList data;
+        private NActivity c;
+        private Typeface font;
+
+        public ListAdapter(PlayerList data, NActivity c){
+            this.data = data;
+            this.c = c;
+            font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
+        }
+
+        public int getCount() {
+            return data.size();
+        }
+
+        public String getItem(int position) {
+            return data.get(position).getName();
+        }
+
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView result;
+
+            if (convertView == null) {
+                result = (TextView) c.getLayoutInflater().inflate(R.layout.create_roles_right_item, parent, false);
+            } else {
+                result = (TextView) convertView;
+            }
+
+            Player p = data.get(position);
+            String name = p.getName();
+            int color;
+            if (p.isComputer()){
+                color = getColor(R.color.redBlood);
+            }else{
+                color = getColor(R.color.white);
+            }
+            result.setText(name);
+            //result.setTypeface(font);
+            result.setTextColor(color);
+
+            return result;
+
+
+        }
+
+        private int getColor(int id){
+            return NActivity.ParseColor(c, id);
+        }
     }
 }

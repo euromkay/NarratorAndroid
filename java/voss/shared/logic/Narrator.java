@@ -520,7 +520,7 @@ public class Narrator{
 			if(roleListSize > players.size())
 				message = "Not enough players. Remove " + (roleListSize - players.size()) +  " roles or wait for more.";
 			else
-				message = "Too many players. Add more roles or wait for " + (players.size() - roleListSize) + " more.";
+				message = "Too many players. Add more roles or remove " + (players.size() - roleListSize) + " player(s).";
 			throw new IllegalGameSettingsException(message);	
 		}
 	}
@@ -725,6 +725,7 @@ public class Narrator{
 		for(Player p: players){
 			if(!p.isAlive())
 				continue;
+			p.saveNightTargets();
 			
 			Player[] target = p.getNightTargets();
 			if(p.getAbilityCount() == 1){

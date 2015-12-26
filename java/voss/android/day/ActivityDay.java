@@ -26,7 +26,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
@@ -598,7 +597,8 @@ implements
 			else
 				hideView(button);
 
-			if(manager.getCurrentPlayer().getTeam().getMembers().getLivePlayers().size() > 1){
+			Team t = manager.getCurrentPlayer().getTeam();
+			if(t.getMembers().getLivePlayers().size() > 1 && t.knowsTeam()){
 				showView(alliesTV);
 				showView(alliesLV);
 				hideView(rolesTV);

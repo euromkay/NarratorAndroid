@@ -10,8 +10,9 @@ public class DeathType {
 	private ArrayList<Integer> attacks = new ArrayList<Integer>();
 	private boolean lynchDeath;
 	private int day;
-	public DeathType(boolean day) {
-		lynchDeath = day;
+	public DeathType(boolean phase, int day) {
+		lynchDeath = phase;
+		this.day = day;
 	}
 
 	public DeathType(Packager in) {
@@ -27,10 +28,6 @@ public class DeathType {
 	
 	public void addDeath(int flag) {
 		attacks.add(flag);
-	}
-
-	public void setDay(int dayNumber) {
-		day = dayNumber;
 	}
 
 	public int getDeathDay() {

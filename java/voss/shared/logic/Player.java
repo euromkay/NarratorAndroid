@@ -2,6 +2,7 @@ package voss.shared.logic;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.exceptions.NotEqualsException;
@@ -189,6 +190,17 @@ public class Player implements ActionTaker{
 		return ability;
 	}
 	
+	private HashMap<Integer, Player[]> prevNightTargets = new HashMap<Integer, Player[]>();
+	public Player[] getPrevNightTarget(int day){
+		return prevNightTargets.get(day);
+	}
+	public void saveNightTargets(){
+		Player[] nightTargets = new Player[MAX_TARGET_NUMBER];
+		for(int i = 0; i < MAX_TARGET_NUMBER; i++){
+			nightTargets[i] = this.nightTargets[i];
+		}
+		prevNightTargets.put(n.getDayNumber(), nightTargets);
+	}
 	
 	public static final int MAX_TARGET_NUMBER = Role.MAIN_ABILITY + 1;
 	private Player[] nightTargets = new Player[MAX_TARGET_NUMBER];
@@ -541,7 +553,6 @@ public class Player implements ActionTaker{
 	private void setDead(int flag){
 		setDead();
 		deathType.addDeath(flag);
-		deathType.setDay(n.getDayNumber());
 	}
 	public void setLynchDeath(int dayNumber){
 		setDead(Constants.LYNCH_FLAG);
@@ -562,7 +573,6 @@ public class Player implements ActionTaker{
 	
 	
 	protected void onDayReset(){
-		nightTargets = new Player[MAX_TARGET_NUMBER];
 		role.dayReset(this);
 		jesterVote = false;
 		busDriven = false;
@@ -578,6 +588,7 @@ public class Player implements ActionTaker{
 		attackedByList.clear();
 	}
 	protected void onNightReset(){
+		nightTargets = new Player[MAX_TARGET_NUMBER];
 		role.nightReset();
 	}
 	
@@ -598,7 +609,6 @@ public class Player implements ActionTaker{
 		}
 		else{
 			//you weren't
-			deathType = new DeathType(n.isDay());
 			for(int type: attackTypeList){
 				String killFeedback = determineKillFeedback(type);
 				feedback.add(killFeedback);
@@ -618,7 +628,20 @@ public class Player implements ActionTaker{
 			e.add(s);
 			n.addEvent(e);
 		}
+		
+		ArrayList<String> todaysFeedback = new ArrayList<String>();
+		for(String s: feedback)
+			todaysFeedback.add(s);
+		pastFeedbacks.put(n.getDayNumber(), todaysFeedback);
 	}
+	private HashMap<Integer, ArrayList<String>> pastFeedbacks = new HashMap<Integer, ArrayList<String>>();
+	public ArrayList<String> getFeedback(int day){
+		if(pastFeedbacks.containsKey(day))
+			return pastFeedbacks.get(day);
+		return new ArrayList<String>();
+	}
+	
+	
 	private static String determineKillFeedback(int role){
 		if(role == Constants.A_MAFIA || role == Constants.A_YAKUZA)
 			return Mafioso.DEATH_FEEDBACK;
@@ -744,7 +767,7 @@ public class Player implements ActionTaker{
 				}
 				return p1.getName().compareTo(p2.getName());
 			}else
-				return p2.getDeathDay() - p1.getDeathDay();
+				return p1.getDeathDay() - p2.getDeathDay();
 		}
 
 	};
@@ -1010,7 +1033,7 @@ public class Player implements ActionTaker{
 		return new Player[0];
 	}
 	public void setDead() {
-		deathType = new DeathType(n.isDay());
+		deathType = new DeathType(n.isDay(), n.getDayNumber());
 		getTeam().removeMember(this);
 		
 	}

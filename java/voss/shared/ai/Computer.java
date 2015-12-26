@@ -4,12 +4,13 @@ package voss.shared.ai;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
+import voss.shared.logic.Rules;
 import voss.shared.logic.Team;
-import voss.shared.logic.exceptions.PhaseException;
 import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.roles.Arsonist;
 import voss.shared.roles.Framer;
 import voss.shared.roles.Mayor;
+import voss.shared.roles.Sheriff;
 
 
 public class Computer {
@@ -142,14 +143,14 @@ public class Computer {
             return;
         }
 
+        talkings();
+        
         day = n.getDayNumber();
 
         Player choiceA = brain.getDayChoices()[0];
         choiceA = n.getPlayerByName(choiceA.getName());
         Player choiceB = brain.getDayChoices()[1];
         choiceB = n.getPlayerByName(choiceB.getName());
-        
-        controller.say(slave, "What.");
         
         if(slave.isBlackmailed() || (choiceA.isDead() && choiceB.isDead())){
         	controller.vote(slave, slave.getSkipper());
@@ -200,5 +201,27 @@ public class Computer {
             }
 
         }
+    }
+    
+    private boolean noPrevNight(){
+    	Narrator n = slave.getNarrator();
+    	Rules r = n.getRules();
+    	if(n.getDayNumber() == 1 && r.DAY_START)
+    		return true;
+    	return false;
+    }
+    
+    private void talkings(){
+    	if(noPrevNight())
+    		return;
+    	Player target;
+    	Narrator n = slave.getNarrator();
+    	int lastNight = n.getDayNumber() - 1;
+    	if(slave.is(Sheriff.ROLE_NAME)){
+    		target = slave.getPrevNightTarget(lastNight)[Sheriff.MAIN_ABILITY];
+    		slave.say("My target was " + target.getName());
+    		for(String s: slave.getFeedback(lastNight))
+    			slave.say(s);
+    	}
     }
 }
