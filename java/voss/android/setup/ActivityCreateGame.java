@@ -9,15 +9,19 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -142,6 +146,20 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 			chatET = (EditText) findViewById(R.id.create_chatET);
 			chatTV = (TextView) findViewById(R.id.create_chatTV);
+
+			chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+					if (actionId == EditorInfo.IME_ACTION_DONE) {
+						sendMessage();
+						return true;
+					}
+					else if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+						sendMessage();
+						return true;
+					}
+					return false;
+				}
+			});
 
 			chatButton = (Button) findViewById(R.id.create_toChat);
 			if(Server.IsLoggedIn()) {
@@ -491,13 +509,15 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private EditText chatET;
 	private TextView chatTV;
 	private void sendMessage(){
+		if(!Server.IsLoggedIn())
+			return;
+
 		String message = chatET.getText().toString();
 		if(chatET.length() == 0)
 			return;
 
-		manager.talk(message);
-
 		chatET.setText("");
+		manager.talk(message);
 	}
 
 	protected void updateChat(){
@@ -508,6 +528,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		String events = ns.local.getEvents(Server.GetCurrentUserName(), true);
 		events = events.replace("\n", "<br>");
 		chatTV.setText(Html.fromHtml(events));
+		pushChatDown();
 	}
 
 	private boolean chatVisible(){
@@ -574,6 +595,22 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				break;
         }
 
+	}
+
+	public void pushChatDown() {
+		final ScrollView chatLV = (ScrollView) findViewById(R.id.day_chatHolder);
+		chatLV.post(new Runnable() {
+			public void run() {
+				chatLV.fullScroll(View.FOCUS_DOWN);
+			}
+		});
+		chatET.post(new Runnable() {
+			public void run() {
+				chatET.requestFocusFromTouch();
+				InputMethodManager lManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				lManager.showSoftInput(chatET, 0);
+			}
+		});
 	}
 
     public Toast toast(String message){
