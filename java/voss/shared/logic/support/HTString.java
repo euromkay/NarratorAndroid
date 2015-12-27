@@ -19,4 +19,8 @@ public class HTString {
 			return data;
 		}
 	}
+
+	public int getColor() {
+		return color;
+	}
 }

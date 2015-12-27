@@ -153,9 +153,9 @@ public class RandomRole extends RoleTemplate implements Alignment{
 	
 	
 	private static final int 
-	CITIZEN_WEIGHT = 1,
+	CITIZEN_WEIGHT = 20,
 	
-	SHERIFF_WEIGHT = 5,
+	SHERIFF_WEIGHT = 3,
 	LOOKOUT_WEIGHT = 2,
 	DETECTIVE_WEIGHT = 2,
 	

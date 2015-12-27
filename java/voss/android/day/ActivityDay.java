@@ -819,7 +819,7 @@ implements
 		happenings.append(manager.getNarrator().getEvents(Event.PRIVATE, true));
 
 		happenings.append("\n");
-		for (Player p: manager.getNarrator().getAllPlayers()){
+		for (Player p: manager.getNarrator().getAllPlayers().sortByRole()){
 			happenings.append("\n");
 			happenings.append(Event.toHTML(p));
 		}

@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
+import voss.shared.logic.Team;
 
 
 public class Brain {
@@ -70,7 +71,7 @@ public class Brain {
         
     }
     private void talkings(){
-    	for(Player s: slaves){
+    	for(Player s: slaves.getLivePlayers()){
     		getComputer(s).talkings();
     	}
     	PlayerList list;
@@ -213,6 +214,14 @@ public class Brain {
 			else
 				nightAction();
 		}
+	}
+
+	public ArrayList<Claim> claims = new ArrayList<>();
+	public void claim(Player target, Team t, Player slave) {
+		Claim c = new Claim(target, t, slave);
+		if(!slave.isBlackmailed())
+			claims.add(c);
+		
 	}
 
 	

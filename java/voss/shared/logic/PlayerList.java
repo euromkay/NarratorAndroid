@@ -196,8 +196,14 @@ public class PlayerList implements Iterable<Player>{
 		return list.remove(list.size()-1);
 	}
 
-	public void sortBySubmissionTime() {
+	public PlayerList sortByRole(){
+		Collections.sort(list, Player.Roles);
+		return this;
+	}
+	
+	public PlayerList sortBySubmissionTime() {
 		Collections.sort(list, Player.SubmissionTime);
+		return this;
 	}
 	public PlayerList sortByName(){
 		Collections.sort(list, Player.NameSort);

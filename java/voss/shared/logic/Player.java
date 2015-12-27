@@ -17,6 +17,7 @@ import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
 import voss.shared.logic.support.HTString;
+import voss.shared.logic.support.RoleTemplate;
 import voss.shared.logic.support.Shuffler;
 import voss.shared.logic.support.StringChoice;
 import voss.shared.roles.Arsonist;
@@ -751,6 +752,16 @@ public class Player implements ActionTaker{
 		}
 
 	};
+	
+	public static final Comparator<Player> Roles = new Comparator<Player>() {
+		public int compare(Player p1, Player p2) {
+			Member m1 = new Member(p1.getRoleName(), p1.getAlignment());
+			Member m2 = new Member(p2.getRoleName(), p2.getAlignment());
+			return RoleTemplate.RandomComparator().compare(m1, m2);
+		}
+
+	};
+	
 	public static final Comparator<Player> NameSort = new Comparator<Player>() {
 		public int compare(Player p1, Player p2) {
 			return p1.getName().compareTo(p2.getName());

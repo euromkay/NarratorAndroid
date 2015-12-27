@@ -8,9 +8,12 @@ import voss.shared.logic.PlayerList;
 import voss.shared.logic.Rules;
 import voss.shared.logic.Team;
 import voss.shared.logic.exceptions.PlayerTargetingException;
+import voss.shared.logic.support.Constants;
 import voss.shared.roles.Arsonist;
+import voss.shared.roles.Executioner;
 import voss.shared.roles.Framer;
 import voss.shared.roles.Janitor;
+import voss.shared.roles.Jester;
 import voss.shared.roles.Mayor;
 import voss.shared.roles.Sheriff;
 
@@ -167,16 +170,53 @@ public class Computer {
     }
     
     void talkings(){
-    	if(noPrevNight())
-    		return;
-    	if(slave.is(Sheriff.ROLE_NAME)){
-    		sheriffTalk();
     	if(slave.is(Mayor.ROLE_NAME)){
     		if(slave.hasDayAction())
             	controller.doDayAction(slave);
     	}
-    		
+    	if(noPrevNight())
+    		return;
+    	if(slave.is(Sheriff.ROLE_NAME)){
+    		sheriffTalk();
+    	}else if(slave.is(Executioner.ROLE_NAME)){
+    		exeuctionerTalk();
+    	}else if(slave.is(Jester.ROLE_NAME)){
+    		jesterTalk();
     	}
+    	
+    }
+    
+    private Narrator getNarrator(){
+    	return slave.getNarrator();
+    }
+    
+    private Team getTeam(int i){
+    	return getNarrator().getTeam(i);
+    }
+    
+    private void exeuctionerTalk(){
+    	Executioner ex = (Executioner) slave.getRole();
+    	Player target = ex.getTarget(slave);
+    	if(target.isDead())
+    		return;
+
+    	Team arsons = getTeam(Constants.A_ARSONIST);
+    	String say = "I'm Sheriff. ";
+    	say = say + target.getName() + " is a(n) " + arsons.getName() + ".";
+		slave.say(say);
+		
+    	brain.claim(target, arsons, slave);
+    }
+    
+    private void jesterTalk(){
+    	Team arsons = getTeam(Constants.A_ARSONIST);
+    	Player randAccused = slave.getNarrator().getLivePlayers().getRandom(brain.random);
+    	
+    	String say = "I'm Sheriff. ";
+    	say = say + randAccused.getName() + " is a(n) " + arsons.getName() + ".";
+		slave.say(say);
+    	
+    	brain.claim(randAccused, arsons, slave);
     }
     
     private void sheriffTalk(){
@@ -189,7 +229,9 @@ public class Computer {
 				if(s.equals(Sheriff.NOT_SUSPICIOUS)){
 					say = say + target.getName() + " is not suspicious.";
 				}else{
-					say = say + target.getName() + " is a(n) " + e.getHTStrings().get(0).access(false) + ".";
+					Team t = slave.getNarrator().getTeam(e.getHTStrings().get(0).getColor());
+					brain.claim(target, t, slave);
+					say = say + target.getName() + " is a(n) " + t.getName() + ".";
 					slave.say(say);
 				}
 			}
@@ -212,21 +254,41 @@ public class Computer {
 			if(slave.getVoteTarget() == slave.getSkipper())
 				return null;
 			return controller.skipVote(slave);
-		}else{
-			Player choice;
-			if (slave.getTeam().knowsTeam()){
-				choice = choices.compliment(slave.getTeam().getMembers().getLivePlayers()).getRandom(brain.random);
-				if(choice != null && slave.getVoteTarget() != choice){
-					return controller.vote(slave, choice);
-				}
-			}
-			choice = choices.copy().remove(slave).getRandom(brain.random);
-			
-			if(choice == null)
-				return controller.skipVote(slave);
-			else if(slave.getVoteTarget() != choice)
-				return controller.vote(slave, choice);
+		
 		}
+		choices = choices.copy();
+		choices.remove(slave);
+		if(choices.isEmpty())
+			return controller.skipVote(slave);
+		
+		PlayerList temp;
+		
+		if (slave.getTeam().knowsTeam()){
+			temp = choices.copy();
+			temp.remove(slave.getTeam().getMembers().getLivePlayers());
+			if(!temp.isEmpty())
+				choices = temp;
+		}
+		for(Claim c: brain.claims){
+			if(choices.size() <= 1)
+				break;
+			
+			temp = choices.copy();
+			if (c.believable(slave) && choices.contains(c.accused)){
+				if(slave.getVoteTarget() == c.accused)
+					return null;
+				return controller.vote(slave, c.accused);
+			}else if(c.outlandish(slave) && choices.contains(c.prosecutor)){
+				if(slave.getVoteTarget() == c.prosecutor)
+					return null;
+				return controller.vote(slave, c.prosecutor);
+			}
+		}
+		Player choice = choices.getRandom(brain.random);
+		
+		if(slave.getVoteTarget() != choice)
+			return controller.vote(slave, choice);
+		
 		
 		return null;
 	}

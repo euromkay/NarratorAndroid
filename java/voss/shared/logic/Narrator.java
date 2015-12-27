@@ -66,7 +66,7 @@ public class Narrator{
 	public static final int NORMAL_HEALTH = 0;
 	public static final String KEY = "NARRATOR_KEY";
 
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	public static final boolean EMU = true;
 	
 	public static Narrator Default(){
@@ -1244,7 +1244,7 @@ public class Narrator{
 	
 	public Object commandLock = new Object();
 	protected void talk(Player p, String message){
-		if(p.isBlackmailed())
+		if(p.isBlackmailed() || p.isDead())
 			return;
 		Event e = new Event();
 		if (isNight()) {
