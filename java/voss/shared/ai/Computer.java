@@ -1,6 +1,7 @@
 package voss.shared.ai;
 
 
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -30,7 +31,9 @@ public class Computer {
     public void doNightAction(){
         if (slave.endedNight())
             controller.cancelEndNight(slave);
-        PlayerList selections = slave.getNarrator().getLivePlayers().remove(brain.masters);
+        PlayerList selections = slave.getNarrator().getLivePlayers();
+        if(!brain.targetAnyone)
+        	selections.remove(brain.masters);
 
         String[] abilities = slave.getAbilities();
         for(String action: abilities){
@@ -39,6 +42,9 @@ public class Computer {
             if(mafSendAbility(ability))
             	continue;
             if (arsonAbility(ability, selections))
+            	continue;
+            
+            if (mafKillAbility(ability, selections))
             	continue;
             
             Player choice = getTargetChoice(ability, selections.copy());
@@ -104,6 +110,18 @@ public class Computer {
     		Player sender = brain.getMafSender(slave);
     		if(sender == slave || !slave.isBlackmailed()) //if not blackmailed, they can choose whoever they want. if they are, they'll shut up if its not themselves
     			controller.setNightTarget(slave, sender, Team.SEND);
+    		return true;
+    	}
+    		
+    	return false;	
+    }
+    
+    private boolean mafKillAbility(int ability, PlayerList selections){
+    	if(ability == Team.KILL_){
+    		selections = selections.copy();
+    		selections.remove(slave.getTeam().getMembers());
+    		if(brain.getMafSender(slave) == slave)
+    			controller.setNightTarget(slave, selections.getRandom(brain.random), Team.KILL);
     		return true;
     	}
     		
@@ -214,14 +232,28 @@ public class Computer {
     private void talkings(){
     	if(noPrevNight())
     		return;
-    	Player target;
-    	Narrator n = slave.getNarrator();
-    	int lastNight = n.getDayNumber() - 1;
     	if(slave.is(Sheriff.ROLE_NAME)){
-    		target = slave.getPrevNightTarget(lastNight)[Sheriff.MAIN_ABILITY];
-    		slave.say("My target was " + target.getName());
-    		for(String s: slave.getFeedback(lastNight))
-    			slave.say(s);
+    		sheriffTalk();
+    		
+    		
     	}
+    }
+    
+    private void sheriffTalk(){
+    	int lastNight = slave.getNarrator().getDayNumber() - 1;
+    	for(Event e: slave.getFeedback(lastNight)){
+			String s = e.access(slave, false).replace("\n", "");
+			if(s.startsWith("Your target")){
+				Player target = slave.getPrevNightTarget(lastNight)[Sheriff.MAIN_ABILITY];
+				String say = "I'm Sheriff. ";
+				if(s.equals(Sheriff.NOT_SUSPICIOUS)){
+					say = say + target.getName() + " is not suspicious.";
+				}else{
+					say = say + target.getName() + " is a(n) " + e.getHTStrings().get(0).access(false) + ".";
+					slave.say(say);
+				}
+			}
+			
+		}
     }
 }

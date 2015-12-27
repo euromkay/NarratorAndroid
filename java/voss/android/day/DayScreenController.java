@@ -205,8 +205,10 @@ public class DayScreenController implements NarratorListener{
 
 
 	private void deadCurrentPlayerCheck(PlayerList possibleDeadList){
-		if(possibleDeadList.contains(currentPlayer))
+		if(possibleDeadList.contains(currentPlayer)) {
+			manager.setCurrentPlayer(null);
 			setNarratorInfoView();
+		}
 	}
 
 	public void setNarratorInfoView(){
@@ -361,7 +363,9 @@ public class DayScreenController implements NarratorListener{
 
 	private void updateChatPanel(){
 		String text;
-		if (!playerSelected())
+		if (!manager.getNarrator().isInProgress()){
+			text = manager.getNarrator().getEvents(Event.PRIVATE, true);
+		}else if (!playerSelected())
 			text = manager.getNarrator().getEvents(Event.PUBLIC, true);
 		else
 			text = getNarrator().getEvents(currentPlayer, true);

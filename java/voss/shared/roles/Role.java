@@ -13,6 +13,7 @@ import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.exceptions.UnknownRoleException;
 import voss.shared.logic.exceptions.UnsupportedMethodException;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.HTString;
 import voss.shared.logic.support.StringChoice;
 import voss.shared.packaging.Packager;
 
@@ -52,11 +53,11 @@ public abstract class Role{
 			owner.getNarrator().addEvent(e);
 			if(t.knowsTeam()){
 				for(Player teamMember: t.getMembers()){
-					teamMember.sendMessage(e.access(teamMember, false));
+					teamMember.sendMessage(e);
 				}
 			}
 			else
-				owner.sendMessage(e.access(owner, false));
+				owner.sendMessage(e);
 			//t.notifyTeammates(owner, " will " + getKeyWord() + " " + target, getKeyWord());
 		}
 
@@ -108,7 +109,7 @@ public abstract class Role{
 		if(owner.isDetectable())
 			owner.visit(target);
 		Event e = new Event();
-		e.add(owner, " killed ", target, ".");
+		e.add(owner, " attacked ", target, ".");
 		e.setPrivate();
 		n.addEvent(e);
 		target.kill(flag, owner);
@@ -119,8 +120,13 @@ public abstract class Role{
 		Event e = new Event();
 		e.add(sender, " recruited ", target, ".");
 		e.setPrivate();
-		target.addNightFeedback("You've been recruited into the " + sender.getTeam().getName() + ".");
 		n.addEvent(e);
+		
+		e = Event.StringFeedback("You've been recruited into the ", target);
+		e.add(new HTString(sender.getTeam().getName(), sender.getTeam().getAlignment()));
+		e.add(".");
+		target.addNightFeedback(e);
+		
 	}
 
 	public static void Exception(String s){

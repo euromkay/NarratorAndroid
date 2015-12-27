@@ -9,7 +9,7 @@ import voss.shared.logic.PlayerList;
 
 public class Simulations {
 
-    private Brain brain;
+    public Brain brain;
     private Controller controller;
     public Simulations(Controller controller, Random rand, Narrator n){
         PlayerList slaves = new PlayerList();

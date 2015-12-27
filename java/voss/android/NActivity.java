@@ -46,7 +46,7 @@ public abstract class NActivity extends FragmentActivity{
 		}catch(IllegalArgumentException|NullPointerException e){}
     }
     
-    protected boolean networkCapable(){
+    public boolean networkCapable(){
 		if (Server.IsLoggedIn())
 			return true;
 		return Build.VERSION.SDK_INT >= 18;

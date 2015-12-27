@@ -60,7 +60,7 @@
 
         <LinearLayout
             android:id="@+id/day_roles_layout"
-            android:layout_width="100dp"
+            android:layout_width="200dp"
             android:layout_height="match_parent"
             android:layout_below="@id/day_playerDrawerButton"
             android:layout_alignParentStart="true"
@@ -92,7 +92,7 @@
 
         <LinearLayout
             android:id="@+id/members_layout"
-            android:layout_width="150dp"
+            android:layout_width="200dp"
             android:layout_alignTop="@id/day_roles_layout"
             android:layout_toRightOf="@id/day_roles_layout"
             android:layout_toEndOf="@id/day_roles_layout"
@@ -315,6 +315,7 @@
             android:layout_toLeftOf="@id/day_commandsLabel"
             android:layout_toStartOf="@id/day_commandsLabel"
             android:layout_marginEnd="10dp"
+            android:layout_marginTop="3dp"
             android:layout_marginRight="10dp"
             android:background="@color/category_tint"
             android:orientation="vertical"

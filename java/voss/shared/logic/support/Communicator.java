@@ -1,15 +1,11 @@
 package voss.shared.logic.support;
 
-import java.util.ArrayList;
-
 import voss.shared.packaging.Packager;
 
 
 public abstract class Communicator{
 
 	public abstract void sendMessage(String message);
-
-	public abstract void sendMessage(ArrayList<String> message);
 	
 	public boolean equals(Object o){
 		if(o == null)

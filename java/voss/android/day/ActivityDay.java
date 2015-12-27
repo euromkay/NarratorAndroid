@@ -147,7 +147,7 @@ implements
 	}
 	
 	
-	private void setup(Bundle b){
+	public void setup(Bundle b){
 		if (playerMenu != null)
 			return;
 		connectNarrator(new NarratorConnectListener() {
@@ -926,7 +926,7 @@ implements
 	public void onDrawerSlide(View v, float f){}
 	public void onDrawerStateChanged(int i){}
 	public void onDoubleTap() {
-		if (Narrator.DEBUG && !drawerOut && manager.getNarrator().isInProgress()) {
+		if (!drawerOut && manager.getNarrator().isInProgress()) {
 			synchronized(manager.ns.local){
 				manager.nextSimulation();
 			}

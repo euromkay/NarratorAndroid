@@ -69,7 +69,7 @@ public class Mayor extends Role {
 		sc = new StringChoice("has");
 		sc.add(owner, "have");
 		
-		e.add(sc, "revealed as the Mayor!");
+		e.add(sc, " revealed as the Mayor!");
 		n.addEvent(e);
 		
 		

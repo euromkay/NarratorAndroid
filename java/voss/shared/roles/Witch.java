@@ -102,7 +102,7 @@ public class Witch extends Role {
 		}
 		witch.visit(victim);
 		if(n.getRules().witchLeavesFeedback)
-			victim.addNightFeedback(WITCH_FEEDBACK);
+			victim.addNightFeedback(Event.StringFeedback(WITCH_FEEDBACK, victim));
 		
 		Event e = new Event();
 		e.add(witch, " changed ", victim, "\'s target to ", newTarget, ".");

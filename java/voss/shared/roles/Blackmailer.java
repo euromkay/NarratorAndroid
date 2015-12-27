@@ -14,7 +14,7 @@ public class Blackmailer extends Role{
 	}
 
 	public static final String ROLE_NAME = "Blackmailer";
-	public static final String FEEDBACK = "You were blackmailed";
+	public static final String FEEDBACK = "You were blackmailed.";
 	
 	public String getRoleName(){
 		return ROLE_NAME;
@@ -38,7 +38,7 @@ public class Blackmailer extends Role{
 			return false;
 		owner.visit(target);
 		target.setBlackmailed(true);
-		target.addNightFeedback(FEEDBACK);
+		target.addNightFeedback(Event.StringFeedback(FEEDBACK, owner));
 		Event e = new Event();
 		e.add(owner, " blackmailed ", target, ".");
 		e.setPrivate();

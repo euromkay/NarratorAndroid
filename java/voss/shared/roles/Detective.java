@@ -2,6 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -54,12 +55,15 @@ public class Detective extends Role {
 		PlayerList visits = target.getVisits();
 		visits.sortByName();
 		if(visits.isEmpty())
-			owner.addNightFeedback(NO_VISIT);
+			owner.addNightFeedback(Event.StringFeedback(NO_VISIT, owner));
 		else{
-			String message = FEEDBACK;
-			for(Player p: visits)
-				message += (p.getName() + ", ");
-			owner.addNightFeedback(Player.cleanup(message));
+			Event e = Event.StringFeedback(FEEDBACK, owner);
+			for(Player p: visits){
+				e.add(p);
+				if(visits.getLast() != p)
+					e.add(", ");
+			}
+			owner.addNightFeedback(e);
 		}
 		
 		

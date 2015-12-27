@@ -25,7 +25,7 @@ public class DayManager implements TextInput{
 	private   Player currentPlayer;
 
 	
-	protected DayScreenController dScreenController;
+	public DayScreenController dScreenController;
 	private TextController tC;
 	public NarratorService ns;
 	public PhoneBook phoneBook;
@@ -43,10 +43,17 @@ public class DayManager implements TextInput{
 		
 		phoneBook = new PhoneBook(ns.local);
 
-		simulations = new Simulations(new TestController(ns.local), new Random(), ns.local);
-		
-
 		tC = new TextController(this);
+
+		for(Player p: ns.local.getAllPlayers()){
+			if(p.isComputer()){
+				simulations = new Simulations(new TestController(ns.local), new Random(), ns.local);
+				simulations.brain.setTargetAnyone(true);
+				return;
+			}
+		}
+
+
 	}
 	private Simulations simulations;
 
@@ -218,7 +225,8 @@ public class DayManager implements TextInput{
 	}
 
 	public void nextSimulation(){
-		simulations.next();
+		if(simulations!= null)
+			simulations.next();
 	}
 
 	
@@ -232,13 +240,18 @@ public class DayManager implements TextInput{
 
 
 	public boolean isHost() {
-		return ns.socketHost != null;
+		if(Server.IsLoggedIn())
+			return false;
+		if(dScreenController.dScreen.networkCapable())
+			return ns.socketHost != null;
+		return true;
 	}
 	
 	public void text(Player p, String s, boolean sync){
 		s = p.getName() + Constants.NAME_SPLIT + s;
 		if(isHost()){
-			ns.socketHost.write(s);
+			if(ns.socketHost != null)
+				ns.socketHost.write(s);
 		}else{
 			if(Server.IsLoggedIn()) {
 				s = "," + s;

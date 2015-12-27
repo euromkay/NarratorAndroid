@@ -66,7 +66,7 @@ public class Narrator{
 	public static final int NORMAL_HEALTH = 0;
 	public static final String KEY = "NARRATOR_KEY";
 
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static final boolean EMU = true;
 	
 	public static Narrator Default(){
@@ -1055,7 +1055,9 @@ public class Narrator{
 		int toLynch = getMinLynchVote() - (getVoteCountOf(target) + 1);
 		if(voterList.containsKey(voter)){
 			prevTarget = unVoteHelper(voter);
-			e.add(" changed ", new StringChoice("their").add(voter, "your")," vote from ", prevTarget, " to ", target, numberOfVotesNeeded(toLynch));
+			sc = new StringChoice(target);
+			sc.add(target, "you");
+			e.add(" changed ", new StringChoice("their").add(voter, "your")," vote from ", prevTarget, " to ", sc, ". ", numberOfVotesNeeded(toLynch));
 
 			addVoteHelper(voter, target);
 
@@ -1064,7 +1066,9 @@ public class Narrator{
 				nl.onChangeVote(voter, target, prevTarget, toLynch);
 			}
 		}else{
-			e.add(" voted for ", target, numberOfVotesNeeded(toLynch));
+			sc = new StringChoice(target);
+			sc.add(target, "you");
+			e.add(" voted for ", sc, ". ", numberOfVotesNeeded(toLynch));
 
 			addVoteHelper(voter, target);
 
@@ -1077,6 +1081,8 @@ public class Narrator{
 		checkVote();
 	}
 	public static String numberOfVotesNeeded(int difference){
+		if(difference == 0)
+			return "(Hammer)";
         return "  (L - " + difference + ")";
     }
 	private void addVoteHelper(Player voter, Player target){
@@ -1104,9 +1110,12 @@ public class Narrator{
 		int difference = getMinLynchVote() - getVoteCountOf(Skipper);
 		
 		if(prevTarget == Skipper)
-			e.add(" decided against skipping the lynch" + numberOfVotesNeeded(difference));
-		else
-			e.add(" unvoted ", prevTarget, numberOfVotesNeeded(difference));
+			e.add(" decided against skipping the lynch. " + numberOfVotesNeeded(difference));
+		else{
+			sc = new StringChoice(prevTarget);
+			sc.add(prevTarget, "you");
+			e.add(" unvoted ", sc, ". ", numberOfVotesNeeded(difference));
+		}
 		addEvent(e);
 
 		for(NarratorListener nl: listeners){
@@ -1147,9 +1156,11 @@ public class Narrator{
 		addVoteHelper(p, Skipper);
 		int difference = getMinLynchVote() - getVoteCountOf(Skipper);
 		
-		if(prevTarget != null)
-			e.add(" decided against lynching ", prevTarget, " and instead wants to skip the day " + numberOfVotesNeeded(difference));
-		else
+		if(prevTarget != null){
+			sc = new StringChoice(prevTarget);
+			sc.add(prevTarget, "you");
+			e.add(" decided against lynching ", sc, " and instead wants to skip the day. " + numberOfVotesNeeded(difference));
+		}else
 			e.add(" voted to skip the day.");
 	
 		addEvent(e);
@@ -1388,8 +1399,11 @@ public class Narrator{
 			e.add("and ");
 		
 		e.add(winners.get(winners.size() - 1));
-		
-		e.add(" has won!");
+		if(winners.size() > 1){
+			e.add(" have ");
+		}else
+			e.add(" has ");
+		e.add("won!");
 		
 		return e;
 	}

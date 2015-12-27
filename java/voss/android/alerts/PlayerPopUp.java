@@ -55,6 +55,9 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             lv.setOnItemClickListener(this);
             mainView.findViewById(R.id.addPlayerConfirm).setOnClickListener(this);
         }
+
+
+
         setTitle();
 
         EditText edit_txt = (EditText) mainView.findViewById(R.id.addPlayerContent);

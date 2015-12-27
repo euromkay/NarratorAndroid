@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import voss.shared.logic.listeners.CommandListener;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
+import voss.shared.logic.support.HTString;
 import voss.shared.logic.support.StringChoice;
+import voss.shared.roles.Driver;
 
 
 public class Event {
@@ -30,6 +32,10 @@ public class Event {
 		eventParts = new ArrayList<>();
 		access = new ArrayList<>();
 	}
+	public Event(String s){
+		this();
+		add(s);
+	}
 
 	public String toString(){
 		boolean b = showInPrivate;
@@ -47,7 +53,10 @@ public class Event {
 		StringBuilder sb = new StringBuilder("");
 		if ((level.equals(PRIVATE) && showInPrivate) || access.contains(level) || isPublic()){
 			for(Object o: eventParts){
-				if(o instanceof Player){
+				if(o instanceof HTString){
+					HTString ht = (HTString) o;
+					sb.append(ht.access(html));
+				} else if(o instanceof Player){
 					accessHelper((Player) o, sb, level, html);
 				} else if (o instanceof StringChoice){
 					StringChoice sc = (StringChoice) o;
@@ -98,8 +107,9 @@ public class Event {
 	public void setVisibility(String v){
 		access.add(v);
 	}
-	public void setVisibility(Player p){
+	public Event setVisibility(Player p){
 		access.add(p.getName());
+		return this;
 	}
 
 	public void setVisibility(PlayerList list){
@@ -108,15 +118,17 @@ public class Event {
 		}
 	}
 	
-	public void add(Object part){
+	public Event add(Object part){
 		if(part == null)
 			throw new NullPointerException();
 		eventParts.add(part);
+		return this;
 	}
 	
-	public void add(Object ... objects) {
+	public Event add(Object ... objects) {
 		for(Object o: objects)
 			add(o);
+		return this;
 	}
 	
 	
@@ -133,6 +145,14 @@ public class Event {
 		//String red   = toHex(Color.red(color));
 		//String blue  = toHex(Color.blue(color));
 		//String green = toHex(Color.green(color));
+		String hexColor = ToHex(color);
+		return WrapHTML(p.getDescription(), hexColor);
+	}
+	public static String WrapHTML(String s, String color){
+
+		return "<font color = #" + color + ">" + s + "</font>";
+	}
+	public static String ToHex(int color){
 		String hexColor = Integer.toHexString(color);//apparently there are 2 ffs
 		while(hexColor.length() < 6){
 			hexColor = "0" + hexColor;
@@ -140,8 +160,7 @@ public class Event {
 		while(hexColor.length() > 6){
 			hexColor = hexColor.substring(1);
 		}
-
-		return "<font color = #" + hexColor + ">" +p.getDescription() + "</font>";
+		return hexColor;
 	}
 	
 	public String toHex(int i){
@@ -196,9 +215,9 @@ public class Event {
 
 	
 	private boolean showInPrivate = true; 
-	public void dontShowPrivate() {
+	public Event dontShowPrivate() {
 		showInPrivate = false;
-		
+		return this;
 	}
 
 	
@@ -231,5 +250,16 @@ public class Event {
 
 	public String getCommand() {
 		return command;
+	}
+	public static Event StringFeedback(String feedback, Player player) {
+		return new Event(feedback).dontShowPrivate().setVisibility(player);
+	}
+	public ArrayList<HTString> getHTStrings() {
+		ArrayList<HTString> hts = new ArrayList<HTString>();
+		for(Object o: eventParts){
+			if(o.getClass() == HTString.class)
+				hts.add((HTString) o);
+		}
+		return hts;
 	}
 }

@@ -304,6 +304,12 @@ public class PlayerList implements Iterable<Player>{
 		return false;
 	}
 
+	public Player getLast() {
+		if(size() == 0)
+			return null;
+		return get(size() - 1);
+	}
+
 	
 
 	

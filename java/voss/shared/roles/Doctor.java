@@ -2,6 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.support.Constants;
@@ -42,7 +43,7 @@ public class Doctor extends Role {
 		if(target.getLives() < Narrator.NORMAL_HEALTH){
 			setHealed(true);
 			if(n.getRules().doctorKnowsIfTargetIsAttacked)
-				owner.addNightFeedback(SUCCESFULL_HEAL);
+				owner.addNightFeedback(Event.StringFeedback(SUCCESFULL_HEAL, owner));
 		}
 		
 		//but the person is healed either way

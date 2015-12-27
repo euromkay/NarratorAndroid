@@ -64,10 +64,15 @@ public class Lookout extends Role {
 		visitors.remove(owner);
 		visitors.sortByName();
 		if(visitors.isEmpty())
-			owner.addNightFeedback(NO_VISIT);
+			owner.addNightFeedback(Event.StringFeedback(NO_VISIT, owner));
 		else{
-			String message = FEEDBACK + visitors.getStringName();
-			owner.addNightFeedback(message);
+			Event e = Event.StringFeedback(FEEDBACK, owner);
+			for(Player p: visitors){
+				e.add(p);
+				if(visitors.getLast() != p)
+					e.add(", ");
+			}
+			owner.addNightFeedback(e);
 		}
 	}
 	public void dayReset(Player p){

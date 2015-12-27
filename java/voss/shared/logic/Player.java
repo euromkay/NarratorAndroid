@@ -16,6 +16,7 @@ import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
+import voss.shared.logic.support.HTString;
 import voss.shared.logic.support.Shuffler;
 import voss.shared.logic.support.StringChoice;
 import voss.shared.roles.Arsonist;
@@ -48,23 +49,27 @@ public class Player implements ActionTaker{
 	
 	
 	private Communicator comm;
-	public void sendMessage(String message){
-		comm.sendMessage(message);
+	public void sendMessage(Event message){
+		sendMessage(message.access(this, false));
+	}
+	public void sendMessage(String s){
+		comm.sendMessage(s.replace("\n", ""));
 		for (NarratorListener nl: n.getListeners()){
 			nl.onMessageReceive(this);
 		}
+	}
+	public void sendMessage(ArrayList<Event> message) {
+		for(Event e: message)
+			sendMessage(e);
+	}
+	
+	public Communicator getCommunicator(){
+		return comm;
 	}
 	public Player setCommunicator(Communicator comm){
 		this.comm = comm;
 		return this;
 	}
-	public void sendMessage(ArrayList<String> message) {
-		comm.sendMessage(message);
-	}
-	public Communicator getCommunicator(){
-		return comm;
-	}
-
 	
 	
 
@@ -280,7 +285,7 @@ public class Player implements ActionTaker{
 			if(t.knowsTeam()){
 				e.setVisibility(t.getMembers());
 				for(Player p: t.getMembers()) {
-					p.sendMessage(e.access(p, false));
+					p.sendMessage(e);
 				}
 			}else {
 				e.setVisibility(this);
@@ -300,7 +305,7 @@ public class Player implements ActionTaker{
 	public void setHouse(Player p){
 		house = p;
 		if(!busDriven){
-			addNightFeedback(Driver.FEEDBACK);
+			addNightFeedback(Event.StringFeedback(Driver.FEEDBACK, this));
 			busDriven = true;
 		}
 	}
@@ -464,7 +469,7 @@ public class Player implements ActionTaker{
 	public void getBlocked(Player owner){
 		if(blocked)
 			return;
-		addNightFeedback(Blocker.FEEDBACK);
+		addNightFeedback(Event.StringFeedback(Blocker.FEEDBACK, this));
 		blocked = true;
 	}
 	public boolean isBlocked(){
@@ -523,7 +528,7 @@ public class Player implements ActionTaker{
 				lives--;
 				attackTypeList.add(type);
 			}else{
-				feedback.add(Constants.NIGHT_IMMUNE_TARGET_FEEDBACK);
+				feedback.add(Event.StringFeedback(Constants.NIGHT_IMMUNE_TARGET_FEEDBACK, this));
 			}
 		}
 	}
@@ -586,14 +591,16 @@ public class Player implements ActionTaker{
 		alignmentStatus = Constants.A_NORMAL;
 		attackList.clear();
 		attackedByList.clear();
+		healList.clear();
 	}
 	protected void onNightReset(){
 		nightTargets = new Player[MAX_TARGET_NUMBER];
 		role.nightReset();
 	}
 	
-	private ArrayList<String> feedback = new ArrayList<String>();
-	public void addNightFeedback(String s){
+	private ArrayList<Event> feedback = new ArrayList<Event>();
+	public void addNightFeedback(Event s){
+		s.setVisibility(this);
 		feedback.add(s);
 	}
 	public void sendNightFeedback() {
@@ -603,7 +610,8 @@ public class Player implements ActionTaker{
 		if(alive){
 			//you were attacked and healed
 			for(Integer role: healList){
-				String mess = determineHealFeedback(role);
+				Event mess = determineHealFeedback(role);
+				mess.setVisibility(this);
 				feedback.add(mess);
 			}
 		}
@@ -611,7 +619,7 @@ public class Player implements ActionTaker{
 			//you weren't
 			for(int type: attackTypeList){
 				String killFeedback = determineKillFeedback(type);
-				feedback.add(killFeedback);
+				feedback.add(Event.StringFeedback(killFeedback, this));
 				deathType.addDeath(type);
 			}
 			
@@ -620,25 +628,21 @@ public class Player implements ActionTaker{
 		//dead
 		Shuffler.shuffle(feedback, n.getRandom());
 		sendMessage(feedback);
-		Event e;
-		for(String s: feedback){
-			e = new Event();
-			e.setVisibility(this);
-			e.dontShowPrivate();
-			e.add(s);
+		for(Event e: feedback){
 			n.addEvent(e);
 		}
 		
-		ArrayList<String> todaysFeedback = new ArrayList<String>();
-		for(String s: feedback)
+		ArrayList<Event> todaysFeedback = new ArrayList<>();
+		for(Event s: feedback)
 			todaysFeedback.add(s);
 		pastFeedbacks.put(n.getDayNumber(), todaysFeedback);
+		
 	}
-	private HashMap<Integer, ArrayList<String>> pastFeedbacks = new HashMap<Integer, ArrayList<String>>();
-	public ArrayList<String> getFeedback(int day){
+	private HashMap<Integer, ArrayList<Event>> pastFeedbacks = new HashMap<>();
+	public ArrayList<Event> getFeedback(int day){
 		if(pastFeedbacks.containsKey(day))
 			return pastFeedbacks.get(day);
-		return new ArrayList<String>();
+		return new ArrayList<>();
 	}
 	
 	
@@ -668,13 +672,16 @@ public class Player implements ActionTaker{
 		throw new IllegalArgumentException("The person cannot kill! " + role);
 		
 	}
-	private static String determineHealFeedback(int role){
+	private static Event determineHealFeedback(int role){
+		Event e = new Event();
 		if(role == Constants.DOCTOR_HEAL_FLAG)
-			return Constants.HEAL_FEEDBACK_DOCTOR;
+			e.add(Constants.HEAL_FEEDBACK_DOCTOR);
 		else if(role == Constants.BODYGUARD_KILL_FLAG)
-			return Bodyguard.SAVING_FEEDBACK;
-		throw new IllegalArgumentException(role + ": cannot heal!");
-		
+			e.add(Bodyguard.SAVING_FEEDBACK);
+		else
+			throw new IllegalArgumentException(role + ": cannot heal!");
+		e.dontShowPrivate();
+		return e;
 	}
 	
 	
@@ -1016,12 +1023,22 @@ public class Player implements ActionTaker{
 			pendingRole = r;
 		else{
 			role = r;
-			sendMessage("You are now a " + role.getRoleName() + ".");
+
+			Event e = Event.StringFeedback("You are now a ", this);
+			HTString ht = new HTString(role.getRoleName(), getAlignment());
+			e.add(ht);
+			e.add(".");
+			
+			sendMessage(e);
 		}
 	}
 	public void resolveRoleChange(){
 		if(pendingRole != null){
-			addNightFeedback("You are now a " + pendingRole.getRoleName() + ".");
+			Event e = Event.StringFeedback("You are now a ", this);
+			HTString ht = new HTString(pendingRole.getRoleName(), getAlignment());
+			e.add(ht);
+			e.add(".");
+			addNightFeedback(e);
 			role = pendingRole;
 			pendingRole = null;
 		}

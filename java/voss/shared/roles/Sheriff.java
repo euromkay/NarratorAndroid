@@ -2,10 +2,12 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
+import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
 import voss.shared.logic.support.Constants;
+import voss.shared.logic.support.HTString;
 
 
 public class Sheriff extends Role{
@@ -38,28 +40,35 @@ public class Sheriff extends Role{
 		
 		Team sheriffTeam = owner.getTeam();
 		
-		String nightFeedback;
+		Team targetTeam = target.getTeam();
+		
+		
 		int status = target.getFrameStatus();
 		if(status != Constants.A_NORMAL){
-			nightFeedback = generateFeedback(n.getTeam(status));
-		} else { 
-			if(!target.isDetectable())
-				nightFeedback = generateFeedback(null);
-			else if(sheriffTeam.sheriffDetects(target.getAlignment()))
-				nightFeedback = generateFeedback(target.getTeam());
-			else
-				nightFeedback = generateFeedback(null);
-		}
+			targetTeam = n.getTeam(status);
+		} 
+		if(!target.isDetectable())
+			targetTeam = sheriffTeam;
+		if(!sheriffTeam.sheriffDetects(targetTeam.getAlignment()))
+			targetTeam = null;
 		 
+		Event nightFeedback = generateFeedback(targetTeam);
+		nightFeedback.setVisibility(owner);
+		
 		owner.addNightFeedback(nightFeedback);
 		Role.event(owner, " checked ", target);
 		return true;
 	}
 	
-	public static String generateFeedback(Team t){
+	public static Event generateFeedback(Team t){
+		Event e = new Event().dontShowPrivate();
 		if(t == null)
-			return NOT_SUSPICIOUS;
-		return "Your target is a member of the " + t.getName();
+			return e.add(NOT_SUSPICIOUS);
+		if(t.knowsTeam())
+			e.add("Your target is a member of the ");
+		else
+			e.add("Your target is a");
+		return e.add(new HTString(t.getName(), t.getAlignment()), ".");
 	}
 	
 	private static final String COMMAND = "Check";

@@ -24,7 +24,7 @@ public class Brain {
         namesInBrain = new ArrayList<>();
     }
     
-    private boolean targetAnyone = false;
+    protected boolean targetAnyone = false;
     public void setTargetAnyone(boolean b){
     	targetAnyone = b;
     }
@@ -157,8 +157,14 @@ public class Brain {
 		if(killer != null)
 			return slave.getNarrator().getPlayerByName(killer.getName());
 		
-		Team t = slave.getTeam();
-		killer = t.getMembers().getLivePlayers().getRandom(random);
+		PlayerList aliveTeammates = slave.getTeam().getMembers().getLivePlayers();
+		for(Player poss: aliveTeammates){
+			if(poss.getAbilityCount() == 0){
+				killer = poss;
+				return killer;
+			}
+		}
+		killer = aliveTeammates.getRandom(random);
         mafKiller.put(slave.getAlignment(), killer);
 		return killer;
 	}
