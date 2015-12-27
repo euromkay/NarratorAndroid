@@ -310,8 +310,22 @@ public class PlayerList implements Iterable<Player>{
 		return get(size() - 1);
 	}
 
-	
+	public PlayerList intersect(PlayerList inter){
+		PlayerList sect = new PlayerList();
+		for(Player i: inter){
+			if(contains(i))
+				sect.add(i);
+		}
+		return sect;
+	}
 
-	
+	public PlayerList compliment(PlayerList inter){
+		PlayerList sect = new PlayerList();
+		for(Player p: list){
+			if(!inter.contains(p))
+				sect.add(p);
+		}
+		return sect;
+	}
 }
 ;

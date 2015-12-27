@@ -3,11 +3,11 @@ package voss.shared.ai;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.TreeMap;
 
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
-import voss.shared.logic.Team;
 
 
 public class Brain {
@@ -18,6 +18,7 @@ public class Brain {
     public Brain(PlayerList masters, Random random){
         this.masters = masters;
         mafKiller = new HashMap<>();
+        mafKillTarget = new HashMap<>();
         this.random = random;
         
         slaves = new PlayerList();
@@ -54,78 +55,100 @@ public class Brain {
         return c;
     }
 
-    private Player[] voteChoices;
     private Player skipper;
     private boolean firstTimeThrough = true;
     public void dayAction(){
-    	if(slaves.isEmpty())
+    	if(slaves.isEmpty() || !slaves.get(0).getNarrator().isDay())
     		return;
     	skipper = slaves.get(0).getSkipper();
     	if(firstTimeThrough){
-    		initialDayAction();
+    		talkings();
     		firstTimeThrough = false;
     	}else{
-    		skipDay();
-    		firstTimeThrough = true;
+    		voting();
     	}
         
     }
-    private void initialDayAction(){
-        PlayerList choices;
-        if(!targetAnyone)
-        	choices = slaves.copy().getLivePlayers();
-        else
-        	choices = slaves.get(0).getNarrator().getLivePlayers();
-        
-        choices.add(slaves.get(0).getSkipper());
-        
-        if (choices.size() < 2)
-            return;
-
-        voteChoices = new Player[2];
-
-        voteChoices[0] = choices.getRandom(random);
-        choices.remove(voteChoices[0]);
-        voteChoices[1] = choices.getRandom(random);
-        choices.remove(voteChoices[1]);
-
-
-
-        if (voteChoices[0] != skipper) {
-        	doDayAction(voteChoices[0]);
-        }
-        if (voteChoices[1] != skipper) {
-            doDayAction(voteChoices[1]);
-        }
-
-
-        choices.remove(skipper);
-        for (Player slave: choices){
-        	doDayAction(slave);
-        }
+    private void talkings(){
+    	for(Player s: slaves){
+    		getComputer(s).talkings();
+    	}
+    	PlayerList list;
+    	if(targetAnyone)
+    		list = slaves.get(0).getNarrator().getLivePlayers();
+    	else
+    		list = slaves.getLivePlayers();
+    	for(Player s: slaves){
+    		getComputer(s).vote(list);
+    	}
     }
     
-    private void skipDay(){
-    	if (skipper.getNarrator().isNight() || !skipper.getNarrator().isInProgress())
-            return;
-
-        //blackmailing is stopping this
-        if (!mastersExist() && skipper.getNarrator().isDay()){
-            for (Player slave: slaves){
-            	doDayAction(slave);
-            }
-        }
-    }
     
-    private void doDayAction(Player p){
-    	Narrator n = p.getNarrator();
-    	if (p.isDead())
+    private void voting(){
+    	if(slaves.isEmpty())
     		return;
-    	if (n.isNight() || !n.isInProgress())
-            return;
-    	Computer comp = getComputer(p);
-    	if(comp != null){
-    		comp.doDayAction();
+    	PlayerList livePlayers = slaves.get(0).getNarrator().getLivePlayers();
+    	
+    	int min = slaves.get(0).getNarrator().getMinLynchVote();
+    	boolean dub = false;
+    	for(Player p: livePlayers){
+    		int voteCount = p.getVoteCount();
+    		if(voteCount == 0){
+    			continue;
+    		}
+    		
+    		if(voteCount < min){//if i find a new low non0 
+    			min = voteCount;
+    			dub = false;
+    		}else if(voteCount == min){
+    			dub = true;
+    		}
+    	}
+
+    	
+    	PlayerList choices = new PlayerList();
+    	PlayerList needToChange = new PlayerList();
+    	for(Player p: livePlayers){
+    		if(p.getVoteCount() > min){
+    			if(targetAnyone || slaves.contains(p))
+    				choices.add(p);
+    		}else if (p.getVoteCount() == min){
+    			if(dub){
+	    			if(targetAnyone || slaves.contains(p))
+	    				choices.add(p);
+    			}
+    			for(Player toChange: p.getVoters())
+    				if(slaves.contains(toChange))
+    					needToChange.add(toChange);
+    		}else{
+    			for(Player toChange: p.getVoters())
+    				if(slaves.contains(toChange))
+    					needToChange.add(toChange);
+    		}
+    	}
+    	
+    	Player voted = null;
+    	for(Player p: needToChange){
+    		if(p.isComputer()){
+    			p = getComputer(p).vote(choices);
+    			if(p != null)
+    				voted = p;
+    		}
+    	}
+    	
+    	if(voted == null){
+            //blackmailing is stopping this
+            if (!mastersExist() && skipper.getNarrator().isDay()){
+                for (Player slave: slaves){
+                	if(!slave.getNarrator().isDay())
+                		return;
+                	if(!slave.isComputer())
+                		continue;
+                	if(slave.getVoteTarget() != slave.getSkipper())
+                		getComputer(slave).controller.skipVote(slave);
+                }
+            
+            }
     	}
     }
     
@@ -141,15 +164,13 @@ public class Brain {
     protected boolean mastersExist(){
         return !masters.isEmpty();
     }
-    
-    
-    public Player[] getDayChoices(){
-        return voteChoices;
-    }
 
-    private HashMap<Integer, Player> mafKiller; 
+    private HashMap<Integer, Player> mafKiller;
+    private HashMap<Integer, Player> mafKillTarget;
 	public void reset() {
 		mafKiller.clear();
+		mafKillTarget.clear();
+		firstTimeThrough = true;
 	}
 
 	public Player getMafSender(Player slave) {
@@ -168,6 +189,19 @@ public class Brain {
         mafKiller.put(slave.getAlignment(), killer);
 		return killer;
 	}
+	
+	public Player getMafKillTarget(Player slave) {
+		Player killTarget = mafKillTarget.get(slave.getAlignment());
+		if(killTarget != null)
+			return slave.getNarrator().getPlayerByName(killTarget.getName());
+		
+		PlayerList aliveTeammates = slave.getTeam().getMembers().getLivePlayers();
+		PlayerList alive = slave.getNarrator().getAllPlayers().getLivePlayers();
+		
+		killTarget = alive.compliment(aliveTeammates).getRandom(random);
+		mafKillTarget.put(slave.getAlignment(), killTarget);
+		return killTarget;
+	}
 
 	public void endGame() {
 		if(slaves.isEmpty())
@@ -180,4 +214,6 @@ public class Brain {
 				nightAction();
 		}
 	}
+
+	
 }

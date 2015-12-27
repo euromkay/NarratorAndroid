@@ -33,7 +33,7 @@ public class GUIController extends Controller implements TextInput{
 	public static final boolean SAY = false;
 	public static final boolean TARGET = true;
     
-    public void vote(Player slave, Player target){
+    public Player vote(Player slave, Player target){
     	target = Translate(slave.getNarrator(), target);
     	if(VOTE && target != slave.getSkipper())
     		logger.vote(slave, target);
@@ -48,12 +48,14 @@ public class GUIController extends Controller implements TextInput{
         		throw e;
         	}
         }
+        return target;
     }
 
-    public void skipVote(Player slave){
+    public Player skipVote(Player slave){
     	if(VOTE)
     		logger.skipVote(slave);
         vote(slave, slave.getSkipper());
+        return slave.getSkipper();
     }
 
     public void setNightTarget(Player slave, Player choice, String ability){

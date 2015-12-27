@@ -598,7 +598,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	public void pushChatDown() {
-		final ScrollView chatLV = (ScrollView) findViewById(R.id.day_chatHolder);
+		final ScrollView chatLV = (ScrollView) findViewById(R.id.create_chatHolder);
 		chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);

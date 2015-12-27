@@ -45,11 +45,13 @@ public class TestController extends Controller{
 	}
 
 	
-	public void vote(Player a, Player b) {
+	public Player vote(Player a, Player b) {
 		a.vote(b);
+		return b;
 	}
-	public void skipVote(Player a){
+	public Player skipVote(Player a){
 		a.voteSkip();
+		return a.getSkipper();
 	}
 
 	public void selectHost(Player host) {

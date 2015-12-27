@@ -16,8 +16,8 @@ public abstract class Controller {
 	public abstract void setNightTarget(Player a, Player b, String action, String teamName);
 	public abstract void removeNightTarget(Player a, String action);
 
-	public abstract void vote(Player slave, Player target);
-	public abstract void skipVote(Player slave);
+	public abstract Player vote(Player slave, Player target);
+	public abstract Player skipVote(Player slave);
 	public abstract void unvote(Player slave);
 
 	public abstract void selectHost(Player host);

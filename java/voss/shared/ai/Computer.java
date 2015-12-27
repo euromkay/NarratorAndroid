@@ -10,6 +10,7 @@ import voss.shared.logic.Team;
 import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.roles.Arsonist;
 import voss.shared.roles.Framer;
+import voss.shared.roles.Janitor;
 import voss.shared.roles.Mayor;
 import voss.shared.roles.Sheriff;
 
@@ -45,6 +46,8 @@ public class Computer {
             	continue;
             
             if (mafKillAbility(ability, selections))
+            	continue;
+            if (janitorAbility(ability))
             	continue;
             
             Player choice = getTargetChoice(ability, selections.copy());
@@ -95,12 +98,23 @@ public class Computer {
     }
     
     private boolean framerMainAbility(int ability, Player choice){
-    	if (slave.getRoleName().equals(Framer.ROLE_NAME) && ability == Framer.MAIN_ABILITY){
+    	if (slave.is(Framer.ROLE_NAME) && ability == Framer.MAIN_ABILITY){
         	int teamChoiceSize = slave.getNarrator().getNumberOfTeams();
         	int random = brain.random.nextInt(teamChoiceSize);
             String teamName = choice.getNarrator().getAllTeams().get(random).getName();
             controller.setNightTarget(slave, choice, Framer.FRAME, teamName);
             return true;
+    	}
+    	return false;
+    }
+    private boolean janitorAbility(int ability){
+    	if (slave.is(Janitor.ROLE_NAME) && ability == Janitor.MAIN_ABILITY) {
+    		if (brain.getMafSender(slave) != slave){
+    			Player killTarget = brain.getMafKillTarget(slave);
+    			if(killTarget != null)
+    				controller.setNightTarget(slave, killTarget, Janitor.CLEAN);
+    		}
+    		return true;
     	}
     	return false;
     }
@@ -120,8 +134,11 @@ public class Computer {
     	if(ability == Team.KILL_){
     		selections = selections.copy();
     		selections.remove(slave.getTeam().getMembers());
-    		if(brain.getMafSender(slave) == slave)
-    			controller.setNightTarget(slave, selections.getRandom(brain.random), Team.KILL);
+    		if(brain.getMafSender(slave) == slave){
+        		Player killTarget = brain.getMafKillTarget(slave);
+        		if(killTarget != null)
+        			controller.setNightTarget(slave, killTarget, Team.KILL);
+    		}
     		return true;
     	}
     		
@@ -140,86 +157,6 @@ public class Computer {
         else
             return getTargetChoice(ability, possible.remove(selection));
     }
-
-    private int day = -1;
-    public void doDayAction(){
-        Narrator n = slave.getNarrator();
-        if (n.isNight())
-        	return;
-            //throw new PhaseException(slave.getName() + " trying to do day action during night");
-        if (slave.is(Mayor.ROLE_NAME) && slave.hasDayAction())
-        	controller.doDayAction(slave);
-
-        //arson killed himself
-        if (slave.isDead())
-            return;
-
-        //second time around, vote skip
-        if (day == n.getDayNumber()){
-            if (slave.getVoteTarget() != slave.getSkipper())
-            	controller.skipVote(slave);
-            return;
-        }
-
-        talkings();
-        
-        day = n.getDayNumber();
-
-        Player choiceA = brain.getDayChoices()[0];
-        choiceA = n.getPlayerByName(choiceA.getName());
-        Player choiceB = brain.getDayChoices()[1];
-        choiceB = n.getPlayerByName(choiceB.getName());
-        
-        if(slave.isBlackmailed() || (choiceA.isDead() && choiceB.isDead())){
-        	controller.vote(slave, slave.getSkipper());
-        	return;
-        }
-        
-        if(choiceA.isDead()){
-        	if(choiceB == slave)
-            	controller.skipVote(slave);
-        	else
-        		controller.vote(slave, choiceB);
-        	return;
-        }
-        
-        if(choiceB.isDead()){
-        	if(choiceA == slave)
-            	controller.skipVote(slave);
-        	else
-        		controller.vote(slave, choiceA);
-        	return;
-        }
-        
-        if (choiceA == slave){
-            controller.vote(slave, choiceB);
-        }else if (choiceB == slave){
-            controller.vote(slave, choiceA);
-        }else{
-
-            if (brain.mastersExist()) {
-                if (choiceA != null && choiceA.getVoteCount() + slave.getVotePower() == n.getMinLynchVote())
-                    choiceA = null;
-                if (choiceB != null && choiceB.getVoteCount() + slave.getVotePower() == n.getMinLynchVote())
-                    choiceB = null;
-            }
-            if(choiceA == null && choiceB == null)
-            	controller.skipVote(slave);
-            else if(choiceA == null) 
-                controller.vote(slave, choiceB);
-            else if(choiceB == null)
-                controller.vote(slave, choiceA);
-            else if(!brain.mastersExist())
-            	 controller.vote(slave, choiceA);
-            else{
-            	if (brain.random.nextBoolean())
-            		controller.vote(slave, choiceA);
-            	else
-            		controller.vote(slave, choiceB);
-            }
-
-        }
-    }
     
     private boolean noPrevNight(){
     	Narrator n = slave.getNarrator();
@@ -229,12 +166,15 @@ public class Computer {
     	return false;
     }
     
-    private void talkings(){
+    void talkings(){
     	if(noPrevNight())
     		return;
     	if(slave.is(Sheriff.ROLE_NAME)){
     		sheriffTalk();
-    		
+    	if(slave.is(Mayor.ROLE_NAME)){
+    		if(slave.hasDayAction())
+            	controller.doDayAction(slave);
+    	}
     		
     	}
     }
@@ -256,4 +196,38 @@ public class Computer {
 			
 		}
     }
+
+	public Player vote(PlayerList choices) {
+    	if (slave.isDead())
+    		return null;
+		Narrator n = slave.getNarrator();
+    	if (n.isNight() || !n.isInProgress())
+            return null;
+
+        //arson killed himself
+        if (slave.isDead())
+            return null;
+    	
+		if(slave.isBlackmailed()){
+			if(slave.getVoteTarget() == slave.getSkipper())
+				return null;
+			return controller.skipVote(slave);
+		}else{
+			Player choice;
+			if (slave.getTeam().knowsTeam()){
+				choice = choices.compliment(slave.getTeam().getMembers().getLivePlayers()).getRandom(brain.random);
+				if(choice != null && slave.getVoteTarget() != choice){
+					return controller.vote(slave, choice);
+				}
+			}
+			choice = choices.copy().remove(slave).getRandom(brain.random);
+			
+			if(choice == null)
+				return controller.skipVote(slave);
+			else if(slave.getVoteTarget() != choice)
+				return controller.vote(slave, choice);
+		}
+		
+		return null;
+	}
 }

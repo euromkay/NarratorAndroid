@@ -45,21 +45,22 @@ public class TextController extends Controller {
 		texter.text(a, action + " " + Constants.UNTARGET, ASYNC);
 	}
 
-    public void vote(Player slave, Player target) {
+    public Player vote(Player slave, Player target) {
     	target = Translate(slave.getNarrator(), target);
     	if(target == slave.getSkipper())
     		skipVote(slave);
     	else
     		texter.text(slave, TextHandler.VOTE + " " + target.getName(), SYNC);
-        
+        return target;
     }
 
     public void selectHost(Player host) {
 
     }
     
-    public void skipVote(Player a){
+    public Player skipVote(Player a){
     	texter.text(a, TextHandler.SKIP_VOTE, SYNC);
+    	return a.getSkipper();
     }
 
 

@@ -23,11 +23,11 @@ public class Janitor extends Role{
 		return NIGHT_PROMPT;
 	}
 	
-	public static final int CLEAN = MAIN_ABILITY;
+	public static final int CLEAN_ = MAIN_ABILITY;
 
 	public void isAcceptableTarget(Player owner, Player target, int ability) {
 		deadCheck(target);
-		allowedAbilities(ability, CLEAN);
+		allowedAbilities(ability, CLEAN_);
 		selfCheck(owner, target);
 	}
 
@@ -49,7 +49,7 @@ public class Janitor extends Role{
 	}
 
 	private static final String COMMAND = "Clean";
-
+	public static final String CLEAN = COMMAND;
 
 	
 	

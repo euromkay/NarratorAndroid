@@ -46,7 +46,7 @@ public class Simulations {
     	
         if (p.getNarrator().isDay()) {
         	updateMasters();
-            brain.dayAction();
+            //brain.dayAction();
             brain.dayAction();
         }else {
         	updateMasters();

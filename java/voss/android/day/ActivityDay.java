@@ -575,8 +575,10 @@ implements
 		pushChatDown();
 	}
 
+	private boolean progress = true;
 	private void setChatPanelText(String text){
-		chatTV.setText(Html.fromHtml(text.replace("\n", "<br>")));
+		if(progress)
+			chatTV.setText(Html.fromHtml(text.replace("\n", "<br>")));
 	}
 
 	public void hideMessagePanel(){
@@ -824,7 +826,7 @@ implements
 
 
 		setChatPanelText(happenings.toString());
-
+		progress = false;
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
 		if(wideMode()){
