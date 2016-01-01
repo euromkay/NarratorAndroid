@@ -333,5 +333,10 @@ public class PlayerList implements Iterable<Player>{
 		}
 		return sect;
 	}
+
+	public PlayerList reverse() {
+		Collections.reverse(list);
+		return this;
+	}
 }
 ;

@@ -56,7 +56,16 @@ public class NarratorService extends Service implements Callback, SetupListener{
     public IBinder onBind(Intent arg0) {
         return mBinder;
     }
-    public class MyBinder extends Binder {
+
+	public void setRules(Rules rules, String original) {
+
+		if(sManager==null)
+			local.setRules(rules);
+		else
+			sManager.setRules(original);
+	}
+
+	public class MyBinder extends Binder {
         public NarratorService getService() {
             return NarratorService.this;
         }
@@ -296,10 +305,9 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	
 	
 	
-	public synchronized void startGame(long seed, Rules r){
+	public synchronized void startGame(long seed){
 		if(!local.isStarted()) {
 			local.setSeed(seed);
-			local.setRules(r);
 			local.startGame();
 		}
 

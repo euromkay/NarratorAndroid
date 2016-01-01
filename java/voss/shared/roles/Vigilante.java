@@ -42,7 +42,7 @@ public class Vigilante extends Role {
 		allowedAbilities(action, MAIN_ABILITY);
 		selfCheck(target, owner);
 	}
-	private static final String COMMAND = "Shoot";
+	public static final String COMMAND = "Shoot";
 	public int parseAbility(String message){
 		if(message.equalsIgnoreCase(COMMAND) && getShots() != 0)
 			return MAIN_ABILITY;

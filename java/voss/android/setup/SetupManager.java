@@ -19,6 +19,7 @@ import voss.shared.ai.Computer;
 import voss.shared.logic.Member;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
+import voss.shared.logic.Rules;
 import voss.shared.logic.exceptions.IllegalGameSettingsException;
 import voss.shared.logic.exceptions.IllegalRoleCombinationException;
 import voss.shared.logic.support.CommandHandler;
@@ -26,6 +27,7 @@ import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.RoleTemplate;
+import voss.shared.packaging.Packager;
 import voss.shared.roles.RandomRole;
 
 
@@ -35,7 +37,7 @@ public class SetupManager {
 
     public TextAdder textAdder;
 
-    private SetupScreenController screenController;
+    public SetupScreenController screenController;
 
     private ArrayList<SetupListener> listeners;
 
@@ -56,14 +58,17 @@ public class SetupManager {
             //debugSettings();
 
         intentFilter = new IntentFilter();
-        intentFilter.addAction("SMS_RECEIVED_ACTION");
-        intentFilter.addAction(ParseConstants.PARSE_FILTER);
+        if(Server.IsLoggedIn())
+            intentFilter.addAction(ParseConstants.PARSE_FILTER);
+        else
+            intentFilter.addAction("SMS_RECEIVED_ACTION");
+
 
         textAdder = new TextAdder(this);
         resumeTexting();
 
 
-        screenController = new SetupScreenController(a);
+        screenController = new SetupScreenController(a, isHost());
         listeners.add(ns);
         listeners.add(screenController);
     }
@@ -97,6 +102,12 @@ public class SetupManager {
 
     public void setSeed(long l){
     	rand.setSeed(l);
+    }
+
+    protected void onRuleChange(){
+        if(Server.IsLoggedIn()){
+            Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+        }
     }
 
     private void log(String s){
@@ -159,7 +170,7 @@ public class SetupManager {
     		if(c == null){//already added
     			for(SetupListener sl: listeners){
         			if(sl != ns)//will only update the screen with a toast, or the playerpopup
-        				sl.onPlayerAdd(name, c);
+        				sl.onPlayerAdd(name, null);
         		}
     		}else{//requesting host to add
                 if(!Server.IsLoggedIn())
@@ -196,7 +207,7 @@ public class SetupManager {
 
     public void startGame(long seed){
         if(checkNarrator()) {
-            ns.startGame(seed, ActivitySettings.getRules(screen));
+            ns.startGame(seed);
             //startDay();
         }
     }
@@ -312,6 +323,12 @@ public class SetupManager {
 
     }
 
+    public void setRules(String rules){
+        Packager p = new Packager(new SetupDeliverer(rules));
+        Rules r = new Rules(p);
+        ns.local.setRules(r);
+        screenController.setRoleInfo(screenController.activeRole, Constants.A_NORMAL, r);
+    }
 
     public void updateNarrator(Intent i){
         String message = i.getStringExtra("stuff");
@@ -332,6 +349,10 @@ public class SetupManager {
                 if (!isHost())
                     removeRole(RoleTemplate.FromIp(command[1]));
                 return;
+            case ParseConstants.RULES:
+                if(!isHost())
+                    setRules(command[1]);
+                return;
             case ParseConstants.STARTGAME:
                 Server.UpdateGame(ns, new SuccessListener() {
                     public void onSuccess() {
@@ -350,6 +371,17 @@ public class SetupManager {
                 message = message.substring(command[0].length() + 1);//1 length for comma
                 ns.onRead(message, null);//adds it to my narrator
                 screen.updateChat();
+        }
+    }
+
+    public void ruleChange() {
+        if(Server.IsLoggedIn())
+            Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+        else if (isHost()) {
+            SetupDeliverer sd = new SetupDeliverer();
+            Packager p = new Packager(sd);
+            ns.local.getRules().writeToPackage(p);
+            hAdder.onRulesChange(sd.toString());
         }
     }
 }

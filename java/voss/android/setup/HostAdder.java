@@ -90,5 +90,7 @@ public class HostAdder implements SetupListener{
     }
 
 
-
+    public void onRulesChange(String s) {
+        ns.socketHost.write(Constants.SET_RULES + s);
+    }
 }

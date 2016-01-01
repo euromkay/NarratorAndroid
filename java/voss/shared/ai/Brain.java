@@ -1,10 +1,12 @@
 package voss.shared.ai;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.TreeMap;
 
+import voss.shared.logic.DeathType;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -172,22 +174,37 @@ public class Brain {
 		mafKiller.clear();
 		mafKillTarget.clear();
 		firstTimeThrough = true;
+		suspList.clear();
 	}
 
 	public Player getMafSender(Player slave) {
-		Player killer = mafKiller.get(slave.getAlignment());
-		if(killer != null)
-			return slave.getNarrator().getPlayerByName(killer.getName());
-		
-		PlayerList aliveTeammates = slave.getTeam().getMembers().getLivePlayers();
-		for(Player poss: aliveTeammates){
-			if(poss.getAbilityCount() == 0){
-				killer = poss;
+		Player killer = null;
+		for(Team x: slave.getTeams()){
+			killer = mafKiller.get(x.getAlignment());
+			if(x.hasMember(slave) && killer != null){
 				return killer;
 			}
 		}
-		killer = aliveTeammates.getRandom(random);
-        mafKiller.put(slave.getAlignment(), killer);
+		
+		Team theTeam = null;
+		ArrayList<Team> teams = slave.getTeams();
+		for(Team t: teams){
+			if(t.canKill()){
+				theTeam = t;
+				break;
+			}
+		}
+		if(theTeam == null)
+			return null;
+		for(Player poss: theTeam.getMembers().getLivePlayers()){
+			if(poss.getAbilityCount() == 0){
+				killer = poss;
+				mafKiller.put(theTeam.getAlignment(), killer);
+				return killer;
+			}
+		}
+		killer = theTeam.getMembers().getLivePlayers().getRandom(random);
+        mafKiller.put(theTeam.getAlignment(), killer);
 		return killer;
 	}
 	
@@ -209,6 +226,9 @@ public class Brain {
 			return;
 		Narrator n = slaves.get(0).getNarrator();
 		while(n.isInProgress()){
+			//if(n.getDeadSize() == 11)
+				//System.out.println(n.getHappenings());
+			//System.out.println(n.getDeadSize());
 			if(n.isDay())
 				dayAction();
 			else
@@ -224,5 +244,86 @@ public class Brain {
 		
 	}
 
-	
+	HashMap<Team, ArrayList<PlayerList>> suspList = new HashMap<>();
+	public ArrayList<PlayerList> getSuspiciousPeople(Team slaveAlignment) {
+
+		ArrayList<PlayerList> ret = suspList.get(slaveAlignment);
+		if(ret != null)
+			return ret;
+		ret = new ArrayList<>();
+		Narrator n = slaves.get(0).getNarrator();
+		
+		HashMap<Player, Integer> scores = new HashMap<Player, Integer>();
+		for(Player p: n.getLivePlayers()){
+			scores.put(p, 0);
+		}
+		
+		for(Player dead: n.getDeadPlayers()){
+			DeathType dt = dead.getDeathType();
+			if(!dt.isLynch() || dead.isCleaned())
+				continue;
+			PlayerList lynch = dt.getLynchers().getLivePlayers();
+			Team deadTeam = dead.getTeam();
+			
+			if(slaveAlignment.isEnemy(deadTeam)){//if person voted for my enemy, i think more highly of them
+				for(Player lyncher: lynch){
+					increment(scores, lyncher);
+				}
+				for(Player notLyncher: n.getLivePlayers().remove(lynch)){
+					decrement(scores, notLyncher);
+				}
+			}else{
+				for(Player lyncher: lynch){
+					decrement(scores, lyncher);
+				}
+				for(Player notLyncher: n.getLivePlayers().remove(lynch)){
+					increment(scores, notLyncher);
+				}
+			}
+		}
+		//this gives me a list of all the different types of ratings that exist
+		ArrayList<Integer> ratings = new ArrayList<>();
+		for(Integer rating: scores.values()){
+			if(!ratings.contains(rating))
+				ratings.add(rating);
+		}
+
+		if(ratings.size() == 1)
+			return ret;
+		
+		//put them 
+		Collections.sort(ratings);
+		Collections.reverse(ratings);
+		
+		//fill the return
+		for(int i : ratings){
+			ret.add(new PlayerList());
+		}
+		
+		for(Player p: n.getLivePlayers()){
+			Integer rating = scores.get(p);
+			int index = ratings.indexOf(rating);
+			ret.get(index).add(p);
+		}
+		suspList.put(slaveAlignment, ret);
+		return ret;
+	}
+	private void increment(HashMap<Player, Integer> map, Player p){
+		map.put(p, map.get(p) + 1);
+	}
+	private void decrement(HashMap<Player, Integer> map, Player p){
+		map.put(p, map.get(p) -1 );
+	}
+
+	public boolean gridlock() {
+		int greatDeathDay = 0;
+		Narrator n = slaves.get(0).getNarrator();
+		for(Player p: n.getDeadPlayers()){
+			greatDeathDay = Math.max(greatDeathDay, p.getDeathDay());
+		}
+		if(n.getDayNumber() - greatDeathDay > 10){
+			return true;
+		}
+		return false;
+	}
 }

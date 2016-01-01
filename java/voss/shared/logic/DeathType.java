@@ -21,6 +21,13 @@ public class DeathType {
 		lynchDeath = in.readBool();
 
 	}
+	private PlayerList lynchers;
+	public PlayerList getLynchers(){
+		return lynchers.copy();
+	}
+	public void setLynchers(PlayerList lynchers){
+		this.lynchers = lynchers;
+	}
 
 	public ArrayList<Integer> getList(){
 		return attacks;

@@ -12,10 +12,12 @@ import voss.android.wifi.CommunicatorInternet;
 import voss.android.wifi.SocketClient;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
+import voss.shared.logic.Rules;
 import voss.shared.logic.support.Communicator;
 import voss.shared.logic.support.CommunicatorNull;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.RoleTemplate;
+import voss.shared.packaging.Packager;
 
 
 public class ClientAdder implements SetupListener{
@@ -55,13 +57,16 @@ public class ClientAdder implements SetupListener{
         }else if(s.startsWith(Constants.ADD_ROLE)) {
             RoleTemplate l = RoleTemplate.FromIp(s.substring(Constants.ADD_ROLE.length()));
             ns.addRole(l);
-        }else if(s.startsWith(Constants.REMOVE_ROLE)){
+        }else if(s.startsWith(Constants.REMOVE_ROLE)) {
             RoleTemplate l = RoleTemplate.FromIp(s.substring(Constants.REMOVE_ROLE.length()));
             ns.removeRole(l);
-
+        }else if(s.startsWith(Constants.SET_RULES)) {
+            SetupDeliverer sd = new SetupDeliverer(s.substring(Constants.SET_RULES.length()));
+            Packager p = new Packager(sd);
+            ns.setRules(new Rules(p), s.substring(Constants.SET_RULES.length()));
         }else if(s.startsWith(Constants.START_GAME)){
         	Long l = Long.parseLong(s.substring(Constants.START_GAME.length()));
-        	ns.startGame(l, ActivitySettings.getRules(ns));
+        	ns.startGame(l);
         }
     }
 

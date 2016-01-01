@@ -106,9 +106,14 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
     }
 
     public void onClick(View v){
+        if(hostToGame == null)
+            return;
+
         String potentialHostName = getSearchContents();
         if (potentialHostName.length() == 0)
             return;
+
+
 
         if (!hostToGame.containsKey(potentialHostName)){
             a.toast("No games are being run by that host");
@@ -155,9 +160,9 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             else
                 n.addRole((RandomRole) rt);
         }
+        n.setRules(gl.getRules());
         if (gl.inProgress()) {
             n.setSeed(gl.getSeed());
-            n.setRules(ActivitySettings.getRules(a));
             n.startGame();
         }
         CommandHandler ch = new CommandHandler(n);

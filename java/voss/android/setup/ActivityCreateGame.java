@@ -373,6 +373,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			changeRoleType(position);
 
 			teamDescription(currentCatalogue);
+
 			return;
 			
 		case R.id.roles_bottomLV:
@@ -432,11 +433,61 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		}
 
 		setDescriptionText(text, color);
+
+
+		manager.screenController.setRoleInfo(SetupScreenController.NONE, Constants.A_NORMAL, null);
 	}
 
 	private void roleDescription(RoleTemplate rt){
 		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), rt.getColor());
+		int role = SetupScreenController.NONE;
+		switch(rt.getName()){
+			case Godfather.ROLE_NAME:
+				role = SetupScreenController.GODFATHER;
+				break;
+			case Doctor.ROLE_NAME:
+				role = SetupScreenController.DOCTOR;
+				break;
+			case Vigilante.ROLE_NAME:
+				role = SetupScreenController.VIGILANTE;
+				break;
+			case Veteran.ROLE_NAME:
+				role = SetupScreenController.VETERAN;
+				break;
+			case Mayor.ROLE_NAME:
+				role = SetupScreenController.MAYOR;
+				break;
+			case Escort.ROLE_NAME:
+				role = SetupScreenController.BLOCKER;
+				break;
+			case Consort.ROLE_NAME:
+				role = SetupScreenController.BLOCKER;
+				break;
+			case Executioner.ROLE_NAME:
+				role = SetupScreenController.EXECUTIONER;
+				break;
+			case Witch.ROLE_NAME:
+				role = SetupScreenController.WITCH;
+				break;
+			case SerialKiller.ROLE_NAME:
+				role = SetupScreenController.SERIAL_KILLER;
+				break;
+			case Arsonist.ROLE_NAME:
+				role = SetupScreenController.ARSONIST;
+				break;
+			case MassMurderer.ROLE_NAME:
+				role = SetupScreenController.MASS_MURDERER;
+				break;
+			case Cultist.ROLE_NAME:
+				role = SetupScreenController.CULT;
+				break;
+			case CultLeader.ROLE_NAME:
+				role = SetupScreenController.CULT;
+				break;
+		}
+		manager.screenController.setRoleInfo(role, rt.getColor(), null);
 	}
+
 
 	private void setDescriptionText(String text, int color){
 		TextView tv = (TextView) findViewById(R.id.create_info_label);
@@ -574,7 +625,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 					if(manager.isHost()){
 						if(!manager.checkNarrator())
 							return;
-						Server.StartGame(ns.local, ActivitySettings.getRules(this).DAY_START, ns.getGameListing(), new SuccessListener() {
+						Server.StartGame(ns.local, ns.local.getRules().DAY_START, ns.getGameListing(), new SuccessListener() {
 							public void onSuccess() {
 								toast("Starting game");
 							}

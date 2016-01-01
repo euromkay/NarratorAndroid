@@ -79,7 +79,9 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         Toast.makeText(activity, "Successfully logged in", Toast.LENGTH_SHORT).show();
         Button v = (Button) activity.findViewById(R.id.home_login_signup);
         v.setText("Signout");
-        getDialog().cancel();
+        try {
+            getDialog().cancel();
+        }catch(NullPointerException e){}
     }
 
     public void onBadPassword(){

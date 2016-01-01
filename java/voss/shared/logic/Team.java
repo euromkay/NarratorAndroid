@@ -145,6 +145,9 @@ public class Team implements Alignment, ActionTaker{
 	public boolean isEnemy(int team){
 		return enemies.contains(team);
 	}
+	public boolean isEnemy(Team t){
+		return isEnemy(t.getAlignment());
+	}
 	
 	
 	
@@ -421,7 +424,7 @@ public class Team implements Alignment, ActionTaker{
 		if(owner.isBlackmailed() && owner != target)
 			exception("If you're blackmailed, you can only vote to send yourself for the kill.");
 
-		if(!owner.alliesWith(target) && n.Skipper != target)
+		if(!members.contains(target) && n.Skipper != target)
 			exception("You can only send an ally for the kill.");
 		/*
 

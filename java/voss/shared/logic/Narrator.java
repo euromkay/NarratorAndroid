@@ -66,7 +66,7 @@ public class Narrator{
 	public static final int NORMAL_HEALTH = 0;
 	public static final String KEY = "NARRATOR_KEY";
 
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static final boolean EMU = true;
 	
 	public static Narrator Default(){
@@ -278,10 +278,10 @@ public class Narrator{
 			return players.copy();
 		}
 	}
-	public ArrayList<Player> getDeadPlayers() {
-		ArrayList<Player> list = new ArrayList<Player>();
+	public PlayerList getDeadPlayers() {
+		PlayerList list = new PlayerList();
 		for(Player p: players)
-			if(!p.isAlive())
+			if(p.isDead())
 				list.add(p);
 		return list;
 	}
@@ -608,6 +608,7 @@ public class Narrator{
 		if(!isDay)
 			throw new IllegalStateException("It's already night");
 		isDay = NIGHT_TIME;
+		checkProgress();
 		if(!isInProgress())
 			return;
 		
@@ -675,7 +676,7 @@ public class Narrator{
 	}
 	
 	public PlayerList getLivePlayers(){
-		return players.getLivePlayers();
+		return players.getLivePlayers().copy();
 	}
 	
 	
@@ -951,9 +952,10 @@ public class Narrator{
 			if(p.isAlive() && p.getLives() < NORMAL_HEALTH){
 				p.setDead();
 				newDead.add(p);
-				p.sendNightFeedback();
 			}
-
+		for(Player p: newDead){
+			p.sendNightFeedback();
+		}
 		return newDead;
 	}			
 	
@@ -982,6 +984,8 @@ public class Narrator{
 	private boolean canVote;
 	public void startDay(PlayerList newDead){
 		isDay = DAY_TIME;
+		checkProgress();
+		
 		if(!isInProgress())
 			return;
 
@@ -1052,25 +1056,28 @@ public class Narrator{
 		e.setCommand(voter, CommandHandler.VOTE, target.getName());
 		
 		//can't revote
-		int toLynch = getMinLynchVote() - (getVoteCountOf(target) + 1);
+		int toLynch;
 		if(voterList.containsKey(voter)){
 			prevTarget = unVoteHelper(voter);
 			sc = new StringChoice(target);
 			sc.add(target, "you");
+			
+			addVoteHelper(voter, target);
+			toLynch = getMinLynchVote() - (getVoteCountOf(target));;
 			e.add(" changed ", new StringChoice("their").add(voter, "your")," vote from ", prevTarget, " to ", sc, ". ", numberOfVotesNeeded(toLynch));
 
-			addVoteHelper(voter, target);
 
 			addEvent(e);
 			for(NarratorListener nl: listeners){
 				nl.onChangeVote(voter, target, prevTarget, toLynch);
 			}
 		}else{
+			addVoteHelper(voter, target);
 			sc = new StringChoice(target);
 			sc.add(target, "you");
+			toLynch = getMinLynchVote() - (getVoteCountOf(target));;
 			e.add(" voted for ", sc, ". ", numberOfVotesNeeded(toLynch));
 
-			addVoteHelper(voter, target);
 
 			addEvent(e);
 			for(NarratorListener nl: listeners)
@@ -1081,7 +1088,7 @@ public class Narrator{
 		checkVote();
 	}
 	public static String numberOfVotesNeeded(int difference){
-		if(difference == 0)
+		if(difference <= 0)
 			return "(Hammer)";
         return "  (L - " + difference + ")";
     }
@@ -1180,13 +1187,11 @@ public class Narrator{
 			if (getVoteCountOf(target) >= getMinLynchVote()) {
 				canVote = false;
 				lynched.add(target);
+				PlayerList voters = target.getVoters();
 				if (!Skipper.equals(target))
-					target.setLynchDeath(dayNumber);
+					target.setLynchDeath(dayNumber, voters);
 
-				PlayerList voters = new PlayerList();
-				for (Player voter : voteList.get(target)) {
-					voters.add(voter);
-				}
+		
 				//jester check
 				if (target.is(Jester.ROLE_NAME)) {
 					for (Player p : voters) {
@@ -1325,20 +1330,19 @@ public class Narrator{
 		return listeners;
 	}
 
+	public boolean isInProgress(){
+		synchronized(progSync){
+		if(!gameStarted)
+			return false;
+		
+		return win == null;
+		}
+	}
 
 	private Object progSync = new Object();
-	public synchronized boolean isInProgress(){
+	private synchronized void checkProgress(){
 		synchronized(progSync){
-		if (win != null)
-			return false;
 		
-		if (players.size() == 0){
-			return false;
-		}
-		
-		if(players.get(0).is(UnsetRole.ROLE_NAME)){
-			return false;
-		}
 		
 		for(Team t: teams.values()){
 			if(!t.isAlive())
@@ -1348,17 +1352,15 @@ public class Narrator{
 				Team enemyTeam = teams.get(enemyKey);
 				if(enemyTeam.isAlive()){
 					if(!isDay || getLivePlayers().size() >= 3)
-						return true;
+						return;
 				}
 			}
 		}
-		if(win == null)
-			determineWinners();
-		
+
+		determineWinners();
 		for(NarratorListener nL: listeners)
 			nL.onEndGame();
 		
-		return false;
 		}
 	}
 	private void determineWinners(){

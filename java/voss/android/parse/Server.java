@@ -26,10 +26,13 @@ import voss.android.NarratorService;
 import voss.android.SuccessListener;
 import voss.android.alerts.GameBookPopUp;
 import voss.android.screens.ActivityHome;
+import voss.android.setup.SetupDeliverer;
 import voss.android.setup.SetupManager;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
+import voss.shared.logic.Rules;
 import voss.shared.logic.support.RoleTemplate;
+import voss.shared.packaging.Packager;
 
 public class Server {
 
@@ -325,10 +328,15 @@ public class Server {
         for(RoleTemplate rt: narrator.getAllRoles())
             roles.add(rt.toIpForm());
 
+        SetupDeliverer sd = new SetupDeliverer();
+        Packager p = new Packager(sd);
+        narrator.getRules().writeToPackage(p);
+
 
         HashMap<String, Object> params = new HashMap<>();
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
         params.put(ParseConstants.ROLES, roles);
+        params.put("ruless", sd.toString());
         params.put(ParseConstants.PLAYERS, players);
         Log.i("Server start game", gl.getPlayerNames().size() + "/" + gl.getRoleNames().size());
         params.put(ParseConstants.WHEN, dayStart);
@@ -386,34 +394,45 @@ public class Server {
     public static void ResumeGame(String id, final NarratorService ns, final SuccessListener ls){
         GetNarratorInfo(id, new GetCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
-                if(e == null){
+                if (e == null) {
                     ns.refresh();
                     GameListing gl = new GameListing(parseObject);
                     ns.setGameListing(gl);
 
-                    for(String p: gl.getPlayerNames())
+                    for (String p : gl.getPlayerNames())
                         ns.local.addPlayer(p);
 
-                    for(String r: gl.getRoleNames())
+                    for (String r : gl.getRoleNames())
                         ns.local.addRole(SetupManager.TranslateRole(RoleTemplate.FromIp(r)));
 
                     ns.local.setSeed(gl.getSeed());
-                    ns.local.setRules(ActivitySettings.getRules(ns));
+                    ns.local.setRules(gl.getRules());
                     ns.local.startGame();
 
                     int i;
-                    for(String c: gl.getCommands()){
+                    for (String c : gl.getCommands()) {
                         i = c.indexOf(",");
-                        c = c.substring(i+1);
+                        c = c.substring(i + 1);
                         ns.onRead(c, null);
                     }
                     ls.onSuccess();
-                }
-                else
+                } else
                     ls.onFailure(e.getMessage());
             }
         });
     }
+
+    public static final void UpdateRules(GameListing gl, Rules r){
+        SetupDeliverer sd = new SetupDeliverer();
+        Packager p = new Packager(sd);
+        r.writeToPackage(p);
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ruless", sd.toString());
+        params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
+        ParseCloud.callFunctionInBackground(ParseConstants.RULES, params);
+    }
+
 
     public static final void CheckVersion(int version, final FunctionCallback t){
         HashMap<String, Object> params = new HashMap<>();

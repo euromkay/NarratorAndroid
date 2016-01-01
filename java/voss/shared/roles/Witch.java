@@ -60,9 +60,9 @@ public class Witch extends Role {
 			e.dontShowPrivate();
 		}
 		if(ability == VICTIM)
-			e.setCommand(owner, COMMAND1, target.getName());
+			e.setCommand(owner, Control, target.getName());
 		else
-			e.setCommand(owner, COMMAND2, target.getName());
+			e.setCommand(owner, Target, target.getName());
 		e.add(".");
 		
 		owner.getNarrator().addEvent(e);
@@ -121,13 +121,13 @@ public class Witch extends Role {
 
 	public static final int VICTIM = SECONDARY_ABILITY;
 	public static final int VICTIM_TARGET = MAIN_ABILITY; 
-	private static final String COMMAND1 = "Control";
-	private static final String COMMAND2 = "Target";
+	public static final String Control = "Control";
+	public static final String Target = "Target";
 	public int parseAbility(String message, boolean isDay) {
 		if(!isDay){
-		if(message.equalsIgnoreCase(COMMAND1))
+		if(message.equalsIgnoreCase(Control))
 			return VICTIM;
-		if(message.equalsIgnoreCase(COMMAND2))
+		if(message.equalsIgnoreCase(Target))
 			return VICTIM_TARGET;
 		}
 		return INVALID_ABILITY;
@@ -135,8 +135,8 @@ public class Witch extends Role {
 
 	public ArrayList<String> getAbilities() {
 		ArrayList<String> list = new ArrayList<String>();
-		list.add(COMMAND2);
-		list.add(COMMAND1);
+		list.add(Target);
+		list.add(Control);
 		return list;
 	}
 	

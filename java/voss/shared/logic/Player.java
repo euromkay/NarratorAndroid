@@ -560,8 +560,9 @@ public class Player implements ActionTaker{
 		setDead();
 		deathType.addDeath(flag);
 	}
-	public void setLynchDeath(int dayNumber){
+	public void setLynchDeath(int dayNumber, PlayerList lynchers){
 		setDead(Constants.LYNCH_FLAG);
+		deathType.setLynchers(lynchers);
 	}
 	
 	public void modKillHelper() {

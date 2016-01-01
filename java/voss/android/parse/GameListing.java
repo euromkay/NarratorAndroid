@@ -1,9 +1,15 @@
 package voss.android.parse;
 
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import com.parse.ParseObject;
+
+import voss.android.ActivitySettings;
+import voss.android.setup.SetupDeliverer;
+import voss.shared.logic.Rules;
+import voss.shared.packaging.Packager;
 
 public class GameListing {
 
@@ -55,5 +61,19 @@ public class GameListing {
         return parse;
     }
 
+    public Rules getRules(){
+
+        String compress = parse.getString("rules");
+        if(compress == null || compress.length() == 0)
+            return ActivitySettings.getRules();
+        SetupDeliverer sd = new SetupDeliverer(compress);
+        Packager p = new Packager(sd);
+        try {
+            return new Rules(p);
+        }catch(ArrayIndexOutOfBoundsException e){
+            return new Rules();
+        }
+
+    }
 }
 

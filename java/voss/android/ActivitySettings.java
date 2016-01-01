@@ -21,20 +21,19 @@ import voss.shared.logic.exceptions.UnsupportedMethodException;
 import voss.shared.logic.support.Constants;
 
 public class ActivitySettings extends Activity implements OnClickListener, OnCheckedChangeListener, OnItemSelectedListener{
-	
-	public static Rules getRules(Context c){
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+
+	public static Rules getRules(){
 		Rules rules = new Rules();
-		
-		rules.DAY_START = prefs.getBoolean(Constants.RULES_DAYSTART, true);
-			
-		rules.doctorCanHealSelf = prefs.getBoolean(Constants.RULES_DOCTOR_HEAL_SELF, true);
-		rules.doctorKnowsIfTargetIsAttacked = prefs.getBoolean(Constants.RULES_DOCTOR_SUCCESS_NOTIFICATION, true);
-			
-		rules.serialKillerIsInvulnerable = prefs.getBoolean(Constants.RULES_SK_INVULN, true);
-		
-		
-		
+
+		rules.DAY_START = true;
+
+		rules.doctorCanHealSelf = (true);
+		rules.doctorKnowsIfTargetIsAttacked = (true);
+
+		rules.serialKillerIsInvulnerable = (true);
+
+
+
 		return rules;
 	}
 	

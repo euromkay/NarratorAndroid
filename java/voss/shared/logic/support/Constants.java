@@ -42,6 +42,7 @@ public class Constants {
 
 	public static final String START_GAME = "START_GAME ";
 
+	public static final String SET_RULES = "SET_RULES ";
 
 	//Commands
     public static final String MODKILL = "modkill";
