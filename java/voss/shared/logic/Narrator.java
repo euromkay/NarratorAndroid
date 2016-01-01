@@ -52,7 +52,6 @@ import voss.shared.roles.RandomRole;
 import voss.shared.roles.Role;
 import voss.shared.roles.SerialKiller;
 import voss.shared.roles.Sheriff;
-import voss.shared.roles.UnsetRole;
 import voss.shared.roles.Veteran;
 import voss.shared.roles.Vigilante;
 import voss.shared.roles.Witch;

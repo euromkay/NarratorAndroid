@@ -86,7 +86,7 @@ public class Mayor extends Role {
 		if (voteTarget != null)
 			owner.vote(voteTarget);
 		
-		if (n.isDay())
+		if (n.isDay()) //if its still day
 			for (NarratorListener nl: n.getListeners())
 				nl.onMayorReveal(owner);
 	}

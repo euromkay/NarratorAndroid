@@ -95,7 +95,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 	protected void onSaveInstanceState(Bundle b){
 		super.onSaveInstanceState(b);
-		manager.stopTexting();
+		if(manager != null)
+			manager.stopTexting();
 	}
 	
 	protected void onResume(){
@@ -434,8 +435,10 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 		setDescriptionText(text, color);
 
-
-		manager.screenController.setRoleInfo(SetupScreenController.NONE, Constants.A_NORMAL, null);
+		if(i == RANDOM)
+			manager.screenController.setRoleInfo(SetupScreenController.DAY, color, null);
+		else
+			manager.screenController.setRoleInfo(SetupScreenController.NONE, Constants.A_NORMAL, null);
 	}
 
 	private void roleDescription(RoleTemplate rt){
@@ -625,7 +628,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 					if(manager.isHost()){
 						if(!manager.checkNarrator())
 							return;
-						Server.StartGame(ns.local, ns.local.getRules().DAY_START, ns.getGameListing(), new SuccessListener() {
+						Server.StartGame(ns.local, ns.getGameListing(), new SuccessListener() {
 							public void onSuccess() {
 								toast("Starting game");
 							}

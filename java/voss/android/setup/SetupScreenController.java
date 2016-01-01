@@ -25,7 +25,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     private TextView[] tView;
     private TextWatcher[] tWatcher;
 
-
+    public static final int DAY = -1;
     public static final int NONE = 0;
     public static final int DOCTOR = 1;
     public static final int VIGILANTE = 2;
@@ -39,6 +39,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     public static final int MASS_MURDERER = 10;
     public static final int GODFATHER = 11;
     public static final int CULT = 12;
+
 
 
     private Rules rules;
@@ -152,6 +153,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
     private void firstBox(boolean b){
         switch(activeRole){
+            case DAY:
+                rules.DAY_START = b;
+                break;
             case DOCTOR:
                 rules.doctorCanHealSelf = b;
                 break;
@@ -237,20 +241,6 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         }
     }
 
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-    }
-
-    public void afterTextChanged(Editable s) {
-
-        s.toString();
-
-    }
-
     public int activeRole;
     public void setRoleInfo(int i, int color, Rules r){
         if( r!= null)
@@ -260,6 +250,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             setColor(color);
         activeRole = i;
         switch(activeRole) {
+            case DAY:
+                setDay();
+                break;
             case DOCTOR:
                 setDoctor();
                 return;
@@ -300,6 +293,13 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
                 hideAll();
         }
     }
+    private void setDay(){
+        setBooleanTexts("Day Start");
+        setBoolean(rules.DAY_START);
+        setTexts();
+        setEdits();
+    }
+
     private void setGF(){
         setBooleanTexts("Godfather is invulnerable", "Godfather is undetectable");
         setBoolean(rules.gfInvulnerable, rules.gfUndetectable);

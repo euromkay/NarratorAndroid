@@ -217,10 +217,20 @@ public class Server {
                     GameListing gl;
                     for (ParseObject po : list) {
                         gl = new GameListing(po);
+                        if(gl.getPlayerNames().contains(Server.GetCurrentUserName())) {
+                            games.add(gl);
+                            continue;
+                        }
+                        if(gl.getRoleNames().isEmpty())
+                            continue;
+                        if(gl.getRoleNames().size() == gl.getPlayerNames().size())
+                            continue;
                         games.add(gl);
                     }
-
-                    gf.onGamesFound(games);
+                    if(games.isEmpty())
+                        gf.noGamesFound();
+                    else
+                        gf.onGamesFound(games);
                 } else if (e.getCode() == ParseException.INVALID_SESSION_TOKEN) {
                     gf.onInvalidToken();
                 } else {
@@ -319,7 +329,7 @@ public class Server {
         ParsePush.subscribeInBackground("c" + gl.getID(), sc);
     }
 
-    public static void StartGame(Narrator narrator, boolean dayStart, GameListing gl, final SuccessListener sl){
+    public static void StartGame(Narrator narrator, GameListing gl, final SuccessListener sl){
         List<String> players = new ArrayList<String>();
         List<String> roles = new ArrayList<String>();
         for(Player p: narrator.getAllPlayers())
@@ -339,7 +349,7 @@ public class Server {
         params.put("ruless", sd.toString());
         params.put(ParseConstants.PLAYERS, players);
         Log.i("Server start game", gl.getPlayerNames().size() + "/" + gl.getRoleNames().size());
-        params.put(ParseConstants.WHEN, dayStart);
+        params.put(ParseConstants.WHEN, narrator.getRules().DAY_START);
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
