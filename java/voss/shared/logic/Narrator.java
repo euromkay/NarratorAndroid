@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
+import voss.shared.event.Event;
+import voss.shared.event.EventLog;
+import voss.shared.event.EventManager;
 import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.exceptions.IllegalGameSettingsException;
 import voss.shared.logic.exceptions.IllegalRoleCombinationException;
@@ -66,7 +69,6 @@ public class Narrator{
 	public static final String KEY = "NARRATOR_KEY";
 
 	public static boolean DEBUG = false;
-	public static final boolean EMU = true;
 	
 	public static Narrator Default(){
 		Narrator narrator = new Narrator();
@@ -166,7 +168,7 @@ public class Narrator{
 		addTeam(Constants.A_SKIP).setName("Skip Team");
 		Skipper = new Player("Skip Day", new CommunicatorNull(), this);
 		Skipper.setRole(new Citizen(Skipper), Constants.A_SKIP);
-		events = new EventManager();
+		events = new EventManager(this);
 		random = new Random();
 		setSeed(random.nextLong());
 
@@ -257,7 +259,7 @@ public class Narrator{
 		if(rem != null)
 			players.remove(rem);
 	}
-	private Object getPlayerByNameLock = new Object();
+	private final Object getPlayerByNameLock = new Object();
 	public Player getPlayerByName(String name){
         if (Skipper.getName().equals(name))
         	return Skipper;
@@ -535,7 +537,8 @@ public class Narrator{
 
 		runSetupChecks();
 		gameStarted = true;
-
+		events.setPhaseStart(rules.DAY_START);
+		
 		ArrayList<RoleTemplate> list = getAllRoles();
 		if (!DEBUG) {
 			players.sortByName();
@@ -571,7 +574,7 @@ public class Narrator{
 			e.dontShowPrivate();
 			e.setVisibility(player);
 			e.add("You are a " + player.getRoleName() + ".");
-			addEvent(e);
+			events.getDayChat(0).add(e);
 		}
 	}
 	public Role convertRoles(String name, Player p){
@@ -587,7 +590,7 @@ public class Narrator{
 	}
 	
 	
-	private int dayNumber = -1;
+	private int dayNumber = 0;
 	public int getDayNumber() {
 		return dayNumber;
 	}
@@ -616,9 +619,6 @@ public class Narrator{
 		for (Player p: players){
 			p.onNightReset();
 		}
-		Event e = new Event();
-		e.add("\nNight " + dayNumber + "\n");
-		addEvent(e);
 
 		for(NarratorListener nl: listeners){
 			nl.onNightStart(lynchedList);
@@ -670,12 +670,11 @@ public class Narrator{
 		if(players.size() < nightList.size())
 			throw new IllegalStateException("Something is wrong with the input of night actions");
 		
-		
 		return getLivePlayers().size() == nightList.size();
 	}
 	
 	public PlayerList getLivePlayers(){
-		return players.getLivePlayers().copy();
+		return players.getLivePlayers();
 	}
 	
 	
@@ -686,25 +685,33 @@ public class Narrator{
 	
 	
 	private EventManager events;
-	public String getEvents(String access, boolean HTML){
-		if(access.equals(Event.PRIVATE) || !isInProgress())
-			return events.access(Event.PRIVATE, HTML);
-		return events.access(access, HTML);
+	private String trim(String s){
+		while(s.contains("\n\n\n\n")){
+			s = s.replace("\n\n\n\n", "\n\n\n");
+		}
+		return s;
+	}
+	public String getPrivateEvents(boolean html){
+		return trim(events.getPrivate(html));
+	}
+	public String getPublicEvents(boolean html){
+		if(!isInProgress())
+			return trim(getPrivateEvents(html));
+		return trim(events.getPublic(html));
 	}
 	public String getHappenings(){
-		return getEvents(Event.PRIVATE, false);
+		return getPrivateEvents(false);
 	}
-	public String getEvents(Player p, boolean HTML){
-		return getEvents(p.getName(), HTML);
+	public String getPlayerEvents(Player p, boolean HTML){
+		return trim(events.getPlayerEvents(p, HTML));
 	}
+	public EventManager getEventManager() {
+		return events;
+	}
+	
+	
 	private ArrayList<CommandListener> cListeners;
-	public void addEvent(Event e){
-		events.add(e);
-
-	}
-	public ArrayList<Event> getEvents(){
-		return events.getEvents();
-	}
+	
 	public ArrayList<CommandListener> getCommandListeners(){
 		return cListeners;
 	}
@@ -714,10 +721,11 @@ public class Narrator{
 	
 	
 	private void endNight(){
-		Event f = new Event();
-		f.add("\n");
-		addEvent(f);
+		EventLog nc = events.getNightLog(null, dayNumber);
+		Event e = new Event("\n");
+		e.setPrivate();
 		
+		nc.add(e);
 		voteList.clear();
 		voterList.clear();
 		
@@ -795,13 +803,21 @@ public class Narrator{
 		
 		//ending
 		nightList.clear();
+
+		nc.add(e);
 		dayNumber++;
 	
 		for(Team t: teams.values())
 			t.reset();
 	
+		e = new Event();
+		e.dontShowPrivate();
+		e.add("\n");
+		nc.add(e);
+		
+		
 		for(Player dead: newDeadList){
-			Event e = new Event();
+			e = new Event();
 			e.dontShowPrivate();
 			
 			StringChoice sc = new StringChoice(dead);
@@ -812,7 +828,7 @@ public class Narrator{
 			sc.add(dead, "were");
 			
 			e.add(sc, " found ", dead.getDeathType().toString());
-			addEvent(e);
+			nc.add(e);
 		}
 		
 		startDay(newDeadList);
@@ -988,11 +1004,6 @@ public class Narrator{
 		if(!isInProgress())
 			return;
 
-
-		Event e = new Event();
-		e.add("\nDay " + dayNumber + "\n");
-		addEvent(e);
-
 		voterList.clear();
 		voteList.clear();
 		
@@ -1053,7 +1064,7 @@ public class Narrator{
 		e.add(sc);
 		
 		e.setCommand(voter, CommandHandler.VOTE, target.getName());
-		
+		EventLog eL = events.getDayChat(dayNumber);
 		//can't revote
 		int toLynch;
 		if(voterList.containsKey(voter)){
@@ -1066,7 +1077,7 @@ public class Narrator{
 			e.add(" changed ", new StringChoice("their").add(voter, "your")," vote from ", prevTarget, " to ", sc, ". ", numberOfVotesNeeded(toLynch));
 
 
-			addEvent(e);
+			eL.add(e);;
 			for(NarratorListener nl: listeners){
 				nl.onChangeVote(voter, target, prevTarget, toLynch);
 			}
@@ -1078,7 +1089,7 @@ public class Narrator{
 			e.add(" voted for ", sc, ". ", numberOfVotesNeeded(toLynch));
 
 
-			addEvent(e);
+			eL.add(e);;
 			for(NarratorListener nl: listeners)
 				nl.onVote(voter, target, toLynch);
 
@@ -1122,7 +1133,7 @@ public class Narrator{
 			sc.add(prevTarget, "you");
 			e.add(" unvoted ", sc, ". ", numberOfVotesNeeded(difference));
 		}
-		addEvent(e);
+		events.getDayChat(dayNumber).add(e);
 
 		for(NarratorListener nl: listeners){
 			nl.onUnvote(voter, prevTarget, difference);
@@ -1167,9 +1178,9 @@ public class Narrator{
 			sc.add(prevTarget, "you");
 			e.add(" decided against lynching ", sc, " and instead wants to skip the day. " + numberOfVotesNeeded(difference));
 		}else
-			e.add(" voted to skip the day.");
+			e.add(" voted to skip the day. " + numberOfVotesNeeded(difference));
 	
-		addEvent(e);
+		events.getDayChat(dayNumber).add(e);
 
 		for(NarratorListener nL: listeners){
 			nL.onVote(p, Skipper, difference);
@@ -1247,24 +1258,26 @@ public class Narrator{
 	}
 	
 	public Object commandLock = new Object();
-	protected void talk(Player p, String message){
-		if(p.isBlackmailed() || p.isDead())
-			return;
-		Event e = new Event();
-		if (isNight()) {
-			if(p.getTeam().getMembers().size() <= 1)
-				return;
-			if(!p.getTeam().knowsTeam())
-				return;
-			e.setVisibility(p.getTeam().getMembers());
+	protected void talk(Player p, String message, String key){
+		if(p.isBlackmailed())
+			throw new IllegalActionException("Blackmailed players cannot talk.");
+		if(p.isDead())
+			throw new IllegalActionException("Dead players cannot talk.");
+		if(isNight() && !p.getTeam().knowsTeam()){
+			throw new IllegalActionException("Player has no one to talk to.");
 		}
-
+		
+		Event e = new Event();
 		StringChoice sc = new StringChoice(p);
 		sc.add(p, "You");
-		
 		e.add(sc, ": ", message);
-		addEvent(e);
-		//e.setCommand(p, CommandHandler.SAY, message);
+		
+		if (isNight()) 
+			events.getNightLog(key, dayNumber).add(e);
+		else
+			events.getDayChat(dayNumber).add(e);
+		
+		e.setCommand(p, CommandHandler.SAY, key, message);
 		for(NarratorListener nl: listeners){
 			nl.onMessageReceive(p);
 		}
@@ -1275,10 +1288,11 @@ public class Narrator{
 		if(!isDay)
 			throw new IllegalStateException("It was already nighttime");
 
+		EventLog eLog = events.getDayChat(dayNumber);
 		if(lynchedTargets.contains(Skipper)) {
 			Event e = new Event();
 			e.add("\nDay was skipped!\n");
-			addEvent(e);
+			eLog.add(e);
 		}else {
 			boolean first = true;
 			for (Player lynched : lynchedTargets) {
@@ -1293,7 +1307,7 @@ public class Narrator{
 				StringChoice was = new StringChoice("was");
 				was.add(lynched, "were");
 				e.add(was," lynched by ", voteList.get(lynched), ".");
-				addEvent(e);
+				eLog.add(e);
 			}
 		}
 		canVote = false;
@@ -1494,8 +1508,10 @@ public class Narrator{
 
 		dest.write(gameStarted);
 
-		if(gameStarted)
-			events.writeToPackage(dest);
+		if(gameStarted){
+			ArrayList<String> commands = getCommands();
+			dest.write(commands);
+		}
 	}
 	
 	public Narrator(Narrator n){
@@ -1614,9 +1630,11 @@ public class Narrator{
 
 		CommandHandler commander = new CommandHandler(this);
 
-		size = in.readInt();
-		for(int i = 0; i < size; i++) {
-			commander.parseCommand(in.readString());
+		ArrayList<String> commands = in.readStringList();
+		String command;
+		while(!commands.isEmpty()){
+			command = commands.remove(0);
+			commander.parseCommand(command);
 		}
 
 		for(Player comm_less: players_to_comms.keySet()){
@@ -1678,6 +1696,8 @@ public class Narrator{
 	public boolean isStarted() {
 		return gameStarted;
 	}
+
+	
 	
 	
 

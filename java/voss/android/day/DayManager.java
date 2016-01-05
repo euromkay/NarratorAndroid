@@ -131,9 +131,14 @@ public class DayManager implements TextInput{
 
 	public void talk(Player p, String message) {
 		synchronized(ns.local){
-			p.say(message);
-		tC.say(p, message);
-		
+			if(p.isDead() || p.isBlackmailed())
+				return;
+			String key = Constants.REGULAR_CHAT;
+			if(ns.local.isNight())
+				key = p.getTeam().getName();
+				
+			p.say(message, key);
+			tC.say(p, message, key);
 		}
 	}
 

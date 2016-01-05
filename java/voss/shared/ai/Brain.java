@@ -76,23 +76,24 @@ public class Brain {
     	for(Player s: slaves.getLivePlayers()){
     		getComputer(s).talkings();
     	}
-    	PlayerList list;
+    	/*PlayerList list;
     	if(targetAnyone)
     		list = slaves.get(0).getNarrator().getLivePlayers();
     	else
     		list = slaves.getLivePlayers();
     	for(Player s: slaves){
     		getComputer(s).vote(list);
-    	}
+    	}*/
     }
     
     
     private void voting(){
     	if(slaves.isEmpty())
     		return;
-    	PlayerList livePlayers = slaves.get(0).getNarrator().getLivePlayers();
+    	Narrator n = slaves.get(0).getNarrator();
+    	PlayerList livePlayers = n.getLivePlayers();
     	
-    	int min = slaves.get(0).getNarrator().getMinLynchVote();
+    	int min = n.getMinLynchVote();
     	boolean dub = false;
     	for(Player p: livePlayers){
     		int voteCount = p.getVoteCount();
@@ -107,36 +108,41 @@ public class Brain {
     			dub = true;
     		}
     	}
-
+    	PlayerList choices;
+    	PlayerList needToChange;
     	
-    	PlayerList choices = new PlayerList();
-    	PlayerList needToChange = new PlayerList();
-    	for(Player p: livePlayers){
-    		if(p.getVoteCount() > min){
-    			if(targetAnyone || slaves.contains(p))
-    				choices.add(p);
-    		}else if (p.getVoteCount() == min){
-    			if(dub){
+    	if(min == slaves.get(0).getNarrator().getMinLynchVote()){
+    		choices = n.getLivePlayers();
+    		needToChange = choices.intersect(slaves);
+    	}else{
+    		choices = new PlayerList();
+    		needToChange = new PlayerList();
+    	
+	    	for(Player p: livePlayers){
+	    		if(p.getVoteCount() > min){
 	    			if(targetAnyone || slaves.contains(p))
 	    				choices.add(p);
-    			}
-    			for(Player toChange: p.getVoters())
-    				if(slaves.contains(toChange))
-    					needToChange.add(toChange);
-    		}else{
-    			for(Player toChange: p.getVoters())
-    				if(slaves.contains(toChange))
-    					needToChange.add(toChange);
-    		}
+	    		}else if (p.getVoteCount() == min){
+	    			if(dub){
+		    			if(targetAnyone || slaves.contains(p))
+		    				choices.add(p);
+	    			}
+	    			for(Player toChange: p.getVoters())
+	    				if(slaves.contains(toChange))
+	    					needToChange.add(toChange);
+	    		}else{
+	    			for(Player toChange: p.getVoters())
+	    				if(slaves.contains(toChange))
+	    					needToChange.add(toChange);
+	    		}
+	    	}
     	}
     	
     	Player voted = null;
-    	for(Player p: needToChange){
-    		if(p.isComputer()){
-    			p = getComputer(p).vote(choices);
-    			if(p != null)
-    				voted = p;
-    		}
+    	for(Player p: needToChange.shuffle(random)){
+    		p = getComputer(p).vote(choices);
+    		if(p != null)
+    			voted = p;
     	}
     	
     	if(voted == null){
@@ -145,7 +151,7 @@ public class Brain {
                 for (Player slave: slaves){
                 	if(!slave.getNarrator().isDay())
                 		return;
-                	if(!slave.isComputer())
+                	if(slave.isDead())
                 		continue;
                 	if(slave.getVoteTarget() != slave.getSkipper())
                 		getComputer(slave).controller.skipVote(slave);
@@ -237,11 +243,17 @@ public class Brain {
 	}
 
 	public ArrayList<Claim> claims = new ArrayList<>();
-	public void claim(Player target, Team t, Player slave) {
-		Claim c = new Claim(target, t, slave);
+	public void claim(PlayerList targets, ArrayList<Team> t, Player slave) {
+		Claim c = new Claim(targets, t, slave);
 		if(!slave.isBlackmailed())
 			claims.add(c);
 		
+	}
+	
+	public void claim(Player target, Team t, Player slave){
+		ArrayList<Team> teams = new ArrayList<>();
+		teams.add(t);
+		claim(new PlayerList(target), teams, slave);
 	}
 
 	HashMap<Team, ArrayList<PlayerList>> suspList = new HashMap<>();
@@ -325,5 +337,10 @@ public class Brain {
 			return true;
 		}
 		return false;
+	}
+	
+	Player mayor = null;
+	public Player getRevealedMayor() {
+		return mayor;
 	}
 }

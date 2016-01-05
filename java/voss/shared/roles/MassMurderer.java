@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -35,11 +35,21 @@ public class MassMurderer extends Role {
 		StringChoice sc = new StringChoice(owner);
 		sc.add(owner, "You");
 		
-		Event e = Role.selectionEvent(owner);
+		Event e = new Event();
+		e.add(sc);
 		e.setCommand(owner, COMMAND, target.getName());
-		e.add(sc, SELECTION_PROMPT, target, ".");
-		owner.getNarrator().addEvent(e);
-			//owner.getTeam().notifyTeammates(owner, SELECTION_PROMPT + target.getName() + ".");
+		e.add(SELECTION_PROMPT);
+		
+		sc = new StringChoice(target);
+		sc.add(target, "your");
+		
+		e.add(sc);
+		sc = new StringChoice("'s");
+		sc.add(target, "");
+		
+		e.add(sc, " house.");
+		
+		Event.AddSelectionFeedback(e, owner);
 	}
 
 	public String getNightText(ArrayList<Team> t){
@@ -125,10 +135,11 @@ public class MassMurderer extends Role {
 		if(peopleAttacked > 1)
 			setCoolDown(n.getRules().mmSpreeDelay + 1);
 		
+		
 		Event e = new Event();
 		e.add(owner, " camped out at ", target, "'s house killing ", add,  ".");
 		e.setPrivate();
-		n.addEvent(e);
+		n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 		return true;
 	}
 	

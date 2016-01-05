@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -122,7 +122,7 @@ public class Executioner extends Role{
 		
 		e.add(sc, " target is ", target, ".");
 		e.setVisibility(exec);
-		n.addEvent(e);
+		n.getEventManager().getNightLog(null, 0).add(e);
 	}
 	
 	public boolean isPowerRole() {

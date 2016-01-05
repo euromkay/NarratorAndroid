@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.listeners.NarratorListener;
@@ -70,7 +70,7 @@ public class Mayor extends Role {
 		sc.add(owner, "have");
 		
 		e.add(sc, " revealed as the Mayor!");
-		n.addEvent(e);
+		n.getEventManager().getDayChat(n.getDayNumber()).add(e);
 		
 		
 		

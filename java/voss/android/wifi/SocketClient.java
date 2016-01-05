@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import voss.android.parse.Server;
 import voss.android.wifi.ChatManager;
 
 public class SocketClient extends Service implements Runnable {
@@ -25,6 +26,8 @@ public class SocketClient extends Service implements Runnable {
     private String hostIp;
 
     public int onStartCommand(Intent i, int flags, int startId){
+        if(Server.IsLoggedIn())
+            return Service.START_STICKY;
         hostIp = i.getStringExtra(HOST_IP_ADDRESS);
         
         return Service.START_STICKY;
@@ -77,6 +80,8 @@ public class SocketClient extends Service implements Runnable {
     }
 
     public void send(String s){
+        if(Server.IsLoggedIn())
+            return;
         chat.write(s);
     }
 

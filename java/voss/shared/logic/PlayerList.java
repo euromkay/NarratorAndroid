@@ -107,7 +107,8 @@ public class PlayerList implements Iterable<Player>{
 	}
 
 	public PlayerList remove(Player p) {
-		list.remove(p);
+		if(p != null)
+			list.remove(p);
 		return this;
 	}
 	public PlayerList remove(PlayerList toRemove){
@@ -297,6 +298,15 @@ public class PlayerList implements Iterable<Player>{
 
 		return arrayOfNames;
 
+	}
+	
+	public ArrayList<String> getNamesToStringList(){
+		ArrayList<String> arrayOfNames = new ArrayList<String>();
+
+		for(Player p: list)
+			arrayOfNames.add(p.getName());
+
+		return arrayOfNames;
 	}
 
 	public boolean has(Player a2) {

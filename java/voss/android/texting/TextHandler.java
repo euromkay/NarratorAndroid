@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContextWrapper;
 import voss.android.PhoneBook;
 import voss.android.day.DayManager;
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;

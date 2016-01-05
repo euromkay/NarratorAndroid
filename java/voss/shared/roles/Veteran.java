@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -67,15 +67,14 @@ public class Veteran extends Role {
 
 	public void setAction(Player owner, Player target, int ability) {
 		if(ability == MAIN_ABILITY){
-			Event e = Role.selectionEvent(owner);
+			Event e = new Event();
 			e.setCommand(owner, ALERT, owner.getName());
 
 			StringChoice sc = new StringChoice(owner);
 			sc.add(owner, "You");
 			
 			e.add(sc, " will go on alert.");
-			owner.getNarrator().addEvent(e);
-			//owner.getTeam().notifyTeammates(owner, " will go on alert.");
+			Event.AddSelectionFeedback(e, owner);
 		}else
 			owner.getTeam().getSelectionFeedback(owner, target, ability);
 		
@@ -124,7 +123,7 @@ public class Veteran extends Role {
 		Event e = new Event();
 		e.add(owner, " went on alert, killing ", add);
 		e.setPrivate();
-		n.addEvent(e);
+		n.getEventManager().getDayChat(n.getDayNumber()).add(e);
 		return true;
 	}
 	

@@ -2,11 +2,13 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Rules;
 import voss.shared.logic.Team;
+import voss.shared.logic.support.HTString;
+import voss.shared.logic.support.StringChoice;
 
 public class CultLeader extends Role{
 
@@ -102,16 +104,21 @@ public class CultLeader extends Role{
 				owner.getTeam().addMember(target);
 				if(!n.getRules().cultKeepsRoles)
 					target.changeRole(new Cultist(target));
-			
+				
+				StringChoice sc = new StringChoice(target);
+				sc.add(target, "you");
+				
+				HTString ht = new HTString(owner.getTeam().getName(), owner.getAlignment());
+				
 				Event e = new Event();
 				e.setVisibility(target);
-				e.add(target, " converted to the " + owner.getTeam().getName() + ". Your teammates are : ", owner.getTeam().getMembers().getNamesToStringArray(), ".");
-				n.addEvent(e);
+				e.add(owner, " converted you to the ", ht, ". Your teammates are : ", owner.getTeam().getMembers(), ".");
+				target.addNightFeedback(e);
 				
 				e = new Event();
 				e.setPrivate();
 				e.add(owner, " recruited ", target, " to the " + owner.getTeam().getName());
-				n.addEvent(e);
+				n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 			}
 		}
 		return true;

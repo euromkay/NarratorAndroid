@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -36,10 +36,7 @@ public class Lookout extends Role {
 			return false;
 		if(getVisited()){
 			watch(owner, target, n);
-			Event e = new Event();
-			e.setPrivate();
-			e.add(owner, " watched " , target, ".");
-			n.addEvent(e);
+			Role.event(owner, " watched ", target);
 			return true;
 		}
 		else{

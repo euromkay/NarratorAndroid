@@ -114,7 +114,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	public void onPause(){
-		manager.stopTexting();
+		if(manager != null)
+			manager.stopTexting();
 		super.onPause();
 	}
 	
@@ -133,13 +134,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private SetupManager manager;
 	private void setup(Bundle b){
 		if(manager == null){
+			setupRoleCatalogue();
 			connectNarrator(new NarratorConnectListener() {
 				public void onConnect() {
 					setupManager();
 				}
 			});
 			setupCategories();
-			setupRoleCatalogue();
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
 			changeRoleType(TOWN);
 
@@ -579,7 +580,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			return;
 
 
-		String events = ns.local.getEvents(Server.GetCurrentUserName(), true);
+		String events = ns.local.getPublicEvents(true);
 		events = events.replace("\n", "<br>");
 		chatTV.setText(Html.fromHtml(events));
 		pushChatDown();

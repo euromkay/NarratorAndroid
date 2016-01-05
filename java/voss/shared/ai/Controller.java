@@ -22,7 +22,7 @@ public abstract class Controller {
 
 	public abstract void selectHost(Player host);
 
-	public abstract void say(Player p, String string);
+	public abstract void say(Player p, String string, String key);
 
 	public abstract void doDayAction(Player p);
 	

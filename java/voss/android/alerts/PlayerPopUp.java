@@ -83,7 +83,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         getDialog().setTitle("Players in Game - " + mListener.getNarrator().getPlayerCount());
     }
 
-    public void onItemClick(AdapterView<?> a, View v, int i, long l){
+    public void onItemClick(AdapterView<?> unusedA, View v, int i, long unusedL){
         Player clicked = players.get(i);
 
         if(clicked.getCommunicator().getClass() == CommunicatorInternet.class)
@@ -114,29 +114,33 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     }
 
 
-
-
-
-
     public void onClick(View v) {
         EditText et = (EditText) mainView.findViewById(R.id.addPlayerContent);
         String name = et.getText().toString();
+
+        et.setText("");
         if (name.length() == 0)
             return;
+
+        if(name.equals("set computers")){
+            for(int i = 0; i < players.size(); i++)
+                players.get(i).setComputer();
+            updatePlayerList();
+            return;
+        }
+
 
         if (checkName(name, et))
             return;
 
         if (mListener.getNarrator().getAllPlayers().hasName(name)){
             Toast.makeText(getActivity(), "Name taken", Toast.LENGTH_LONG).show();
-            et.setText("");
             return;
         }
 
 
         activity.getManager().addPlayer(name, new CommunicatorPhone());
 
-        et.setText("");
     }
 
     public void updatePlayerList(){

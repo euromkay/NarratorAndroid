@@ -3,7 +3,7 @@ package voss.shared.roles;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -42,7 +42,7 @@ public abstract class Role{
 			throw new UnsupportedMethodException("");
 			//t.notifyTeammates(owner, " won't " + getKeyWord() + " anyone.");
 		}else{
-			Event e = Role.selectionEvent(owner);
+			Event e = new Event();
 			
 			StringChoice sc = new StringChoice(owner);
 			sc.add(owner, "You");
@@ -50,7 +50,7 @@ public abstract class Role{
 			e.setCommand(owner, getKeyWord(), target.getName());
 			
 			e.add(sc, " will " + getKeyWord().toLowerCase() + " ", target, ".");
-			owner.getNarrator().addEvent(e);
+			Event.AddSelectionFeedback(e, owner);
 			if(t.knowsTeam()){
 				for(Player teamMember: t.getMembers()){
 					teamMember.sendMessage(e);
@@ -108,21 +108,16 @@ public abstract class Role{
 	public static void Kill(Player owner, Player target, int flag, Narrator n){	
 		if(owner.isDetectable())
 			owner.visit(target);
-		Event e = new Event();
-		e.add(owner, " attacked ", target, ".");
-		e.setPrivate();
-		n.addEvent(e);
+		Role.event(owner, " attacked ", target);
 		target.kill(flag, owner);
 		owner.attack(target);
 	}
 	public static void Recruit(Player sender, Player target, int teamColor, Narrator n) {
 		sender.visit(target);
-		Event e = new Event();
-		e.add(sender, " recruited ", target, ".");
-		e.setPrivate();
-		n.addEvent(e);
+		Role.event(sender, " recruited ", target);
 		
-		e = Event.StringFeedback("You've been recruited into the ", target);
+		
+		Event e = Event.StringFeedback("You've been recruited into the ", target);
 		e.add(new HTString(sender.getTeam().getName(), sender.getTeam().getAlignment()));
 		e.add(".");
 		target.addNightFeedback(e);
@@ -389,17 +384,11 @@ public abstract class Role{
 			throw ef;
 		}
 		e.setPrivate();
-		owner.getNarrator().addEvent(e);
+		Narrator n = owner.getNarrator();
+		n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 		
 	}
-	public static Event selectionEvent(Player owner) {
-		Event e = new Event();
-		if(owner.getTeam().knowsTeam())
-			e.setVisibility(owner.getTeam().getMembers());
-		else
-			e.setVisibility(owner);
-		return e;
-	}
+	
 	
 
 	

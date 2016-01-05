@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import voss.shared.event.Event;
+import voss.shared.event.EventLog;
 import voss.shared.logic.exceptions.IllegalActionException;
 import voss.shared.logic.exceptions.NotEqualsException;
 import voss.shared.logic.exceptions.PhaseException;
@@ -283,15 +285,17 @@ public class Player implements ActionTaker{
 			
 			e.add(sc, " reconsidered.");
 			Team t = n.getTeam(alignment);
+			EventLog eLog;
 			if(t.knowsTeam()){
-				e.setVisibility(t.getMembers());
+				eLog = n.getEventManager().getNightLog(getTeam().getName(), n.getDayNumber());
 				for(Player p: t.getMembers()) {
 					p.sendMessage(e);
 				}
 			}else {
 				e.setVisibility(this);
+				eLog = n.getEventManager().getNightLog(null, n.getDayNumber());
 			}
-			n.addEvent(e);
+			eLog.add(e);
 			for (NarratorListener nl: n.getListeners()){
 				nl.onNightTargetRemove(this, prev);
 			}
@@ -399,8 +403,8 @@ public class Player implements ActionTaker{
 			e.setCommand(this, CommandHandler.END_NIGHT);
 			e.setPrivate();
 			e.dontShowPrivate();
+			n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);;
 			n.endNight(this);
-			n.addEvent(e);
 		}
 	}
 	public void cancelEndNight(){
@@ -409,7 +413,7 @@ public class Player implements ActionTaker{
 			e.setCommand(this, CommandHandler.END_NIGHT);
 			e.setPrivate();
 			e.dontShowPrivate();
-			n.addEvent(e);
+			n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 			n.cancelEndNight(this);
 		}
 		
@@ -630,8 +634,9 @@ public class Player implements ActionTaker{
 		//dead
 		Shuffler.shuffle(feedback, n.getRandom());
 		sendMessage(feedback);
+		EventLog eLog = n.getEventManager().getDayChat(n.getDayNumber() + 1);//hasn't quite changed yet
 		for(Event e: feedback){
-			n.addEvent(e);
+			eLog.add(e);
 		}
 		
 		ArrayList<Event> todaysFeedback = new ArrayList<>();
@@ -1096,9 +1101,9 @@ public class Player implements ActionTaker{
 		isComputer = true;
 		comm = new CommunicatorNull();
 	}
-	public void say(String message) {
+	public void say(String message, String key) {
 		synchronized(n){
-			n.talk(this, message);
+			n.talk(this, message, key);
 		}
 	}
 }

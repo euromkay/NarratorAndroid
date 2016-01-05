@@ -1,16 +1,13 @@
 package voss.android.day;
 
-import android.view.Gravity;
-
 import java.util.ArrayList;
 
 import voss.android.CommunicatorPhone;
 import voss.android.NActivity;
 import voss.android.R;
 import voss.android.parse.Server;
-import voss.android.screens.ListingAdapter;
 import voss.android.screens.SimpleGestureFilter;
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -225,7 +222,7 @@ public class DayScreenController implements NarratorListener{
 		Narrator n = getNarrator();
 		PlayerList list;
 		if(Server.IsLoggedIn()){
-			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName().toLowerCase()));
+			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName()));
 		}else if(manager.isHost()) {
 			list = n.getLivePlayers();
 		}else{
@@ -364,11 +361,11 @@ public class DayScreenController implements NarratorListener{
 	private void updateChatPanel(){
 		String text;
 		if (!manager.getNarrator().isInProgress()){
-			text = manager.getNarrator().getEvents(Event.PRIVATE, true);
+			text = manager.getNarrator().getPrivateEvents(true);
 		}else if (!playerSelected())
-			text = manager.getNarrator().getEvents(Event.PUBLIC, true);
+			text = manager.getNarrator().getPublicEvents(true);
 		else
-			text = getNarrator().getEvents(currentPlayer, true);
+			text = getNarrator().getPlayerEvents(currentPlayer, true);
 		dScreen.updateChatPanel(text);
 	}
 	

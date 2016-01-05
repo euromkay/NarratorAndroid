@@ -95,8 +95,17 @@ public class SetupManager {
     }
 
     public boolean isHost(){
-        if(Server.IsLoggedIn())
-            return Server.GetCurrentUserName().equals(ns.getGameListing().getHostName());
+        if(Server.IsLoggedIn()) {
+            try {
+                return Server.GetCurrentUserName().equals(ns.getGameListing().getHostName());
+            }catch(NullPointerException e){
+                if(ns == null)
+                    throw new NullPointerException("ns was null");
+                if(ns.getGameListing() == null)
+                    throw new NullPointerException("game listing was null");
+                throw new NullPointerException("neither were null");
+            }
+        }
         return ns.socketClient == null;
     }
 
@@ -314,9 +323,9 @@ public class SetupManager {
             return;
 
         Player p = ns.local.getPlayerByName(Server.GetCurrentUserName());
-        p.say(message);
+        p.say(message, Constants.REGULAR_CHAT);
 
-        message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + message;
+        message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + null + " " + message;
         Server.PushCommand(ns.getGameListing(), message, 0);
 
         screen.updateChat();
@@ -381,7 +390,8 @@ public class SetupManager {
             SetupDeliverer sd = new SetupDeliverer();
             Packager p = new Packager(sd);
             ns.local.getRules().writeToPackage(p);
-            hAdder.onRulesChange(sd.toString());
+            if(hAdder != null)
+                hAdder.onRulesChange(sd.toString());
         }
     }
 }

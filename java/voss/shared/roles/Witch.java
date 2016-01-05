@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
@@ -36,7 +36,7 @@ public class Witch extends Role {
 			owner.getTeam().getSelectionFeedback(owner, target, ability);
 			return;
 		}
-		Event e = Role.selectionEvent(owner);
+		Event e = new Event();
 		StringChoice sc = new StringChoice(owner);
 		sc.add(owner, "You");
 		e.add(sc);
@@ -56,7 +56,7 @@ public class Witch extends Role {
 			e.add(" will make the victim target ", newTarget);
 			e.dontShowPrivate();
 		}else{//(newTarget == null )
-			e.add(" will controll", victim);
+			e.add(" will controll ", victim);
 			e.dontShowPrivate();
 		}
 		if(ability == VICTIM)
@@ -65,7 +65,7 @@ public class Witch extends Role {
 			e.setCommand(owner, Target, target.getName());
 		e.add(".");
 		
-		owner.getNarrator().addEvent(e);
+		Event.AddSelectionFeedback(e, owner);
 		 //owner.getTeam().notifyTeammates(owner, message);
 	}
 
@@ -107,7 +107,7 @@ public class Witch extends Role {
 		Event e = new Event();
 		e.add(witch, " changed ", victim, "\'s target to ", newTarget, ".");
 		e.setPrivate();
-		n.addEvent(e);
+		n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 		return true;
 	}
 	private boolean completedMainAction(Player victim){

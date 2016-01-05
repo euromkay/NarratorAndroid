@@ -2,7 +2,6 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
@@ -55,11 +54,8 @@ public abstract class Blocker extends Role {
 		}
 
 		target.getBlocked(owner);//visiting taken care of here
-		owner.visit(target);
-		Event e = new Event();
-		e.add(owner, " blocked ", target, ".");
-		e.setPrivate();
-		n.addEvent(e);
+		owner.visit(target);	
+		Role.event(owner, " blocked ", target);
 		
 		return true;
 	}

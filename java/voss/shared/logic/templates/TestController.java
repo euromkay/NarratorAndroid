@@ -58,8 +58,8 @@ public class TestController extends Controller{
 		
 	}
 
-	public void say(Player p, String string) {
-		p.say(string);
+	public void say(Player p, String string, String key) {
+		p.say(string, key);
 		
 	}
 

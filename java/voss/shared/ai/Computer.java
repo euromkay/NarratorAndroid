@@ -3,7 +3,7 @@ package voss.shared.ai;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -12,11 +12,14 @@ import voss.shared.logic.Team;
 import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.support.Constants;
 import voss.shared.roles.Arsonist;
+import voss.shared.roles.Detective;
 import voss.shared.roles.Executioner;
 import voss.shared.roles.Framer;
 import voss.shared.roles.Janitor;
 import voss.shared.roles.Jester;
+import voss.shared.roles.Lookout;
 import voss.shared.roles.Mayor;
+import voss.shared.roles.SerialKiller;
 import voss.shared.roles.Sheriff;
 import voss.shared.roles.Vigilante;
 import voss.shared.roles.Witch;
@@ -39,6 +42,8 @@ public class Computer {
     public void doNightAction(){
         if (slave.endedNight())
             controller.cancelEndNight(slave);
+        if(slave.getTeam().knowsTeam() && !slave.isBlackmailed())
+        	controller.say(slave, "hi", slave.getTeam().getName());
         PlayerList selections = slave.getNarrator().getLivePlayers();
         if(!brain.targetAnyone)
         	selections.remove(brain.masters);
@@ -46,7 +51,7 @@ public class Computer {
         String[] abilities = slave.getAbilities();
         for(String action: abilities){
             int ability = slave.parseAbility(action);
-
+            
             if(mafSendAbility(ability))
             	continue;
             if (arsonAbility(ability, selections))
@@ -61,6 +66,9 @@ public class Computer {
             	continue;
             
             if (witchAbility(ability))
+            	continue;
+            
+            if (skAbility(ability))
             	continue;
             
             Player choice = getTargetChoice(ability, selections.copy());
@@ -170,6 +178,7 @@ public class Computer {
     private boolean vigiAbility(int ability){
     	if(slave.is(Vigilante.ROLE_NAME) && ability == Vigilante.MAIN_ABILITY){
 	    	PlayerList choices = getNarrator().getLivePlayers().remove(slave);
+	    	choices.remove(brain.getRevealedMayor());
 	    	PlayerList temp;
     		ArrayList<PlayerList> suspicious = brain.getSuspiciousPeople(slave.getTeam());//returned to you by the least suspicious people to most
 			for(PlayerList susp: suspicious){
@@ -181,6 +190,15 @@ public class Computer {
 					choices = temp;
 			}
 			controller.setNightTarget(slave, choices.getRandom(brain.random), Vigilante.COMMAND);
+			return true;
+		}
+		return false;
+    }
+    
+    private boolean skAbility(int ability){
+    	if(slave.is(SerialKiller.ROLE_NAME) && ability == SerialKiller.MAIN_ABILITY){
+	    	PlayerList choices = getNarrator().getLivePlayers().remove(slave);
+			controller.setNightTarget(slave, choices.getRandom(brain.random), SerialKiller.STAB);
 			return true;
 		}
 		return false;
@@ -249,10 +267,17 @@ public class Computer {
     	if(slave.is(Mayor.ROLE_NAME)){
     		if(slave.hasDayAction())
             	controller.doDayAction(slave);
+    		brain.mayor = slave;
     	}
+    	if(slave.isBlackmailed())
+    		return;
     	if(noPrevNight())
     		return;
-    	if(slave.is(Sheriff.ROLE_NAME)){
+    	if(slave.is(Detective.ROLE_NAME))
+    		detectiveTalk();
+    	else if(slave.is(Lookout.ROLE_NAME))
+    		lookoutTalk();
+    	else if(slave.is(Sheriff.ROLE_NAME)){
     		sheriffTalk();
     	}else if(slave.is(Executioner.ROLE_NAME)){
     		exeuctionerTalk();
@@ -279,7 +304,7 @@ public class Computer {
     	Team arsons = getTeam(Constants.A_ARSONIST);
     	String say = "I'm Sheriff. ";
     	say = say + target.getName() + " is a(n) " + arsons.getName() + ".";
-		slave.say(say);
+		slave.say(say, Constants.REGULAR_CHAT);
 		
     	brain.claim(target, arsons, slave);
     }
@@ -290,10 +315,69 @@ public class Computer {
     	
     	String say = "I'm Sheriff. ";
     	say = say + randAccused.getName() + " is a(n) " + arsons.getName() + ".";
-		slave.say(say);
+		slave.say(say, Constants.REGULAR_CHAT);
     	
     	brain.claim(randAccused, arsons, slave);
     }
+    
+    private void detectiveTalk(){
+		int lastNight = slave.getNarrator().getDayNumber() - 1;
+		for(Event e: slave.getFeedback(lastNight)){
+			if(e.access(slave, false).startsWith(Detective.FEEDBACK)){
+				Player target = e.getPlayers().get(0);
+				if (target.isAlive())
+					continue;
+				if (target.getDeathType().isLynch())
+					continue;
+				ArrayList<Integer> attacks = target.getDeathType().getList();
+				if(attacks.contains(Constants.A_YAKUZA) || attacks.contains(Constants.A_MAFIA) || attacks.contains(Constants.SK_KILL_FLAG)){
+					Player followed = slave.getPrevNightTarget(lastNight)[Detective.MAIN_ABILITY];
+					String say = "I'm Detective. " + followed.getName() + " may have killed " + target.getName();
+					slave.say(say, Constants.REGULAR_CHAT);
+					ArrayList<Team> teams = new ArrayList<>();
+					Narrator n = slave.getNarrator();
+					for(int i: attacks){
+						if(i == Constants.A_YAKUZA || i == Constants.A_MAFIA)
+							teams.add(n.getTeam(i));
+						else if( i == Constants.SK_KILL_FLAG)
+							teams.add(n.getTeam(Constants.A_SK));
+					}
+					brain.claim(new PlayerList(followed), teams, slave);
+				}
+			}
+		}
+	}
+    
+    private void lookoutTalk(){
+		int lastNight = slave.getNarrator().getDayNumber() - 1;
+		for(Event e: slave.getFeedback(lastNight)){
+			if(e.access(slave, false).startsWith(Lookout.FEEDBACK)){
+				Player watched = slave.getPrevNightTarget(lastNight)[Lookout.MAIN_ABILITY];
+				
+				if (watched.isAlive())
+					continue;
+				if (watched.getDeathType().isLynch())
+					continue;
+				ArrayList<Integer> attacks = watched.getDeathType().getList();
+				if(attacks.contains(Constants.A_YAKUZA) || attacks.contains(Constants.A_MAFIA) || attacks.contains(Constants.SK_KILL_FLAG)){
+					PlayerList possibleAttackers = e.getPlayers();
+					
+					String say = "I'm Lookout. " + possibleAttackers.getStringName() + " may have killed " + watched.getName();
+					slave.say(say, Constants.REGULAR_CHAT);
+					
+					ArrayList<Team> teams = new ArrayList<>();
+					Narrator n = slave.getNarrator();
+					for(int i: attacks){
+						if(i == Constants.A_YAKUZA || i == Constants.A_MAFIA)
+							teams.add(n.getTeam(i));
+						else if( i == Constants.SK_KILL_FLAG)
+							teams.add(n.getTeam(Constants.A_SK));
+					}
+					brain.claim(possibleAttackers, teams, slave);
+				}
+			}
+		}
+	}
     
     private void sheriffTalk(){
     	int lastNight = slave.getNarrator().getDayNumber() - 1;
@@ -301,14 +385,16 @@ public class Computer {
 			String s = e.access(slave, false).replace("\n", "");
 			if(s.startsWith("Your target")){
 				Player target = slave.getPrevNightTarget(lastNight)[Sheriff.MAIN_ABILITY];
+				if(target.isDead())
+					continue;
 				String say = "I'm Sheriff. ";
-				if(s.equals(Sheriff.NOT_SUSPICIOUS)){
+				if(s.startsWith(Sheriff.NOT_SUSPICIOUS)){
 					say = say + target.getName() + " is not suspicious.";
 				}else{
 					Team t = slave.getNarrator().getTeam(e.getHTStrings().get(0).getColor());
 					brain.claim(target, t, slave);
 					say = say + target.getName() + " is a(n) " + t.getName() + ".";
-					slave.say(say);
+					slave.say(say, Constants.REGULAR_CHAT);
 				}
 			}
 			
@@ -349,10 +435,8 @@ public class Computer {
 				if(choices.size() <= 1)
 					break;
 				
-				if (c.believable(slave) && choices.contains(c.accused)){
-					if(slave.getVoteTarget() == c.accused)
-						return null;
-					return controller.vote(slave, c.accused);
+				if (c.believable(slave) && !choices.intersect(c.accused).isEmpty()){
+					choices = choices.intersect(c.accused);
 				}else if(c.outlandish(slave) && choices.contains(c.prosecutor)){
 					if(slave.getVoteTarget() == c.prosecutor)
 						return null;
@@ -371,8 +455,7 @@ public class Computer {
 			}
 		}
 		Player choice = choices.getRandom(brain.random);
-		if(choice == null)
-			brain.toString();
+		
 		
 		if(slave.getVoteTarget() != choice)
 			return controller.vote(slave, choice);

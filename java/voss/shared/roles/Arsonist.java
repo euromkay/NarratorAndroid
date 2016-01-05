@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -77,7 +77,7 @@ public class Arsonist extends Role {
 			e.add(" will douse ", target, ".");
 			//t.notifyTeammates(owner, " will douse " + target.getName() + ".");
 
-			owner.getNarrator().addEvent(e);
+			Event.AddSelectionFeedback(e, owner);
 		}else if(ability == BURN_){
 			e.setCommand(owner, BURN, target.getName());
 			
@@ -85,14 +85,14 @@ public class Arsonist extends Role {
 			e.add(" will ignite those doused.");
 			//t.notifyTeammates(owner, " will ignite those doused.");
 
-			owner.getNarrator().addEvent(e);
+			Event.AddSelectionFeedback(e, owner);
 		}else if(ability == UNDOUSE_){
 			e.setCommand(owner, UNDOUSE, target.getName());
 
 
 			e.add(" will undouse ", target, ".");
 			//t.notifyTeammates(owner, " will undouse " + target.getName() + ".");
-			owner.getNarrator().addEvent(e);
+			Event.AddSelectionFeedback(e, owner);
 		}else
 			t.getSelectionFeedback(owner, target, ability);
 	}
@@ -195,17 +195,18 @@ public class Arsonist extends Role {
 		return hasDayIgnite() && !getBurnedLastNight();
 	}
 	public void doDayAction(Player owner, Narrator n){
+		n = owner.getNarrator();
 		Event e = new Event();
 		e.setCommand(owner, BURN);
 		
 		PlayerList burned = burn(owner, n);
 		if(burned.isEmpty())
-			e.add("There was an explosion but no one was found dead.");
+			e.add("There was an minor explosion but no one was found dead.");
 		else if(burned.size() == 1)
 			e.add("There was an explosion and ", burned.get(0), " was found twitching on the floor. Dead.");
 		else
 			e.add("There was a huge explosion, and ", burned.getDeadPlayers(), " were found dead.");
-		owner.getNarrator().addEvent(e);
+		n.getEventManager().getDayChat(n.getDayNumber()).add(e);
 		//it might be possible that arsons wont be able to douse the next night because they just burned 
 		setBool(1, false);
 		setBurnedDuringDay();

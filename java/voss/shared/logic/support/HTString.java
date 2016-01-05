@@ -1,6 +1,6 @@
 package voss.shared.logic.support;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.roles.Role;
 
 public class HTString {

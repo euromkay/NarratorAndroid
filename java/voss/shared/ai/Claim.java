@@ -1,33 +1,44 @@
 package voss.shared.ai;
 
+import java.util.ArrayList;
+
 import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 import voss.shared.logic.Team;
+import voss.shared.logic.support.Constants;
+import voss.shared.roles.Detective;
 
 public class Claim {
 
-	Player accused;
-	private Team t;
+	PlayerList accused;
+	private ArrayList<Team> teams;
 	Player prosecutor;
 	
-	public Claim(Player accused, Team t, Player slave) {
+	public Claim(PlayerList accused, ArrayList<Team> t, Player slave) {
 		this.accused = accused;
-		this.t= t;
+		this.teams= t;
 		prosecutor = slave;
 	}
 
 	//determines if accused was lying
-	public boolean believable(Player slave) {
-		if(accused.isDead())
+	public boolean believable(Player slave) {//slave is the evaluator of the claim
+		if(accused.getLivePlayers().isEmpty())
 			return false;
 		
-		Team slaveTeam = slave.getTeam();
-		if(slaveTeam.knowsTeam() && !slaveTeam.isEnemy(t.getAlignment()))
-			return false;
-			
-		if(slaveTeam.isEnemy(t.getAlignment()))
+		if(slave == prosecutor)
 			return true;
 		
-		return true;
+		Team slaveTeam = slave.getTeam();
+		int friend = 0;
+		int enemy = 0;
+		for(Team t: teams){
+			if(slaveTeam.isEnemy(t.getAlignment()))
+				enemy++;
+			else
+				friend++;
+		}
+		
+		return friend <= enemy;
 	}
 
 	//determins if prosecutor is lying
@@ -35,10 +46,18 @@ public class Claim {
 		if(prosecutor.isDead())
 			return false;
 
-		if(accused.isDead() && !accused.isCleaned() && accused.getTeam() != t){
-			return true;
+		
+		if(accused.getDeadPlayers().isEmpty())
+			return false;
+		
+		for(Player acc: accused.getDeadPlayers()){
+			if(acc.isCleaned())
+				return false;
+			if(teams.contains(acc.getTeam()))
+				return false;
 		}
-		return false;
+		//i did not find a dead person whos team was a team that the prosecutor claimed
+		return true;
 	}
 
 }

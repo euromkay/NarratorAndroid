@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -241,7 +242,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			if(networkCapable())
 				ns.startHost(this, name);
 
-			if(Build.VERSION.SDK_INT >= 18) {
+			if(Build.VERSION.SDK_INT >= 18 && hasPhoneInvite()) {
 				PhoneBookPopUp pList = new PhoneBookPopUp();
 				pList.setIsHost();
 				pList.show(getFragmentManager(), "phoneBookPopup");
@@ -264,7 +265,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		}
 	}
 
-	
+	private boolean hasPhoneInvite(){
+		return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(this, "android.permission.READ_CONTACTS");
+	}
 
 	public class IpChecker extends AsyncTask<IpPrompt, IpPrompt, IpPrompt> {
 		protected IpPrompt doInBackground(IpPrompt ... i){

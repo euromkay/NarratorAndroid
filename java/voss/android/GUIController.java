@@ -9,7 +9,6 @@ import voss.android.screens.SimpleGestureFilter;
 import voss.android.texting.TextController;
 import voss.android.texting.TextInput;
 import voss.shared.ai.Controller;
-import voss.shared.logic.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -78,7 +77,7 @@ public class GUIController extends Controller implements TextInput{
     private void clickPlayer(Player p){
         int position = dScreen.actionList.indexOf(p);
         if (position == -1){
-        	System.out.println(p.getNarrator().getEvents(Event.PRIVATE, false));
+        	System.out.println(p.getNarrator().getPrivateEvents(false));
             throw new PlayerTargetingException(p + " not found\n" );
         }
         
@@ -180,9 +179,9 @@ public class GUIController extends Controller implements TextInput{
 		dScreen.log(string);
 	}
 	
-	public void say(Player slave, String message){
+	public void say(Player slave, String message, String team){
 		if(SAY)
-			logger.say(slave, message);
+			logger.say(slave, message, team);
 		selectSlave(slave);
 		setMessagePanel();
 		dScreen.chatET.setText(message);

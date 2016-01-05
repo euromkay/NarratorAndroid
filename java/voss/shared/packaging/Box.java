@@ -1,8 +1,8 @@
 package voss.shared.packaging;
 
-//import java.io.File;
-//import java.io.FileWriter;
-//import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,42 +10,42 @@ import java.util.Queue;
 
 public class Box implements Deliverer{
 
-	//private FileWriter in;
-	//private FileWriter out;
+	private FileWriter in;
+	private FileWriter out;
 	private Queue<String> bx = new LinkedList<String>();
 	
 	
 	public Box(){
-		//try {
-			//in = new FileWriter(new File("input.txt"));
-			//out = new FileWriter(new File("output.txt")); 
-		//} catch (IOException e) {
-			//e.printStackTrace();
-		//}
+		try {
+			in = new FileWriter(new File("input.txt"));
+			out = new FileWriter(new File("output.txt")); 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void write(String s){
 		counter++;
-		//try {
-			//if(s == null)
-				//in.write("null");
-			//else
-				//in.write(s+"");
-		//} catch (IOException e) {
-			//e.printStackTrace();
-		//}
+		try {
+			if(s == null)
+				in.write("null");
+			else
+				in.write(s+"");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void read(String s){
 		counter--;
-		//try {
-			//if(s == null)
-				//out.write("null");
-			//else
-				//out.write(s+"");
-		//} catch (IOException e) {
-			//e.printStackTrace();
-		//}
+		try {
+			if(s == null)
+				out.write("null");
+			else
+				out.write(s+"");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 
@@ -127,14 +127,14 @@ public class Box implements Deliverer{
 
 	
 	public void finish() {
-		//try {
-			//in.flush();
-			//out.flush();
-			//out.close();
-			//in.close();
-		//} catch (IOException e) {
+		try {
+			in.flush();
+			out.flush();
+			out.close();
+			in.close();
+		} catch (IOException e) {
 			//e.printStackTrace();
-		//}
+		}
 		
 	}
 

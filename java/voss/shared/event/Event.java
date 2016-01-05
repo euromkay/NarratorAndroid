@@ -1,13 +1,15 @@
-package voss.shared.logic;
+package voss.shared.event;
 
 import java.util.ArrayList;
 
+import voss.shared.logic.Narrator;
+import voss.shared.logic.Player;
+import voss.shared.logic.PlayerList;
 import voss.shared.logic.listeners.CommandListener;
 import voss.shared.logic.support.Constants;
 import voss.shared.logic.support.Equals;
 import voss.shared.logic.support.HTString;
 import voss.shared.logic.support.StringChoice;
-import voss.shared.roles.Driver;
 
 
 public class Event {
@@ -32,7 +34,7 @@ public class Event {
 		eventParts = new ArrayList<>();
 		access = new ArrayList<>();
 	}
-	public Event(String s){
+	public Event(Object s){
 		this();
 		add(s);
 	}
@@ -99,7 +101,7 @@ public class Event {
 	}
 
 	
-	
+	//because access is no longer empty, you need a key to access this event's contents.  setting private and adding someone is redundant.
 	public void setPrivate(){
 		access.add(PRIVATE);
 	}
@@ -110,12 +112,6 @@ public class Event {
 	public Event setVisibility(Player p){
 		access.add(p.getName());
 		return this;
-	}
-
-	public void setVisibility(PlayerList list){
-		for(Player p: list){
-			setVisibility(p);
-		}
 	}
 	
 	public Event add(Object part){
@@ -132,9 +128,7 @@ public class Event {
 	}
 	
 	
-	public boolean isEndGameDisplay(Player requester){
-		return requester != null && requester.getSkipper() == requester;	
-	}
+	
 	
 	public static String toHTML(Player p){
 		int color = p.getAlignment();
@@ -261,5 +255,28 @@ public class Event {
 				hts.add((HTString) o);
 		}
 		return hts;
+	}
+	public static void AddSelectionFeedback(Event e, Player owner) {
+		EventLog el;
+		Narrator n = owner.getNarrator();
+		if(owner.getTeam().knowsTeam()){
+			el = n.getEventManager().getNightLog(owner.getTeam().getName(), n.getDayNumber());
+		}else{
+			el = n.getEventManager().getNightLog(null,  n.getDayNumber());
+			e.setVisibility(owner);
+		}
+		el.add(e);
+	}
+	public PlayerList getPlayers() {
+		PlayerList pList = new PlayerList();
+		for(Object o: eventParts){
+			Class<?> c = o.getClass();
+			if(c == Player.class)
+				pList.add((Player) o);
+			else if(c == PlayerList.class)
+				pList.add((PlayerList) o);
+		}
+		
+		return pList;
 	}
 }

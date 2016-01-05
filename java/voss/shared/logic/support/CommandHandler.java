@@ -160,7 +160,8 @@ public class CommandHandler {
         	message = message.substring(SAY.length() + 1);
         	if(owner == null && !n.isStarted())
         		owner = new Player(name + "[Pregame]", null, n);
-        	owner.say(message);
+        	message = message.substring(block.get(0).length() + 1);
+        	owner.say(message, block.get(0));
         	return ASYNCH;
         }
         int untarget = message.indexOf(block.get(0));

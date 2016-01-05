@@ -41,7 +41,6 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import voss.android.GUIController;
 import voss.android.NActivity;
 import voss.android.R;
@@ -59,7 +58,7 @@ import voss.android.screens.SimpleGestureFilter.SimpleGestureListener;
 import voss.android.texting.PhoneNumber;
 import voss.android.texting.TextHandler;
 import voss.packaging.Board;
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.PlayerList;
@@ -150,29 +149,7 @@ implements
 	public void setup(Bundle b){
 		if (playerMenu != null)
 			return;
-		connectNarrator(new NarratorConnectListener() {
-			public void onConnect() {
-				if(!getIntent().hasExtra(GameListing.ID)){
-					connectManager();
-					return;
-				}
-				String key = getIntent().getStringExtra(GameListing.ID);
-				if(ns.getGameListing() != null && key.equals(ns.getGameListing().getID())) {
-					log("this");
-					finish();
-					return;
-				}
-
-
-				Server.ResumeGame(getIntent().getStringExtra(GameListing.ID), ns, new SuccessListener() {
-					public void onSuccess() {
-						connectManager();
-					}
-					public void onFailure(String message) {log(message);}
-					});
-				}
-
-		});
+		
 		playerMenu = (RecyclerView) findViewById(R.id.day_playerNavigationPane);
 
 
@@ -233,6 +210,31 @@ implements
 
 		detector = new SimpleGestureFilter(this, this);
 
+		connectNarrator(new NarratorConnectListener() {
+			public void onConnect() {
+				if(!getIntent().hasExtra(GameListing.ID)){
+					connectManager();
+					return;
+				}
+				String key = getIntent().getStringExtra(GameListing.ID);
+				if(ns.getGameListing() != null && key.equals(ns.getGameListing().getID())) {
+					log("this");
+					finish();
+					return;
+				}
+
+
+				Server.ResumeGame(getIntent().getStringExtra(GameListing.ID), ns, new SuccessListener() {
+					public void onSuccess() {
+						connectManager();
+					}
+					public void onFailure(String message) {log(message);}
+					});
+				}
+
+		});
+		
+		
 		button.setOnClickListener(this);
 		chatButton.setOnClickListener(this);
 
@@ -316,6 +318,8 @@ implements
 		ListingAdapter adapter = new ListingAdapter(frameOptions, this);
 		adapter.setColors(teamColors);
 		adapter.setLayoutID(R.layout.day_player_player_dropdown_item);
+		if(framerSpinner == null)
+			framerSpinner  = (Spinner) findViewById(R.id.day_frameSpinner);
 		framerSpinner.setAdapter(adapter);
 	}
 
@@ -816,9 +820,8 @@ implements
 		showView(chatLV);
 		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Event.PRIVATE, true));
 		happenings.append("\n");
-		happenings.append(manager.getNarrator().getEvents(Event.PRIVATE, true));
+		happenings.append(manager.getNarrator().getPrivateEvents(true));
 
-		happenings.append("\n");
 		for (Player p: manager.getNarrator().getAllPlayers().sortByRole()){
 			happenings.append("\n");
 			happenings.append(Event.toHTML(p));

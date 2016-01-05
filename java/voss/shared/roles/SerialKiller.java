@@ -32,9 +32,9 @@ public class SerialKiller extends Role {
 		allowedAbilities(action, MAIN_ABILITY);
 		deadCheck(target);
 	}
-	private static final String COMMAND = "Stab";
+	public static final String STAB = "Stab";
 	public int parseAbility(String message, boolean isDay){
-		if(message.equalsIgnoreCase(COMMAND) && !isDay)
+		if(message.equalsIgnoreCase(STAB) && !isDay)
 			return MAIN_ABILITY;
 		else
 			return INVALID_ABILITY;
@@ -42,7 +42,7 @@ public class SerialKiller extends Role {
 
 	public ArrayList<String> getAbilities() {
 		ArrayList<String> list = new ArrayList<String>();
-		list.add(COMMAND);
+		list.add(STAB);
 		return list;
 	}
 	

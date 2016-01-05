@@ -183,7 +183,9 @@ public class Server {
     }
 
     public static String GetCurrentUserName(){
-        return ParseUser.getCurrentUser().getUsername();
+        if(ParseUser.getCurrentUser() != null)
+            return ParseUser.getCurrentUser().getUsername();
+        return "";
     }
 
     public static void GetAllGames(int limit, final GameFoundListener gf){

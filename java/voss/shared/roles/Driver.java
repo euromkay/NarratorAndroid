@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
@@ -90,7 +90,7 @@ public abstract class Driver extends Role{
 			t1 = t2;
 			t2 = temp;
 		}
-		Event e = Role.selectionEvent(owner);
+		Event e = new Event();
 		StringChoice sc = new StringChoice(owner);
 		sc.add(owner, "You");
 		e.add(sc);
@@ -110,8 +110,7 @@ public abstract class Driver extends Role{
 		else
 			e.add(" will switch ", t1, " and ", t2, ".");
 		
-		
-		owner.getNarrator().addEvent(e);
+		Event.AddSelectionFeedback(e, owner);
 	}
 
 	public static final String FEEDBACK = "You were bus driven";
@@ -139,7 +138,7 @@ public abstract class Driver extends Role{
 		e.add(bd, " switched ", t1, " and ", t2, ".");
 		e.setPrivate();
 		
-		n.addEvent(e);
+		n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 		
 		
 		return true;

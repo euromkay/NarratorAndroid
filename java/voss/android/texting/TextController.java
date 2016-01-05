@@ -64,8 +64,8 @@ public class TextController extends Controller {
     }
 
 
-	public void say(Player slave, String message) {
-		texter.text(slave, TextHandler.SAY + " " + message, ASYNC);
+	public void say(Player slave, String message, String key) {
+		texter.text(slave, TextHandler.SAY + " " + key + " " + message, ASYNC);
 	}
 
 

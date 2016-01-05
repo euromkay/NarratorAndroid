@@ -89,7 +89,7 @@ public class Constants {
 	public static final int ARSON_KILL_FLAG = 11;
 
 	
-	
+	public static final String REGULAR_CHAT = "regular_chat";
 	
 	public static final String RULES_DAYSTART = "rulesdaystart";
 	

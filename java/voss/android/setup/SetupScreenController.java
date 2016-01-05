@@ -20,7 +20,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     private Toast toast;
     private ActivityCreateGame screen;
 
-    private CheckBox[] cBox;
+    public CheckBox[] cBox;
     private EditText[] eText;
     private TextView[] tView;
     private TextWatcher[] tWatcher;
@@ -134,7 +134,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     }
 
 
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+    public void onCheckedChanged(CompoundButton buttonView, boolean unused) {
         CheckBox cb = (CheckBox) buttonView;
         switch(cb.getId()){
             case R.id.create_check1:

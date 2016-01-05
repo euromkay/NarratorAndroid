@@ -64,6 +64,13 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 pwET = (EditText) mainView.findViewById(R.id.login_password);
 
                 username = userET.getText().toString();
+                for(char c: username.toCharArray()){
+                    if (!Character.isLetterOrDigit(c)){
+                        setHeader("Only letters and numbers in username please!");
+                        return;
+                    }
+                }
+
                 password = pwET.getText().toString();
                 String email = emailET.getText().toString();
 

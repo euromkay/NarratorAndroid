@@ -2,7 +2,7 @@ package voss.shared.roles;
 
 import java.util.ArrayList;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
 import voss.shared.logic.Narrator;
 import voss.shared.logic.Player;
 import voss.shared.logic.Team;
@@ -51,7 +51,7 @@ public class Framer extends Role {
 			//t.notifyTeammates(owner, " won't " + getKeyWord() + " anyone.");
 		}else {
 			Team parse = owner.getNarrator().getTeam(getAlignment());
-			Event e = Role.selectionEvent(owner);
+			Event e = new Event();
 			StringChoice sc = new StringChoice(owner);
 			sc.add(owner, "You");
 			e.add(sc, " will " + getKeyWord().toLowerCase() + " ", target);
@@ -60,7 +60,7 @@ public class Framer extends Role {
 				e.add(" as ", parse.getName());
 			}
 			e.add(".");
-			owner.getNarrator().addEvent(e);
+			Event.AddSelectionFeedback(e, owner);
 
 		}
 	}
@@ -86,8 +86,8 @@ public class Framer extends Role {
 		owner.visit(target);
 		Event e = new Event();
 		e.setPrivate();
-		e.add(owner, " framed ", target, " as an ", n.getTeam(getAlignment()).getName());
-		n.addEvent(e);
+		e.add(owner, " framed ", target, " as ", n.getTeam(getAlignment()).getName());
+		n.getEventManager().getNightLog(null, n.getDayNumber()).add(e);
 		return true;
 	}
 	

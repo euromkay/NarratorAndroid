@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import voss.shared.logic.Event;
+import voss.shared.event.Event;
+import voss.shared.event.EventLog;
 import voss.shared.logic.exceptions.PlayerTargetingException;
 import voss.shared.logic.support.ActionTaker;
 import voss.shared.logic.support.Alignment;
@@ -209,19 +210,19 @@ public class Team implements Alignment, ActionTaker{
 	public static final int KILL_ = Role.NIGHT_KILL;
 	public static final Team NOT_SUSPICIOUS = null;
 	public void getSelectionFeedback(Player owner, Player target, int ability) {
-		Event e = Role.selectionEvent(owner);
+		Event e = new Event();
 
 		StringChoice sc = new StringChoice(owner);
 		sc.add(owner, "You");
 		
 		e.add(sc);
-		e.setVisibility(members);
 		if(ability == KILL_  && canKill){
 			e.add(" will kill ", target, ".");
 			
 			e.setCommand(owner, KILL, target.getName());
-			
-			n.addEvent(e);
+			e.setVisibility(owner);
+			EventLog el = n.getEventManager().getNightLog(null, n.getDayNumber());
+			el.add(e);
 
 			if(knowsTeam()){
 				for(Player teamMember: getMembers()){
@@ -239,7 +240,8 @@ public class Team implements Alignment, ActionTaker{
 				e.add(".");
 			}
 			e.setCommand(owner, SEND, target.getName());
-			n.addEvent(e);
+			EventLog el = n.getEventManager().getNightLog(name, n.getDayNumber());
+			el.add(e);
 			
 			
 
