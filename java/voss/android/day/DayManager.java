@@ -275,6 +275,8 @@ public class DayManager implements TextInput{
 	}
 
 	public void parseCommand(Intent i){
+		if(!i.hasExtra(GameListing.ID))
+			return;
 		//check if someone else is pinging this
 		if(!i.getStringExtra(GameListing.ID).equals(ns.getGameListing().getID()))
 			return;
