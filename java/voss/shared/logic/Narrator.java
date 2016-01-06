@@ -542,7 +542,7 @@ public class Narrator{
 		ArrayList<RoleTemplate> list = getAllRoles();
 		if (!DEBUG) {
 			players.sortByName();
-			Collections.shuffle(list);
+			Collections.shuffle(list, random);
 		}
 		assignRoles(list);
 		
@@ -775,15 +775,6 @@ public class Narrator{
 
 		doNightAction(Citizen.ROLE_NAME, Mayor.ROLE_NAME, Executioner.ROLE_NAME, Jester.ROLE_NAME, Mafioso.ROLE_NAME);
 		stalkings();
-	
-		
-		//changing of roles
-		for(Player p: players)
-			p.resolveRoleChange();
-
-		
-		for(Player p: players.getLivePlayers())
-			p.sendNightFeedback();
 
 		
 		//executioner changes
@@ -794,12 +785,16 @@ public class Narrator{
 					continue;
 				if(newDead.equals(exec.getTarget(p))){
 					p.setRole(new Jester(p), p.getAlignment());
-					
-					//Event jester = new JesterEvent(p);
 				}
 			}
 		}
+
+		//changing of roles
+		for(Player p: players)
+			p.resolveRoleChange();
 		
+		for(Player p: players.getLivePlayers())
+			p.sendNightFeedback();
 		
 		//ending
 		nightList.clear();
@@ -873,7 +868,7 @@ public class Narrator{
 			return;
 		
 		for(Player p: getDeadPlayers()){
-			if(p.getRoleName().equals(CultLeader.ROLE_NAME)){
+			if(p.is(CultLeader.ROLE_NAME)){
 				if(!p.isAlive() && p.getDeathDay() == dayNumber){
 					//change a cultist into a cult leader
 					Team t = p.getTeam();
@@ -882,8 +877,10 @@ public class Narrator{
 					for(Player cult: cults){
 						if(cult.isAlive() && cult.getRoleName().equals(Cultist.ROLE_NAME)){
 							cult.changeRole(new CultLeader(cult));
-							//addToHappenings(new CultChange(cult));
-							//addToHappenings(cult.getName() + " has become the Cult Leader");
+							Event e = new Event();
+							e.setPrivate();
+							e.add(cult, " has become the Cult Leader.");
+							events.getDayChat(dayNumber).add(e);
 							break;
 						}
 						

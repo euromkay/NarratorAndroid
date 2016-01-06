@@ -189,7 +189,8 @@ public class Computer {
 				if(!temp.isEmpty())
 					choices = temp;
 			}
-			controller.setNightTarget(slave, choices.getRandom(brain.random), Vigilante.COMMAND);
+			if(!choices.isEmpty())
+				controller.setNightTarget(slave, choices.getRandom(brain.random), Vigilante.COMMAND);
 			return true;
 		}
 		return false;

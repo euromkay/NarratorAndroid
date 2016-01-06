@@ -56,7 +56,7 @@ public class Witch extends Role {
 			e.add(" will make the victim target ", newTarget);
 			e.dontShowPrivate();
 		}else{//(newTarget == null )
-			e.add(" will controll ", victim);
+			e.add(" will control ", victim);
 			e.dontShowPrivate();
 		}
 		if(ability == VICTIM)

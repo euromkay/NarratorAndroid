@@ -47,7 +47,7 @@ public class Player implements ActionTaker{
 		this.name = name;
 		this.comm = comm;
 		this.n = n;
-		role = new UnsetRole(this);
+		currentRole = new UnsetRole(this);
 	}
 	
 	
@@ -86,15 +86,29 @@ public class Player implements ActionTaker{
 	}
 	
 	
-	private Role role;
+	private Role currentRole;
+	private HashMap<Integer, Role> roleOnDay = new HashMap<>();
 	public void setRole(Role r, int alignment){
-		role = r;
+		currentRole = r;
 		this.alignment = alignment;
+		roleOnDay.put(n.getDayNumber(), r);
+	}
+	public Role getRole(int day){
+		for(int i = day; i >= -1; i--){
+			Role r = roleOnDay.get(i);
+			if(r != null)
+				return r;
+		}
+		throw new NullPointerException("Role was null!");
+		
 	}
 	public Role getRole(){
-		return role;
+		return currentRole;
 	}
 	public String getDescription(){
+		return getDescription(n.getDayNumber());
+	}
+	public String getDescription(int day){
 		boolean isInProgress = n.isInProgress();
 		if(isAlive() && isInProgress || !n.isStarted())
 			return name;
@@ -102,13 +116,14 @@ public class Player implements ActionTaker{
 		if (isCleaned() && isInProgress)
 			roleName = "?????";
 		else
-			roleName = getRoleName();
+			roleName = getRoleName(day);
 		return name + " (" + roleName + ")";
 	}
 	public String getRoleName(){
-		if(role == null)
-			throw new PhaseException("Game hasn't started yet");
-		return role.getRoleName();
+		return currentRole.getRoleName();
+	}
+	public String getRoleName(int day){
+		return getRole(day).getRoleName();
 	}
 	public int getAlignment(){
 		return alignment;
@@ -130,7 +145,7 @@ public class Player implements ActionTaker{
 			throw except;
 		}
 		else{
-			role.isAcceptableTarget(this, target, ability);
+			currentRole.isAcceptableTarget(this, target, ability);
 			return null;
 		}
 	}
@@ -144,16 +159,16 @@ public class Player implements ActionTaker{
 
 	}
 	public int getAbilityCount(){
-		return role.getAbilityCount();
+		return currentRole.getAbilityCount();
 	}
 	public double nightVotePower(PlayerList pl){
-		return role.nightVotePower(pl);
+		return currentRole.nightVotePower(pl);
 	}
 	public String getRoleInfo(){
-		return role.getRoleInfo();
+		return currentRole.getRoleInfo();
 	}
 	public String getNightText(){
-		return role.getNightText(n.getAllTeams());
+		return currentRole.getNightText(n.getAllTeams());
 	}
 	
 	
@@ -166,7 +181,7 @@ public class Player implements ActionTaker{
 
 	public String[] getAbilities(){
 		ArrayList<String> list = new ArrayList<String>();
-		list.addAll(role.getAbilities());
+		list.addAll(currentRole.getAbilities());
 		ArrayList<Team> t = getTeams();
 		for(Team team: t){
 			for(String s: team.getAbilities())
@@ -192,7 +207,7 @@ public class Player implements ActionTaker{
 	}
 	
 	public int parseAbility(String message){
-		int ability = role.parseAbility(message);
+		int ability = currentRole.parseAbility(message);
 		if (ability == Role.INVALID_ABILITY)
 			return getTeam().parseAbility(message);
 		return ability;
@@ -233,7 +248,7 @@ public class Player implements ActionTaker{
 			t.getSelectionFeedback(this, target, ability);
 		else{
 			t = getTeam();
-			role.setAction(this, target, ability);
+			currentRole.setAction(this, target, ability);
 		}
 
 		
@@ -252,7 +267,7 @@ public class Player implements ActionTaker{
 	private void setOption(int alignment){
 		if(n.getTeam(alignment) == null)
 			throw new UnknownTeamException(alignment + "");
-		role.setFrame(alignment);
+		currentRole.setFrame(alignment);
 	}
 	public void overrideTarget(Player target, int ability){
 		nightTargets[ability] = target;
@@ -328,7 +343,7 @@ public class Player implements ActionTaker{
 	public void doNightAction(){
 		if(completedNightAction)
 			return;
-		completedNightAction = role.doNightAction(this, n);
+		completedNightAction = currentRole.doNightAction(this, n);
 	}
 	public void setSubmissionTime(int time){
 		submissionTime = time;
@@ -350,8 +365,8 @@ public class Player implements ActionTaker{
 	private String name = "";
 	public String getName() {
 		String t;
-		if(role != null && name.length() == 0) {
-			t = role.getRoleName() + "-";
+		if(currentRole != null && name.length() == 0) {
+			t = currentRole.getRoleName() + "-";
 			if(getTeam() != null)
 				t += getTeam().getName();
 			return t;
@@ -525,7 +540,7 @@ public class Player implements ActionTaker{
 	private PlayerList attackList = new PlayerList();
 	private PlayerList attackedByList = new PlayerList();
 	public void kill(int type, Player killer){
-		if(!isImmune() || type == Constants.JESTER_KILL_FLAG || (Constants.VETERAN_KILL_FLAG == type && n.getRules().vetAlerts != Rules.UNLIMITED) || (type == Constants.BODYGUARD_KILL_FLAG && !role.getRoleName().equals(Veteran.ROLE_NAME))){
+		if(!isImmune() || type == Constants.JESTER_KILL_FLAG || (Constants.VETERAN_KILL_FLAG == type && n.getRules().vetAlerts != Rules.UNLIMITED) || (type == Constants.BODYGUARD_KILL_FLAG && !is(Veteran.ROLE_NAME))){
 			lives--;
 			attackTypeList.add(type);
 		}else{
@@ -584,7 +599,7 @@ public class Player implements ActionTaker{
 	
 	
 	protected void onDayReset(){
-		role.dayReset(this);
+		currentRole.dayReset(this);
 		jesterVote = false;
 		busDriven = false;
 		blocked = false;
@@ -601,7 +616,7 @@ public class Player implements ActionTaker{
 	}
 	protected void onNightReset(){
 		nightTargets = new Player[MAX_TARGET_NUMBER];
-		role.nightReset();
+		currentRole.nightReset();
 	}
 	
 	private ArrayList<Event> feedback = new ArrayList<Event>();
@@ -723,14 +738,14 @@ public class Player implements ActionTaker{
 	}
 	
 	public void doDayAction() {
-		if(!role.hasDayAction())
+		if(!currentRole.hasDayAction())
 			throw new IllegalActionException(this + " has no day action!");
 		if(n.isNight())
 			throw new PhaseException("Day actions can only be submitted during the day");
-		role.doDayAction(this, n);
+		currentRole.doDayAction(this, n);
 	}
 	public boolean hasDayAction() {
-		return role.hasDayAction();
+		return currentRole.hasDayAction();
 	}
 	
 	
@@ -748,7 +763,7 @@ public class Player implements ActionTaker{
 		return winner;
 	}
 	protected void determineWin(){
-		winner = role.isWinner(this, n);		
+		winner = currentRole.isWinner(this, n);		
 	}
 	
 	
@@ -871,7 +886,7 @@ public class Player implements ActionTaker{
 			
 		if(notEqual(pendingRole, p.pendingRole))
 			return false;
-		if(notEqual(role, p.role))
+		if(notEqual(currentRole, p.currentRole))
 			return false;		
 		if(winner != p.winner)
 			return false;
@@ -924,7 +939,7 @@ public class Player implements ActionTaker{
 	public static void print(ArrayList<PlayerList> perms){
 		for(PlayerList list: perms){
 			for(Player p: list)
-				System.out.print(p.getDescription() + " ");
+				System.out.print(p.getDescription(p.getNarrator().getDayNumber()) + " ");
 			System.out.println();
 		}
 	}
@@ -936,14 +951,14 @@ public class Player implements ActionTaker{
 			return message.substring(0, lastComma);
 	}
 	public boolean isTargeting(Player target) {
-		if(role.isTargeting(this, target))
+		if(currentRole.isTargeting(this, target))
 			return true;
 		if(getTeam().isTargeting(this, target))
 			return true;
 		return false;
 	}
 	public boolean isAtHome() {
-		if(!role.isTargeting(this, null))
+		if(!currentRole.isTargeting(this, null))
 			return false;
 		if(getTeam().getSender() == this)
 			return false;
@@ -1015,7 +1030,7 @@ public class Player implements ActionTaker{
 		}
 			
 	
-		if(notEqual(p1.role, p2.role))
+		if(notEqual(p1.currentRole, p2.currentRole))
 			error("role not equal");
 		if(p2.winner != p1.winner)
 			error("winner not equal");
@@ -1029,7 +1044,7 @@ public class Player implements ActionTaker{
 	public static String DescriptionList(PlayerList members) {
 		String s = "";
 		for(Player p: members){
-			s += p.getDescription() + ", ";
+			s += p.getDescription(p.getNarrator().getDayNumber()) + ", ";
 		}
 		return cleanup(s);
 	}
@@ -1039,10 +1054,10 @@ public class Player implements ActionTaker{
 		if(n.isNight())
 			pendingRole = r;
 		else{
-			role = r;
+			currentRole = r;
 
 			Event e = Event.StringFeedback("You are now a ", this);
-			HTString ht = new HTString(role.getRoleName(), getAlignment());
+			HTString ht = new HTString(currentRole.getRoleName(), getAlignment());
 			e.add(ht);
 			e.add(".");
 			
@@ -1056,7 +1071,7 @@ public class Player implements ActionTaker{
 			e.add(ht);
 			e.add(".");
 			addNightFeedback(e);
-			role = pendingRole;
+			currentRole = pendingRole;
 			pendingRole = null;
 		}
 	}
@@ -1072,7 +1087,7 @@ public class Player implements ActionTaker{
 		
 	}
 	public boolean isPowerRole() {
-		return role.isPowerRole();
+		return currentRole.isPowerRole();
 	}
 	
 	private boolean doused = false;
