@@ -1,5 +1,6 @@
 package android.screens;
 
+import android.NActivity;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.view.View;
@@ -14,10 +15,10 @@ import shared.logic.PlayerList;
 public class MembersAdapter extends BaseAdapter{
 
     private PlayerList data;
-    private Activity c;
+    private NActivity c;
     private Typeface font;
 
-    public MembersAdapter(PlayerList data, Activity c){
+    public MembersAdapter(PlayerList data, NActivity c){
         this.data = data;
         this.c = c;
         font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
@@ -65,7 +66,7 @@ public class MembersAdapter extends BaseAdapter{
 
         result.setText(name);
         result.setTypeface(font);
-        result.setTextColor(color);
+        result.setTextColor(c.convertTeamColor(color));
 
         return result;
 

@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pinstripe"
+    android:keepScreenOn="true"
+    android:padding="8dp"
+    android:screenOrientation="portrait" >
+
+
+
+
+
+    <View
+        android:id="@+id/centerShim"
+        android:layout_width="16dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/roles_show_Players"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/rsz_addpeople"
+        android:padding="5dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:layout_alignParentEnd="false">
+
+    </ImageButton>
+
+    <TextView
+        android:id="@+id/roles_categories_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:paddingBottom="6dp"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
+        android:text="@string/roles_categoryTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <ListView
+        android:id="@+id/roles_categories_LV"
+        android:layout_width="wrap_content"
+        android:background="@color/category_tint"
+        android:layout_height="wrap_content"
+        android:divider="@null"
+        android:padding="6dp"
+        android:dividerHeight="0dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/roles_categories_title"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim">
+    </ListView>
+
+
+
+    <Button
+        android:id="@+id/create_toChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Chat"
+        android:textColor="@color/black"
+        android:textSize="13sp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:minHeight="0dp"
+        android:background="@layout/main_button"
+        android:layout_below="@id/roles_categories_LV"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"/>
+
+    <Button
+        android:visibility="gone"
+        android:id="@+id/create_chatButton"
+        android:layout_width="wrap_content"
+        android:background="@layout/main_button"
+        android:layout_height="wrap_content"
+        android:minHeight="10dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_marginBottom="1dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@id/centerShim"
+        android:layout_alignEnd="@id/centerShim"
+        android:gravity="center"
+        android:text="Send"
+        android:textColor="@color/black"
+        android:textSize="14sp" >
+    </Button>
+
+    <EditText
+        android:id="@+id/create_chatET"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/create_chatButton"
+        android:layout_toLeftOf="@id/create_chatButton"
+        android:textColor="@color/white"
+        android:imeOptions="actionDone"
+        android:textSize="12sp"
+        android:layout_marginBottom="-2dp"
+        android:singleLine="true"
+        android:hint="Send Message"/>
+
+    <ScrollView
+        android:id="@+id/create_chatHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:background="@color/category_tint"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/create_toChat"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
+        android:layout_above="@id/create_chatET"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:id="@+id/create_chatTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textColor="@color/white"
+            android:textSize="12sp" />
+    </ScrollView>
+
+
+    <TextView
+        android:id="@+id/roles_bottomLV_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/create_toChat"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:text="@string/roles_rolesTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/roles_hint_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/roles_bottomLV_title"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/centerShim"
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <ListView
+        android:id="@+id/roles_bottomLV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:divider="@null"
+        android:padding="6dp"
+        android:dividerHeight="0dp"
+        android:background="@color/category_tint"
+        android:layout_below="@id/roles_hint_title"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim" >
+    </ListView>
+
+    <ScrollView
+        android:id="@+id/create_info_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@id/centerShim"
+        android:layout_toStartOf="@id/centerShim"
+        android:layout_below="@id/roles_bottomLV"
+        android:orientation="vertical"
+        android:scrollbars="vertical" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/create_info_label"
+                android:padding="6dp"
+                android:layout_marginTop="6dp"
+                android:background="@color/category_tint"
+                android:textSize="11sp"
+                />
+
+            <CheckBox
+                android:id="@+id/create_check1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_info_label"
+                android:text="sakdfjalsdkfj"
+                android:scaleY="0.8"
+                android:padding="6dp"
+                android:background="@color/category_tint"
+                android:textSize="11sp"
+                />
+
+            <CheckBox
+                android:id="@+id/create_check2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_check1"
+                android:text="sakdfjalsdkfj"
+                android:scaleY="0.8"
+                android:padding="6dp"
+                android:background="@color/category_tint"
+                android:textSize="11sp"
+                />
+
+            <CheckBox
+                android:id="@+id/create_check3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_check2"
+                android:text="sakdfjalsdkfj"
+                android:scaleY="0.8"
+                android:padding="6dp"
+                android:background="@color/category_tint"
+                android:textSize="11sp"
+                />
+
+            <TextView
+                android:id="@+id/create_rulesTV1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_check3"
+                android:textSize="11sp"
+                android:text="title"/>
+
+            <EditText
+                android:id="@+id/create_rulesET1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:layout_below="@id/create_rulesTV1"
+                android:padding="6dp"/>
+
+            <TextView
+                android:id="@+id/create_rulesTV2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_rulesET1"
+                android:textSize="11sp"
+                android:text="title"/>
+
+            <EditText
+                android:id="@+id/create_rulesET2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:layout_below="@id/create_rulesTV2"
+                android:padding="6dp"/>
+
+
+        </RelativeLayout>
+
+
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/roles_rightLV_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="6dp"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="left"
+        android:layout_toRightOf="@+id/centerShim"
+        android:text="@string/roles_rolesListTitle"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <ListView
+        android:id="@+id/roles_rolesList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:divider="@null"
+        android:background="@color/category_tint"
+        android:dividerHeight="0dp"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/centerShim"
+        android:layout_below="@id/roles_rightLV_title">
+    </ListView>
+
+    <View
+        android:layout_width="1sp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/roles_rolesList"
+        android:layout_alignBottom="@id/roles_rolesList">
+
+    </View>
+
+    <Button
+        android:id="@+id/roles_startGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="@string/roles_start"
+        android:textColor="@color/mafia"
+        android:textSize="25sp" />
+
+    </RelativeLayout>
+

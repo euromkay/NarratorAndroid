@@ -75,4 +75,9 @@ public abstract class NActivity extends FragmentActivity{
 			return context.getResources().getColor(id);
 		}
 	}
+
+	public static int convertTeamColor(String id){
+		id = id.replace("#", "");
+		return Integer.parseInt(id, 16);
+	}
 }

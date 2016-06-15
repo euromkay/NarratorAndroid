@@ -863,7 +863,8 @@ implements
 			unregisterReceiver(intentReceiver);
 		}catch (IllegalArgumentException e){}
 	}
-	public void setTrimmings(String color){
+	public void setTrimmings(String input){
+		int color = convertTeamColor(input);
 		rolesTV.setTextColor(color);
 		roleTV.setTextColor(color);
 		alliesTV.setTextColor(color);

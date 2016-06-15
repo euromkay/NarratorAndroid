@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/playerListRelativeLayout"
+    android:layout_width="fill_parent"
+    android:windowSoftInputMode="adjustPan"
+    android:layout_height="fill_parent">
+
+
+    <EditText
+        android:id="@+id/addPlayerContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:hint="Add player name here"/>
+    <requestFocus />
+
+    <Button
+        android:id="@+id/addPlayerConfirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="Add"
+        android:textSize="25sp" />
+
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/listView1"
+        android:layout_width="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@color/grey"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/addPlayerConfirm"
+        android:layout_height="wrap_content" >
+
+    </ListView>
+
+
+</RelativeLayout>

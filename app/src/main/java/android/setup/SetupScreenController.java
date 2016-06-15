@@ -1,5 +1,6 @@
 package android.setup;
 
+import android.NActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -247,7 +248,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             rules = r;
 
         if(!color.equals(Constants.A_NORMAL))
-            setColor(color);
+            setColor(NActivity.convertTeamColor(color));
         activeRole = i;
         switch(activeRole) {
             case DAY:
@@ -393,7 +394,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             cBox[i].setOnCheckedChangeListener(this);
     }
 
-    private void setColor(String color){
+    private void setColor(int color){
         for(CheckBox cb: cBox)
             cb.setTextColor(color);
 

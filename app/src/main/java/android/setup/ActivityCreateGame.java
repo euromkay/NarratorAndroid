@@ -431,7 +431,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			color = t.getColor();
 		}
 
-		setDescriptionText(text, color);
+		setDescriptionText(text, convertTeamColor(color));
 
 		if(i == RANDOM)
 			manager.screenController.setRoleInfo(SetupScreenController.DAY, color, null);
@@ -440,7 +440,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	private void roleDescription(RoleTemplate rt){
-		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), rt.getColor());
+		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), super.convertTeamColor(rt.getColor()));
 		int role = SetupScreenController.NONE;
 		switch(rt.getName()){
 			case Godfather.ROLE_NAME:
@@ -490,7 +490,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 
-	private void setDescriptionText(String text, String color){
+	private void setDescriptionText(String text, int color){
 		TextView tv = (TextView) findViewById(R.id.create_info_label);
 		tv.setText(text);
 		tv.setTextColor(color);

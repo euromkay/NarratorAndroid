@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="voss.narrator"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="15"
+        android:targetSdkVersion="23" />
+
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+<!--      IMPORTANT: Change "com.parse.starter" to match your app's package name. -->
+
+    <permission
+        android:name="voss.narrator.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="voss.android.permission.C2D_MESSAGE" />
+    <uses-permission
+        android:name="android.permission.ACCESS_WIFI_STATE"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.CHANGE_WIFI_STATE"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        android:required="true" />
+
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:name="android.ApplicationNarratorPreferences"
+        android:allowBackup="true"
+        android:icon="@drawable/home"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="android.screens.ActivityHome"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="android.NarratorService"
+            android:label="NarratorService" >
+        </service>
+        <service
+            android:name="android.wifi.SocketClient"
+            android:label="SocketClient" >
+        </service>
+        <service
+            android:name="android.wifi.SocketHost"
+            android:label="SocketClient" >
+        </service>
+
+        <activity
+            android:name="android.ActivitySettings"
+            android:label="@string/app_name"
+            android:parentActivityName="android.screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name="android.setup.ActivityCreateGame"
+            android:label="@string/app_name"
+            android:parentActivityName="android.screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name="android.ActivityTutorial"
+            android:label="@string/app_name"
+            android:parentActivityName="android.screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="android.screens.ActivityHome" />
+        </activity>
+        <activity
+            android:name="android.day.ActivityDay"
+            android:label="@string/app_name"
+            android:parentActivityName="voss.narrator.screens.ActivityHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="android.screens.ActivityHome" />
+        </activity>
+
+        <receiver
+            android:name="android.texting.ReceiverText"
+            android:enabled="true" >
+            <intent-filter android:priority="1000" >
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+        <service android:name="com.parse.PushService" />
+        <receiver android:name="android.parse.ParseCustomReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.parse.push.intent.RECEIVE" />
+                <action android:name="com.parse.push.intent.DELETE" />
+                <action android:name="com.parse.push.intent.OPEN" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.parse.GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+
+                <category android:name="voss.android" />
+            </intent-filter>
+        </receiver>
+        -->
+
+    </application>
+
+</manifest>

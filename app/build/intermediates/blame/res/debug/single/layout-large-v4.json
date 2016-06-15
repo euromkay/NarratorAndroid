@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\build\\intermediates\\res\\merged\\debug\\layout-large-v4\\create_roles_right_item.xml",
+        "source": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\src\\main\\res\\layout-large\\create_roles_right_item.xml"
+    },
+    {
+        "merged": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\build\\intermediates\\res\\merged\\debug\\layout-large-v4\\activity_home.xml",
+        "source": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\src\\main\\res\\layout-large\\activity_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\build\\intermediates\\res\\merged\\debug\\layout-large-v4\\activity_day.xml",
+        "source": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\src\\main\\res\\layout-large\\activity_day.xml"
+    },
+    {
+        "merged": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\build\\intermediates\\res\\merged\\debug\\layout-large-v4\\activity_creategame.xml",
+        "source": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\src\\main\\res\\layout-large\\activity_creategame.xml"
+    },
+    {
+        "merged": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\build\\intermediates\\res\\merged\\debug\\layout-large-v4\\create_roles_left_item.xml",
+        "source": "C:\\Users\\Michael\\Documents\\GitHub\\NarratorAndroid\\app\\src\\main\\res\\layout-large\\create_roles_left_item.xml"
+    }
+]
