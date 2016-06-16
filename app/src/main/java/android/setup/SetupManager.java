@@ -257,7 +257,7 @@ public class SetupManager {
     private void debugSettings(){
         Player slave;
         for (int i = 1; i <= 5; i++){
-        	String compName = Computer.NAME + toLetter(i);
+        	String compName = Computer.NAME + Computer.toLetter(i);
             addPlayer(compName, new CommunicatorPhone());
             ns.setComputer(compName);
         }
@@ -288,19 +288,6 @@ public class SetupManager {
         	return RandomRole.AnyRandom();
 		}
 	}
-
-    public static String toLetter(int num){
-    	String result = "";
-        while (num > 0) {
-          num--; // 1 => a, not 0 => a
-          int remainder = num % 26;
-          char digit = (char) (remainder + 65);
-          result = digit + result;
-          num = (num - remainder) / 26;
-        }
-
-        return result;
-    }
 
     @SuppressWarnings("unused")
 	private void addRole(Member m, int count){

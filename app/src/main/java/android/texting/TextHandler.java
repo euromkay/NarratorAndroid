@@ -19,13 +19,11 @@ import shared.logic.support.RoleTemplate;
 
 public class TextHandler extends CommandHandler implements NarratorListener, TextInput {
 
-	private static final Player NARRATOR = Narrator.NARRATOR;
-	//private TextInput tc;
 	private PlayerList texters;
     public TextHandler(Narrator n, TextInput tc, PlayerList texters){
         super(n);
         n.addListener(this);
-        //this.tc = tc;
+        
         this.texters = texters;
         
         if (n.isStarted()){
