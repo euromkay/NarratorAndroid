@@ -27,7 +27,6 @@ public class ActivitySettings extends Activity implements OnClickListener, OnChe
 
 		rules.DAY_START = true;
 
-		rules.doctorCanHealSelf = (true);
 		rules.doctorKnowsIfTargetIsAttacked = (true);
 
 		rules.serialKillerIsInvulnerable = (true);

@@ -3,17 +3,16 @@ package android.setup;
 import java.util.ArrayList;
 import java.util.Random;
 
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.util.Log;
 import android.CommunicatorPhone;
 import android.NarratorService;
 import android.SuccessListener;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.day.ActivityDay;
 import android.parse.ParseConstants;
 import android.parse.Server;
 import android.parse.ServerResponder;
-import android.texting.TextHandler;
+import android.util.Log;
 import shared.ai.Computer;
 import shared.logic.Member;
 import shared.logic.Narrator;
@@ -118,7 +117,8 @@ public class SetupManager {
         }
     }
 
-    private void log(String s){
+    @SuppressWarnings("unused")
+	private void log(String s){
         Log.e("SetupManager", s);
     }
 
@@ -254,7 +254,8 @@ public class SetupManager {
         screen.registerReceiver(textAdder, intentFilter);
     }
 
-    private void debugSettings(){
+    @SuppressWarnings("unused")
+	private void debugSettings(){
         Player slave;
         for (int i = 1; i <= 5; i++){
         	String compName = Computer.NAME + Computer.toLetter(i);

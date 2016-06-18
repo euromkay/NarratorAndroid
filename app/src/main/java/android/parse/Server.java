@@ -33,6 +33,8 @@ import shared.logic.Rules;
 import shared.logic.support.RoleTemplate;
 import shared.packaging.Packager;
 
+
+@SuppressWarnings("unused")
 public class Server {
 
     public interface LoginListener{
@@ -248,7 +250,7 @@ public class Server {
 
     public static void AddPlayer(final GameListing gl){
         Channel(gl, new SaveCallback() {
-            public void done(ParseException e) {
+			public void done(ParseException e) {
                 HashMap<String, Object> params = new HashMap<>();
                 params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
                 ParseCloud.callFunctionInBackground(ParseConstants.ADD_PLAYER, params, new FunctionCallback<ParseObject>() {
@@ -320,7 +322,7 @@ public class Server {
 
     public static void Channel(GameListing gl){
         Channel(gl, new SaveCallback() {
-            public void done(ParseException e) {
+			public void done(ParseException e) {
 
             }
         });
@@ -445,7 +447,7 @@ public class Server {
     }
 
 
-    public static final void CheckVersion(int version, final FunctionCallback t){
+    public static final void CheckVersion(int version, final FunctionCallback<?> t){
         HashMap<String, Object> params = new HashMap<>();
         params.put("v", version);
         ParseCloud.callFunctionInBackground("checkVersion", params, new FunctionCallback<Object>() {

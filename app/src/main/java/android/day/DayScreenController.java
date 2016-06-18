@@ -3,16 +3,13 @@ package android.day;
 import java.util.ArrayList;
 
 import android.CommunicatorPhone;
-import android.NActivity;
-
-import shared.logic.RolesList;
-import voss.narrator.R;
 import android.parse.Server;
 import android.screens.SimpleGestureFilter;
 import shared.event.Event;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
+import shared.logic.RolesList;
 import shared.logic.Team;
 import shared.logic.listeners.NarratorListener;
 import shared.logic.support.RoleTemplate;
@@ -325,7 +322,6 @@ public class DayScreenController implements NarratorListener{
 	}
 
 	protected void updateInfoPanel(){
-		Narrator n = getNarrator();
 		if (playerSelected()) {
 			setAllies();
 			dScreen.updateRoleInfo(currentPlayer);

@@ -3,7 +3,6 @@ package android;
 import java.util.ArrayList;
 
 import shared.event.Event;
-import shared.logic.Player;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorHandler;
 import shared.packaging.Packager;

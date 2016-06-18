@@ -78,7 +78,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             }
 
             public void afterTextChanged(Editable s) {
-                String t = s.toString();
+                //String t = s.toString();
                 try{
                     firstET(Integer.parseInt(s.toString()));
                     screen.getManager().ruleChange();
@@ -98,7 +98,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             }
 
             public void afterTextChanged(Editable s) {
-                String t = s.toString();
+                //String t = s.toString();
                 try {
                     secondET(Integer.parseInt(s.toString()));
                     screen.getManager().ruleChange();
@@ -158,10 +158,10 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
                 rules.DAY_START = b;
                 break;
             case DOCTOR:
-                rules.doctorCanHealSelf = b;
+                rules.doctorKnowsIfTargetIsAttacked = b;
                 break;
             case BLOCKER:
-                rules.blockersCanBeBlocked = b;
+                rules.blockersRoleBlockImmune = b;
                 break;
             case EXECUTIONER:
                 rules.exeuctionerImmune = b;
@@ -188,17 +188,11 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
     private void secondBox(boolean b){
         switch(activeRole){
-            case DOCTOR:
-                rules.doctorKnowsIfTargetIsAttacked = b;
-                break;
             case EXECUTIONER:
                 rules.exeuctionerWinImmune = b;
                 break;
             case ARSONIST:
                 rules.arsonDayIgnite = b;
-                break;
-            case CULT:
-                rules.cultLeaderCanOnlyRecruit = b;
                 break;
             case GODFATHER:
                 rules.gfUndetectable = b;
@@ -309,8 +303,8 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     }
 
     private void setCult(){
-        setBooleanTexts("Culted members keep original roles", "Only Cult Leader can recruit");
-        setBoolean(rules.cultKeepsRoles, rules.cultLeaderCanOnlyRecruit);
+        setBooleanTexts("Culted members keep original roles");
+        setBoolean(rules.cultKeepsRoles);
         setTexts("Cooldown after converting non-citizen", "Cooldown after successful conversion");
         setEdits(rules.cultPowerRoleCooldown, rules.cultConversionCooldown);
     }
@@ -352,7 +346,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
     private void setBlocker(){
         setBooleanTexts("Blockers can be blocked");
-        setBoolean(rules.blockersCanBeBlocked);
+        setBoolean(rules.blockersRoleBlockImmune);
         setTexts();
         setEdits();
     }
@@ -377,7 +371,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
     private void setDoctor(){
         setBooleanTexts("Doctor can self heal", "Doctor knows if target was attacked");
-        setBoolean(rules.doctorCanHealSelf, rules.doctorKnowsIfTargetIsAttacked);
+        setBoolean(rules.doctorKnowsIfTargetIsAttacked);
         setTexts();
         setEdits();
     }

@@ -64,7 +64,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
 
         final EditText et = (EditText) mainView.findViewById(R.id.addPlayerContent);
         et.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
@@ -92,8 +92,8 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
     }
 
 
-    private static final int CONTACT_ID_INDEX = 0;
-    private static final int LOOKUP_KEY_INDEX = 1;
+    //private static final int CONTACT_ID_INDEX = 0;
+    //private static final int LOOKUP_KEY_INDEX = 1;
 
     ArrayList<String> persistant = new ArrayList<String>();
     HashMap<String, PhoneNumber> contactList = new HashMap<>();
@@ -116,7 +116,8 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
         }
     }
 
-    private ArrayAdapter<String> getAdapter(String[] players){
+    @SuppressWarnings("unused")
+	private ArrayAdapter<String> getAdapter(String[] players){
         return new ArrayAdapter<>(getActivity().getApplicationContext(), android.R.layout.simple_list_item_1, players);
     }
 
@@ -153,7 +154,8 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
 
 
 
-    private boolean checkName(String name, EditText et){
+    @SuppressWarnings("unused")
+	private boolean checkName(String name, EditText et){
         if (name.toLowerCase().equals("cancel") || name.toLowerCase().equals("skip")){
             Toast.makeText(getActivity(), "don't use this name", Toast.LENGTH_LONG).show();
             et.setText("");

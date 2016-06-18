@@ -1,16 +1,14 @@
 package android.screens;
 
 import android.NActivity;
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import voss.narrator.R;
 import shared.logic.Player;
 import shared.logic.PlayerList;
+import voss.narrator.R;
 
 public class MembersAdapter extends BaseAdapter{
 

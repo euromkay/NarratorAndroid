@@ -156,11 +156,12 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             }
         }
         return null;
-    }*/
-
+    }
+    
+    
     private void invalid(Player target){
         target.sendMessage( "unknown message.  " + HELP);
-    }
+    }*/
 
 
 
@@ -324,12 +325,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
 
     public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, Event e) {
         texters.sendMessage(e);
-
     }
 
     
-
-    private String numberOfVotesNeeded(int i){
-        return Narrator.numberOfVotesNeeded(i);
-    }
 }
