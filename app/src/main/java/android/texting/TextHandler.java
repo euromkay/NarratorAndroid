@@ -1,7 +1,8 @@
 package android.texting;
 
 
-import shared.event.Event;
+import shared.event.Message;
+import shared.event.OGIMessage;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -50,7 +51,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             if(t.knowsTeam() && t.getMembers().getLivePlayers().size() > 1){
                 message += " Your teammates are " +t.getMembers().sortByName().toString() + ".";
             }
-            texter.sendMessage(Event.String(message));
+            texter.sendMessage(new OGIMessage(texter, message));
         }
         if(n.isDay())
             onDayStart(null);
@@ -68,7 +69,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             message += "\nSee team members - " + SQuote(TEAM_INFO);
         message += "\nGet day help - " + SQuote(DAY_HELP);
         message += "\nGet night help - " + SQuote(NIGHT_HELP);
-        owner.sendMessage(Event.String(message));
+        owner.sendMessage(new OGIMessage(owner, message));
     }
 
     private static final String HELP = "help";
@@ -108,30 +109,30 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
                 	}
                 }catch(IllegalActionException e){
                     if (e.getMessage().length() == 0){
-                        owner.sendMessage(Event.String("Unknown command.  Type " + HELP + " to see a list of commands."));
+                        new OGIMessage(owner, "Unknown command.  Type " + HELP + " to see a list of commands.");
                     }else{
-                        owner.sendMessage(e.getMessage());
+                    	new OGIMessage(owner, e.getMessage());
                     }
 
                     printException(e);
                 }catch(UnknownPlayerException f){
-                    owner.sendMessage("Unknown player name. Type "  + SQuote(LIVE_PEOPLE) + " to get a list of players.");
+                    new OGIMessage(owner, "Unknown player name. Type "  + SQuote(LIVE_PEOPLE) + " to get a list of players.");
                     printException(f);
 
                 }catch(UnknownTeamException e){
-                    owner.sendMessage( "Unknown team name. Type " + NIGHT_HELP + " to get info about what you can do during the night.");
+                    new OGIMessage(owner,  "Unknown team name. Type " + NIGHT_HELP + " to get info about what you can do during the night.");
                     printException(e);
 
                 }catch (PlayerTargetingException g){
-                    owner.sendMessage( g.getMessage());
+                    new OGIMessage(owner, g.getMessage());
                     printException(g);
 
                 }catch (PhaseException e){
-                    owner.sendMessage(e.getMessage());
+                    new OGIMessage(owner, e.getMessage());
                     printException(e);
 
                 }catch (VotingException e){
-                    owner.sendMessage(e.getMessage());
+                	new OGIMessage(owner, e.getMessage());
                     printException(e);
                 }
         }
@@ -175,55 +176,55 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
                 roles_list_message += n.getTeam(r.getColor()) + " " + r.getName() + "\n";
         }
         roles_list_message = roles_list_message.substring(0, roles_list_message.length() - 1);
-        owner.sendMessage( roles_list_message);
+        new OGIMessage(owner, roles_list_message);
     }
     private void sendLivePlayerList(Player owner){
         String list_of_texters = "These are the list of people in the game: ";
         for(Player p: n.getLivePlayers())
             list_of_texters += (p.getName() + ", ");
-        owner.sendMessage(list_of_texters);
+        new OGIMessage(owner, list_of_texters);
     }
     private void sendTeamInfo(Player p){
         if (p.getTeam().knowsTeam()) {
             Team t = p.getTeam();
             PlayerList team = t.getMembers();
             if(team.isEmpty()){
-                p.sendMessage("You dont' have any teammembers.");
+            	new OGIMessage(p, "You dont' have any teammembers.");
             }else {
                 PlayerList living = team.getLivePlayers();
                 if(living.isEmpty()){
-                    p.sendMessage("All your teammates died");
+                	new OGIMessage(p, "All your teammates died");
                 }else
-                    p.sendMessage("You're teammates are: " + p.getTeam().getMembers().getLivePlayers().sortByName().toString() + "");
+                	new OGIMessage(p, "You're teammates are: " + p.getTeam().getMembers().getLivePlayers().sortByName().toString() + "");
             }
         }else
-            p.sendMessage( "I can't tell you who's on your team.");
+        	new OGIMessage(p, "I can't tell you who's on your team.");
     }
 
     private void sendNightPrompt(Player p){
         String message = SQuote(END_NIGHT)  + " so night can end.";
         if (p.getAbilities().length == 0){
-            p.sendMessage( "It is now  time. Type " + message );
+        	new OGIMessage(p, "It is now  time. Type " + message );
         }else{
-            p.sendMessage( "It is now nighttime. Submit your night action.  When you're done, type " + message);
+        	new OGIMessage(p, "It is now nighttime. Submit your night action.  When you're done, type " + message);
         }
     }
 
     public void onEndGame(){
-        texters.sendMessage(n.getWinMessage().access(Event.PUBLIC, false));
+    	new OGIMessage(texters, n.getWinMessage().access(Message.PUBLIC, false));
     }
 
     private void sendHelpPrompt(){
-        texters.sendMessage( "To see a list of possible commands, text " + SQuote(HELP) + "");
+    	new OGIMessage(texters, "To see a list of possible commands, text " + SQuote(HELP) + "");
     }
 
     
 
     public void sendNightTextPrompt(Player texter){
-        texter.sendMessage( texter.getNightText());
+    	new OGIMessage(texter, texter.getNightText());
         texter.sendTeamTextPrompt();
-        texter.sendMessage("To talk to your allies : -  " + SQuote(SAY + " message") + "");
-        texter.sendMessage( "After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.");
+        new OGIMessage(texter, "To talk to your allies : -  " + SQuote(SAY + " message") + "");
+        new OGIMessage(texter, "After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.");
     }
 
     public void sendDayTextPrompt(Player texter){
@@ -231,20 +232,20 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
         message += ".\nTo unvote: - " + SQuote(UNVOTE);
         message += ".\nTo end the day so that no one is lynched : - " + SQuote(SKIP_VOTE) + "";
 
-        texter.sendMessage( message);
+    	new OGIMessage(texter, message);
     }
 
     public void onModKill(Player p){
-        texters.sendMessage(p + " suicided!");
+    	new OGIMessage(texters, p + " suicided!");
     }
 
     public void onDayStart(PlayerList dead){
         if(dead != null){
             if(dead.isEmpty())
-                texters.sendMessage("No one died!");
+            	new OGIMessage(texters, "No one died!");
             else{
                 for(Player deadPerson: dead){
-                    texters.sendMessage(deadPerson.getDescription() + " was found " +deadPerson.getDeathType().toString() + "");
+                	new OGIMessage(texters, deadPerson.getDescription() + " was found " +deadPerson.getDeathType().toString() + "");
                 }
             }
         }
@@ -261,20 +262,20 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             message += "You're blackmailed. You can't talk and can only vote to skip the day.";
         else
             message += "Please vote.  Once someone has enough votes, the day will end.";
-        p.sendMessage( message);
+        new OGIMessage(p, message);
     }
 
     public void onNightStart(PlayerList dead){
         if(dead != null) {
             if (dead.isEmpty() || dead.get(0) == n.Skipper){
             	if (n.Skipper.getVoters().isEmpty())
-            		texters.sendMessage("The day ended due to inactivity.");
+            		new OGIMessage(texters, "The day ended due to inactivity.");
             	else
-            		texters.sendMessage(n.Skipper.getVoters().getStringName() + " opted to skip lynching today.");
+            		new OGIMessage(texters, n.Skipper.getVoters().getStringName() + " opted to skip lynching today.");
             }
             else {
                 for (Player deadPerson : dead) {
-                    texters.sendMessage(deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + "");
+                	new OGIMessage(texters, deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + "");
                 }
             }
         }
@@ -308,22 +309,22 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onMayorReveal(Player m){
-        texters.sendMessage(m.getName() + " has revealed as the mayor!");
+        new OGIMessage(texters, m.getName() + " has revealed as the mayor!");
     }
 
-    public void onMessageReceive(Player receiver, Event s){
+    public void onMessageReceive(Player receiver, Message s){
     	
     }
 
-    public void onVote(Player p, Player q, int toLynch, Event e){
+    public void onVote(Player p, Player q, int toLynch, Message e){
         texters.sendMessage(e);
     }
 
-    public void onUnvote(Player p, Player q, int toLynch, Event e){
+    public void onUnvote(Player p, Player q, int toLynch, Message e){
         texters.sendMessage(e);
     }
 
-    public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, Event e) {
+    public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, Message e) {
         texters.sendMessage(e);
     }
 
