@@ -131,7 +131,7 @@ public class DayManager implements TextInput{
 	public void untarget(Player owner, Player target, String ability_s) {
 		owner.cancelTarget(target, owner.parseAbility(ability_s));
 		
-		tC.removeNightTarget(owner, ability_s);
+		tC.cancelNightTarget(owner, target, ability_s);
 	}
 
 
