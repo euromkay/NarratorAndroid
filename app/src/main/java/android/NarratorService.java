@@ -27,7 +27,6 @@ import android.wifi.SocketClient;
 import android.wifi.SocketHost;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.Rules;
 import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PhaseException;
 import shared.logic.support.CommandHandler;
@@ -35,6 +34,7 @@ import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 
 public class NarratorService extends Service implements Callback, SetupListener{
 

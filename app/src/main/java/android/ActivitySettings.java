@@ -16,25 +16,10 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import shared.logic.Narrator;
-import shared.logic.Rules;
 import shared.logic.exceptions.UnsupportedMethodException;
 import shared.logic.support.Constants;
 
 public class ActivitySettings extends Activity implements OnClickListener, OnCheckedChangeListener, OnItemSelectedListener{
-
-	public static Rules getRules(){
-		Rules rules = new Rules();
-
-		rules.DAY_START = true;
-
-		rules.doctorKnowsIfTargetIsAttacked = (true);
-
-		rules.serialKillerIsInvulnerable = (true);
-
-
-
-		return rules;
-	}
 	
 	private SharedPreferences prefs;
 	

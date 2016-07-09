@@ -9,7 +9,8 @@ import android.parse.Server;
 import android.texting.CommunicatorText;
 import android.texting.PhoneNumber;
 import android.texting.ReceiverText;
-import shared.event.Event;
+
+import shared.event.OGIMessage;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 
@@ -95,7 +96,7 @@ public class TextAdder extends BroadcastReceiver{
             if(ct.getNumber().equals(number)) {
             	manager.removePlayer(p.getName(), false);
                 manager.addPlayer(name, p.getCommunicator());
-                p.sendMessage(Event.String("You are now " + name + ""));
+                new OGIMessage(p, "You are now " + name + "" );
                 return true;
             }
         }

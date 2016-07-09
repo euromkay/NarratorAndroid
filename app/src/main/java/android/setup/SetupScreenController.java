@@ -10,8 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import shared.logic.support.rules.Rules;
 import voss.narrator.R;
-import shared.logic.Rules;
 import shared.logic.support.Communicator;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
@@ -153,228 +153,36 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     }
 
     private void firstBox(boolean b){
-        switch(activeRole){
-            case DAY:
-                rules.DAY_START = b;
-                break;
-            case DOCTOR:
-                rules.doctorKnowsIfTargetIsAttacked = b;
-                break;
-            case BLOCKER:
-                rules.blockersRoleBlockImmune = b;
-                break;
-            case EXECUTIONER:
-                rules.exeuctionerImmune = b;
-                break;
-            case WITCH:
-                rules.witchLeavesFeedback = b;
-                break;
-            case SERIAL_KILLER:
-                rules.serialKillerIsInvulnerable = b;
-                break;
-            case ARSONIST:
-                rules.arsonInvlunerable = b;
-                break;
-            case MASS_MURDERER:
-                rules.mmInvulnerable = b;
-                break;
-            case CULT:
-                rules.cultKeepsRoles = b;
-                break;
-            case GODFATHER:
-                rules.gfInvulnerable = b;
-        }
+
     }
 
     private void secondBox(boolean b){
-        switch(activeRole){
-            case EXECUTIONER:
-                rules.exeuctionerWinImmune = b;
-                break;
-            case ARSONIST:
-                rules.arsonDayIgnite = b;
-                break;
-            case GODFATHER:
-                rules.gfUndetectable = b;
-                break;
-        }
+
     }
 
     private void thirdBox(boolean b){
-        switch(activeRole){
-            case CULT:
-                rules.cultImplodesOnLeaderDeath = b;
-                break;
-        }
+
     }
 
     private void firstET(int i){
-        switch(activeRole){
-            case MAYOR:
-                rules.mayorVoteCount = i;
-                break;
-            case VIGILANTE:
-                rules.vigilanteShots = i;
-                break;
-            case VETERAN:
-                rules.vetAlerts = i;
-                break;
-            case MASS_MURDERER:
-                rules.mmSpreeDelay = i;
-                break;
-            case CULT:
-                rules.cultPowerRoleCooldown = i;
-                break;
-        }
+
     }
 
     private void secondET(int i){
-        switch(activeRole){
-            case CULT:
-                rules.cultConversionCooldown = i;
-                break;
-        }
+
     }
 
     public int activeRole;
     public void setRoleInfo(int i, String color, Rules r){
-        if( r!= null)
-            rules = r;
-
-        if(!color.equals(Constants.A_NORMAL))
-            setColor(NActivity.convertTeamColor(color));
-        activeRole = i;
-        switch(activeRole) {
-            case DAY:
-                setDay();
-                break;
-            case DOCTOR:
-                setDoctor();
-                return;
-            case VIGILANTE:
-                setVigilante();
-                return;
-            case VETERAN:
-                setVeteran();
-                return;
-            case MAYOR:
-                setMayor();
-                return;
-            case BLOCKER:
-                setBlocker();
-                return;
-            case EXECUTIONER:
-                setExecutioner();
-                return;
-            case WITCH:
-                setWitch();
-                return;
-            case SERIAL_KILLER:
-                setSK();
-                return;
-            case ARSONIST:
-                setArson();
-                return;
-            case MASS_MURDERER:
-                setMM();
-                return;
-            case CULT:
-                setCult();
-                return;
-            case GODFATHER:
-                setGF();
-                return;
-            default:
-                hideAll();
-        }
+        return;
     }
     private void setDay(){
         setBooleanTexts("Day Start");
-        setBoolean(rules.DAY_START);
         setTexts();
         setEdits();
     }
 
-    private void setGF(){
-        setBooleanTexts("Godfather is invulnerable", "Godfather is undetectable");
-        setBoolean(rules.gfInvulnerable, rules.gfUndetectable);
-        setTexts();
-        setEdits();
-    }
 
-    private void setCult(){
-        setBooleanTexts("Culted members keep original roles");
-        setBoolean(rules.cultKeepsRoles);
-        setTexts("Cooldown after converting non-citizen", "Cooldown after successful conversion");
-        setEdits(rules.cultPowerRoleCooldown, rules.cultConversionCooldown);
-    }
-
-    private void setMM(){
-        setBooleanTexts("Mass Murderer is invulnerable");
-        setBoolean(rules.mmInvulnerable);
-        setTexts("Mass Murderer spree cool down(when successful)");
-        setEdits(rules.mmSpreeDelay);
-    }
-
-    private void setArson(){
-        setBooleanTexts("Arsonist is invulnerable", "Arsonist has a day ignite");
-        setBoolean(rules.arsonInvlunerable, rules.arsonDayIgnite);
-        setTexts();
-        setEdits();
-    }
-
-    private void setSK(){
-        setBooleanTexts("Serial Killer is invulnerable");
-        setBoolean(rules.serialKillerIsInvulnerable);
-        setTexts();
-        setEdits();
-    }
-
-    private void setWitch(){
-        setBooleanTexts("Witch leaves feedbac");
-        setBoolean(rules.witchLeavesFeedback);
-        setTexts();
-        setEdits();
-    }
-
-    private void setExecutioner(){
-        setBooleanTexts("Executioner is immune", "Executioner is immune upon win");
-        setBoolean(rules.exeuctionerImmune, rules.exeuctionerWinImmune);
-        setTexts();
-        setEdits();
-    }
-
-    private void setBlocker(){
-        setBooleanTexts("Blockers can be blocked");
-        setBoolean(rules.blockersRoleBlockImmune);
-        setTexts();
-        setEdits();
-    }
-
-    private void setMayor(){
-        setBooleanTexts();
-        setTexts("Number of extra votes");
-        setEdits(rules.mayorVoteCount);
-    }
-
-    private void setVeteran(){
-        setBooleanTexts();
-        setTexts("Number of Veteran alerts");
-        setEdits(rules.vetAlerts);
-    }
-
-    private void setVigilante(){
-        setBoolean();
-        setTexts("Number of Vigilante shots");
-        setEdits(rules.vigilanteShots);
-    }
-
-    private void setDoctor(){
-        setBooleanTexts("Doctor can self heal", "Doctor knows if target was attacked");
-        setBoolean(rules.doctorKnowsIfTargetIsAttacked);
-        setTexts();
-        setEdits();
-    }
 
     private synchronized void setBoolean(boolean... bools){
         for(int i = 0; i < cBox.length; i++)

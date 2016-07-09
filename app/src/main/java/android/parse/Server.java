@@ -29,8 +29,8 @@ import android.setup.SetupDeliverer;
 import android.setup.SetupManager;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.Rules;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
 
 
@@ -419,7 +419,6 @@ public class Server {
                         ns.local.addRole(SetupManager.TranslateRole(RoleTemplate.FromIp(r)));
 
                     ns.local.setSeed(gl.getSeed());
-                    ns.local.setRules(gl.getRules());
                     ns.local.startGame();
 
                     int i;

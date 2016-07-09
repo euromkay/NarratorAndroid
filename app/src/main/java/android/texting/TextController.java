@@ -41,9 +41,14 @@ public class TextController extends Controller {
         texter.text(a, action + " " +  b.getName() + " " + teamName, ASYNC);
     }
     
-    public void removeNightTarget(Player a, String action) {
-		texter.text(a, action + " " + Constants.UNTARGET, ASYNC);
+    public void cancelNightTarget(Player a, Player b, String action) {
+		texter.text(a, action + " " +  b.getName(), ASYNC);
 	}
+
+	public void clearTargets(Player p){
+
+	}
+
 
     public Player vote(Player slave, Player target) {
     	target = Translate(slave.getNarrator(), target);
@@ -70,11 +75,11 @@ public class TextController extends Controller {
 
 
 	public void doDayAction(Player p) {
-		if(p.is(Mayor.ROLE_NAME)){
+		if(p.is(Mayor.class)){
 			texter.text(p, Mayor.REVEAL, SYNC);
 			return;
 		}
-		else if(p.is(Arsonist.ROLE_NAME)){
+		else if(p.is(Arsonist.class)){
 			texter.text(p, Arsonist.BURN, SYNC);
 			return;
 		}

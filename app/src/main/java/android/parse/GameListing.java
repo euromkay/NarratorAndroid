@@ -7,7 +7,8 @@ import com.parse.ParseObject;
 
 import android.ActivitySettings;
 import android.setup.SetupDeliverer;
-import shared.logic.Rules;
+
+import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
 
 public class GameListing {
@@ -60,19 +61,6 @@ public class GameListing {
         return parse;
     }
 
-    public Rules getRules(){
 
-        String compress = parse.getString("rules");
-        if(compress == null || compress.length() == 0)
-            return ActivitySettings.getRules();
-        SetupDeliverer sd = new SetupDeliverer(compress);
-        Packager p = new Packager(sd);
-        try {
-            return new Rules(p);
-        }catch(ArrayIndexOutOfBoundsException e){
-            return new Rules();
-        }
-
-    }
 }
 

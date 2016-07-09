@@ -1,8 +1,7 @@
 package android;
 
-import java.util.ArrayList;
-
-import shared.event.Event;
+import shared.event.EventList;
+import shared.event.Message;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorHandler;
 import shared.packaging.Packager;
@@ -13,12 +12,11 @@ public class CommunicatorPhone extends Communicator{
 	public CommunicatorPhone() {
 	}
 
-	public void sendMessage(Event e) {
+	public void sendMessage(Message e) {
 
 	}
-	public void sendMessage(ArrayList<Event> messages) {
-		for(Event s: messages)
-			sendMessage(s);
+	public void sendMessage(EventList messages) {
+
 	}
 	
 	public boolean equals(Object o){

@@ -43,6 +43,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.GUIController;
 import android.NActivity;
+
+import shared.event.Header;
+import shared.event.Message;
+import shared.event.OGIMessage;
 import voss.narrator.R;
 import android.SuccessListener;
 import android.alerts.ExitGameAlert;
@@ -58,7 +62,6 @@ import android.screens.SimpleGestureFilter.SimpleGestureListener;
 import android.texting.PhoneNumber;
 import android.texting.TextHandler;
 import packaging.Board;
-import shared.event.Event;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -377,9 +380,11 @@ implements
 			actionLV.setItemChecked(actionList.indexOf(p), false);
 
 	}
-	protected void check(Player p){
-		if (p != null)
-			actionLV.setItemChecked(actionList.indexOf(p), true);
+	protected void check(PlayerList selected){
+		if (selected != null){
+			for(Player p: selected)
+				actionLV.setItemChecked(actionList.indexOf(p), true);
+		}
 
 	}
 	protected void hideDayButton(){
@@ -429,7 +434,7 @@ implements
 			}catch(Exception|Error e){
 				e.printStackTrace();
 				if(owner != null)
-					owner.sendMessage(Event.String(e.getMessage()));
+					new OGIMessage(owner, e.getMessage());
 			}
 				
 			
@@ -690,7 +695,7 @@ implements
 			hideView(framerSpinner);
 			return;
 		}
-		if (manager.getCurrentPlayer().is(Framer.ROLE_NAME) && manager.getCurrentPlayer().isAlive() && isFrameActionSelected()) {
+		if (manager.getCurrentPlayer().is(Framer.class) && manager.getCurrentPlayer().isAlive() && isFrameActionSelected()) {
 			showView(framerSpinner);
 			if(!wideMode())
 				((RelativeLayout.LayoutParams) actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, framerSpinner.getId());
@@ -818,13 +823,13 @@ implements
 		hideView(roleTV);
 
 		showView(chatLV);
-		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Event.PRIVATE, true));
+		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Message.PRIVATE, true));
 		happenings.append("\n");
-		happenings.append(manager.getNarrator().getPrivateEvents().access(Event.PRIVATE, true));
+		happenings.append(manager.getNarrator().getEventManager().getEvents(Message.PRIVATE).access(Message.PRIVATE, true));
 
 		for (Player p: manager.getNarrator().getAllPlayers().sortByRole()){
 			happenings.append("\n");
-			happenings.append(Event.toHTML(p, manager.getNarrator().getDayNumber()));
+			happenings.append(new Header(manager.getNarrator().getDayNumber(), manager.getNarrator().isDay()));
 		}
 
 
@@ -907,7 +912,7 @@ implements
 
 
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		manager.command(manager.getCurrentPlayer().getTarget(Framer.MAIN_ABILITY));
+		manager.command(manager.getCurrentPlayer().getTargets(Framer.MAIN_ABILITY).getLast());
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {

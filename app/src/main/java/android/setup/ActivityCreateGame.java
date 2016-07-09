@@ -23,13 +23,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import android.NActivity;
+
+import shared.event.Message;
 import voss.narrator.R;
 import android.SuccessListener;
 import android.alerts.PlayerPopUp;
 import android.parse.Server;
 import android.screens.ActivityHome;
 import android.screens.ListingAdapter;
-import shared.event.Event;
 import shared.logic.Narrator;
 import shared.logic.Team;
 import shared.logic.support.Constants;
@@ -38,15 +39,11 @@ import shared.roles.Agent;
 import shared.roles.Arsonist;
 import shared.roles.Blackmailer;
 import shared.roles.Bodyguard;
-import shared.roles.BusDriver;
-import shared.roles.Chauffeur;
 import shared.roles.Citizen;
-import shared.roles.Consort;
 import shared.roles.CultLeader;
 import shared.roles.Cultist;
 import shared.roles.Detective;
 import shared.roles.Doctor;
-import shared.roles.Escort;
 import shared.roles.Executioner;
 import shared.roles.Framer;
 import shared.roles.Godfather;
@@ -265,99 +262,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		else
 			rolesLeftTV.setVisibility(View.GONE);
     }
-	
 
-	public static String colorToTeam(String role, boolean yakuza){
-		String town = Constants.A_TOWN;
-        String mafia;
-
-        if (yakuza)
-            mafia = Constants.A_YAKUZA;
-        else
-            mafia = Constants.A_MAFIA;
-		
-		if(role.equals(Citizen.ROLE_NAME))
-			return town;
-		else if(role.equals(Sheriff.ROLE_NAME))
-			return town;
-		else if(role.equals(Doctor.ROLE_NAME))
-			return town;
-		else if(role.equals(Lookout.ROLE_NAME))
-			return town;
-		else if(role.equals(Detective.ROLE_NAME))
-			return town;
-		else if(role.equals(BusDriver.ROLE_NAME))
-			return town;
-		else if(role.equals(Escort.ROLE_NAME))
-			return town;
-		else if(role.equals(Vigilante.ROLE_NAME))
-			return town;
-		else if(role.equals(Mayor.ROLE_NAME))
-			return town;
-		else if(role.equals(Bodyguard.ROLE_NAME))
-			return town;
-		else if(role.equals(Veteran.ROLE_NAME))
-			return town;	
-		else if(role.equals(Constants.TOWN_INVESTIGATIVE_ROLE_NAME))
-			return town;
-		else if(role.equals(Constants.TOWN_PROTECTIVE_ROLE_NAME))
-			return town;
-		else if(role.equals(Constants.TOWN_KILLING_ROLE_NAME))
-			return town;
-		else if(role.equals(Constants.TOWN_GOVERNMENT_ROLE_NAME))
-			return town;
-		else if(role.equals(Constants.TOWN_RANDOM_ROLE_NAME))
-			return town;
-			
-		else if(role.equals(Godfather.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Mafioso.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Janitor.ROLE_NAME))
-				return mafia;
-		else if(role.equals(Blackmailer.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Agent.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Chauffeur.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Consort.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Framer.ROLE_NAME))
-			return mafia;
-		else if(role.equals(Constants.MAFIA_RANDOM_ROLE_NAME))
-			return mafia;
-		else if(role.equals(Constants.YAKUZA_RANDOM_ROLE_NAME))
-			return Constants.A_YAKUZA;
-		
-		else if(role.equals(CultLeader.ROLE_NAME))
-			return Constants.A_CULT;
-		else if(role.equals(Cultist.ROLE_NAME))
-			return Constants.A_CULT;
-		
-		else if(role.equals(SerialKiller.ROLE_NAME))
-			return Constants.A_SK;
-		else if(role.equals(MassMurderer.ROLE_NAME))
-			return Constants.A_MM;
-		else if(role.equals(Arsonist.ROLE_NAME))
-			return Constants.A_ARSONIST;
-		
-		else if(role.equals(Constants.NEUTRAL_RANDOM_ROLE_NAME))
-			return Constants.A_NEUTRAL;
-		else if(role.equals(Jester.ROLE_NAME))
-			return Constants.A_BENIGN;
-		else if(role.equals(Executioner.ROLE_NAME))
-			return Constants.A_BENIGN;
-		
-		else if(role.equals(Witch.ROLE_NAME))
-			return Constants.A_OUTCASTS;
-		
-		else if(role.equals(Constants.ANY_RANDOM_ROLE_NAME)){
-			return Constants.A_RANDOM;
-		}
-		
-		else throw new IllegalArgumentException(role);
-	}
 
 
 	private int currentCatalogue;
@@ -441,52 +346,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 	private void roleDescription(RoleTemplate rt){
 		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), super.convertTeamColor(rt.getColor()));
-		int role = SetupScreenController.NONE;
-		switch(rt.getName()){
-			case Godfather.ROLE_NAME:
-				role = SetupScreenController.GODFATHER;
-				break;
-			case Doctor.ROLE_NAME:
-				role = SetupScreenController.DOCTOR;
-				break;
-			case Vigilante.ROLE_NAME:
-				role = SetupScreenController.VIGILANTE;
-				break;
-			case Veteran.ROLE_NAME:
-				role = SetupScreenController.VETERAN;
-				break;
-			case Mayor.ROLE_NAME:
-				role = SetupScreenController.MAYOR;
-				break;
-			case Escort.ROLE_NAME:
-				role = SetupScreenController.BLOCKER;
-				break;
-			case Consort.ROLE_NAME:
-				role = SetupScreenController.BLOCKER;
-				break;
-			case Executioner.ROLE_NAME:
-				role = SetupScreenController.EXECUTIONER;
-				break;
-			case Witch.ROLE_NAME:
-				role = SetupScreenController.WITCH;
-				break;
-			case SerialKiller.ROLE_NAME:
-				role = SetupScreenController.SERIAL_KILLER;
-				break;
-			case Arsonist.ROLE_NAME:
-				role = SetupScreenController.ARSONIST;
-				break;
-			case MassMurderer.ROLE_NAME:
-				role = SetupScreenController.MASS_MURDERER;
-				break;
-			case Cultist.ROLE_NAME:
-				role = SetupScreenController.CULT;
-				break;
-			case CultLeader.ROLE_NAME:
-				role = SetupScreenController.CULT;
-				break;
-		}
-		manager.screenController.setRoleInfo(role, rt.getColor(), null);
+
+
+		//manager.screenController.setRoleInfo(role, rt.getColor(), null);
 	}
 
 
@@ -577,7 +439,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			return;
 
 
-		String events = ns.local.getPublicEvents().access(Event.PUBLIC, true);
+		String events = ns.local.getEventManager().getEvents(Message.PUBLIC).access(Message.PUBLIC, true);
 		events = events.replace("\n", "<br>");
 		chatTV.setText(Html.fromHtml(events));
 		pushChatDown();
@@ -710,9 +572,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		}
 		
 		String s = rolesList[position];
-		
-		RoleTemplate rt = RoleTemplate.Creator(s, colorToTeam(s, currentCatalogue == YAKUZA)) ;
-		return SetupManager.TranslateRole(rt);
+
+		return null;
 	}
 
 

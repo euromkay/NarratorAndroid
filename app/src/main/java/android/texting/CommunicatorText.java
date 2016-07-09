@@ -2,7 +2,8 @@ package android.texting;
 
 import java.util.ArrayList;
 
-import shared.event.Event;
+import shared.event.EventList;
+import shared.event.Message;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorHandler;
 import shared.packaging.Packager;
@@ -18,7 +19,7 @@ public class CommunicatorText extends Communicator{
 	public CommunicatorText() {
 	}
 
-	public void sendMessage(Event e){
+	public void sendMessage(Message e){
 		sendMessage(e.access(getPlayer(), false));
 	}
 	public void sendMessage(String message) {
@@ -34,8 +35,8 @@ public class CommunicatorText extends Communicator{
 		return new CommunicatorText(new PhoneNumber(number.number));
 	}
 
-	public void sendMessage(ArrayList<String> messages) {
-		for(String s: messages)
+	public void sendMessage(EventList messages) {
+		for(Message s: messages)
 			sendMessage(s);
 	}
 

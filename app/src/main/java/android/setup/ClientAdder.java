@@ -8,11 +8,11 @@ import android.CommunicatorPhone;
 import android.NarratorService;
 import android.wifi.ChatManager;
 import android.wifi.SocketClient;
-import shared.logic.Rules;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
 
 

@@ -2,8 +2,6 @@ package android.day;
 
 import android.content.Intent;
 
-import java.util.Random;
-
 import android.NarratorService;
 import android.PhoneBook;
 import android.parse.GameListing;
@@ -12,11 +10,15 @@ import android.setup.TextAdder;
 import android.texting.TextController;
 import android.texting.TextHandler;
 import android.texting.TextInput;
+
+import shared.ai.Brain;
 import shared.ai.Simulations;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.PlayerList;
 import shared.logic.Team;
 import shared.logic.support.Constants;
+import shared.logic.support.Random;
 import shared.logic.templates.TestController;
 import shared.roles.Framer;
 
@@ -49,11 +51,11 @@ public class DayManager implements TextInput{
 
 		tC = new TextController(this);
 
+		Brain b = new Brain(new PlayerList(), new Random());
+
 		for(Player p: ns.local.getAllPlayers()){
 			if(p.isComputer()){
-				simulations = new Simulations(new TestController(ns.local), new Random(), ns.local);
-				simulations.brain.setTargetAnyone(true);
-				return;
+				b.slaves.add(p);
 			}
 		}
 
@@ -127,7 +129,7 @@ public class DayManager implements TextInput{
 	}
 
 	public void untarget(Player owner, Player target, String ability_s) {
-		owner.removeTarget(owner.parseAbility(ability_s), true);
+		owner.cancelTarget(target, owner.parseAbility(ability_s));
 		
 		tC.removeNightTarget(owner, ability_s);
 	}
@@ -202,14 +204,7 @@ public class DayManager implements TextInput{
 			if(ability == -1){
 				System.out.println("bad line is \t"+ability_s);
 			}
-			Player prev = currentPlayer.getTarget(ability);
-
-			//untargeting someone
-			if (target == prev)
-				untarget(currentPlayer, prev, ability_s);
-			else {
-				target(currentPlayer, target, ability_s);
-			}
+			target(currentPlayer, target, ability_s);
 		}
 		}
 	}

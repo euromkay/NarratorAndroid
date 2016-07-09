@@ -10,7 +10,6 @@ import android.screens.SimpleGestureFilter;
 import android.texting.TextController;
 import android.texting.TextInput;
 import shared.ai.Controller;
-import shared.event.Event;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -79,7 +78,7 @@ public class GUIController extends Controller implements TextInput{
     private void clickPlayer(Player p){
         int position = dScreen.actionList.indexOf(p);
         if (position == -1){
-        	System.out.println(p.getNarrator().getPrivateEvents().access(Event.PRIVATE, false));
+        	System.out.println(p.getNarrator().getHappenings());
             throw new PlayerTargetingException(p + " not found\n" );
         }
         
@@ -104,6 +103,8 @@ public class GUIController extends Controller implements TextInput{
         }
         return false;
     }
+
+    public void clearTargets(Player p){}
 
     private void setActionPanel(){
         if (dScreen.panel != dScreen.actionButton){
@@ -207,8 +208,8 @@ public class GUIController extends Controller implements TextInput{
         clickPlayer(pList.get(0));
 	}
 	
-	public void removeNightTarget(Player slave, String ability){
-		logger.removeNightTarget(slave, ability);
+	public void cancelNightTarget(Player slave, Player target, String ability){
+		logger.cancelNightTarget(slave, target, ability);
 		selectSlave(slave);
         swipeAbilityPanel(slave, ability);
         PlayerList pList = dScreen.getCheckedPlayers();

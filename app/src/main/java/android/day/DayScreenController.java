@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import android.CommunicatorPhone;
 import android.parse.Server;
 import android.screens.SimpleGestureFilter;
-import shared.event.Event;
+
+import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -13,8 +14,10 @@ import shared.logic.RolesList;
 import shared.logic.Team;
 import shared.logic.listeners.NarratorListener;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 import shared.roles.Arsonist;
 import shared.roles.Mayor;
+import shared.roles.Role;
 
 public class DayScreenController implements NarratorListener{
 
@@ -81,7 +84,7 @@ public class DayScreenController implements NarratorListener{
 
 	public void onEndGame() {
 		//TODO SPEECH LISTENER
-		dScreen.say(getNarrator().getWinMessage().access(Event.PUBLIC, false));
+		dScreen.say(getNarrator().getWinMessage().access(Message.PUBLIC, false));
 		dScreen.endGame();
 	}
 
@@ -108,31 +111,28 @@ public class DayScreenController implements NarratorListener{
 
 	}
 
-	public void onVote(Player voter, Player target, int voteCount, Event e) {
+	public void onVote(Player voter, Player target, int voteCount, Message e) {
 		updateActionPanel();
 		updateChatPanel();
 	}
 
 
-	public void onUnvote(Player voter, Player prev, int voteCountToLynch, Event e) {
+	public void onUnvote(Player voter, Player prev, int voteCountToLynch, Message e) {
 		onVote(voter, prev, voteCountToLynch, e);
 	}
 
 
-	public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch, Event e) {
+	public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch, Message e) {
 		onVote(voter, target, toLynch, e);
 	}
 
 
+	private PlayerList getTargets(int ability){
+		return null;
+	}
 	public void onNightTarget(Player owner, Player target) {
-		if (owner == currentPlayer) {
-			for(Player selected: dScreen.getCheckedPlayers())
-				dScreen.uncheck(selected);
-			dScreen.check(target);
+		dScreen.check(getTargets(-1));
 
-		}
-		if (!playerSelected())
-			dScreen.check(owner);
 
 		Team t = owner.getTeam();
 		if(t.hasMember(currentPlayer))
@@ -170,7 +170,7 @@ public class DayScreenController implements NarratorListener{
 		setSkipNightText();
 	}
 
-	public void onMessageReceive(Player p, Event e) {
+	public void onMessageReceive(Player p, Message e) {
 		updateChatPanel();
 	}
 
@@ -270,7 +270,7 @@ public class DayScreenController implements NarratorListener{
 					allowedVoteTargets = n.getLivePlayers().remove(currentPlayer).add(n.Skipper);
 				}
 				dScreen.setActionList(allowedVoteTargets, Narrator.DAY_START);
-				dScreen.check(currentPlayer.getVoteTarget());
+				dScreen.check(getTargets(Role.VOTE));
 				setVotesToLynch();
 			} else { //isNight
 				PlayerList allowedTargets = new PlayerList();
@@ -286,7 +286,7 @@ public class DayScreenController implements NarratorListener{
 							allowedTargets.add(p);
 					}
 					dScreen.setActionList(allowedTargets, isDay());
-					dScreen.check(currentPlayer.getTarget(abilityID));
+					dScreen.check(currentPlayer.getTargets(abilityID));
 
 					dScreen.setCommand(ability);
 				} else {
@@ -361,9 +361,9 @@ public class DayScreenController implements NarratorListener{
 	private void updateChatPanel(){
 		String text;
 		if (!manager.getNarrator().isInProgress()){
-			text = manager.getNarrator().getPrivateEvents().access(Event.PRIVATE, true);
+			text = manager.getNarrator().getEventManager().getEvents(Message.PRIVATE).access(Message.PRIVATE, true);
 		}else if (!playerSelected())
-			text = manager.getNarrator().getPublicEvents().access(Event.PUBLIC, true);
+			text = manager.getNarrator().getEventManager().getEvents(Message.PUBLIC).access(Message.PUBLIC, true);
 		else{
 			text = currentPlayer.getEvents().access(currentPlayer, true);
 		}
@@ -377,9 +377,9 @@ public class DayScreenController implements NarratorListener{
 		if (isDay()){
 			if (!currentPlayer.hasDayAction()) {
 				return;
-			}else if (currentPlayer.is(Mayor.ROLE_NAME))
-				dScreen.setButtonText("Reveal as Mayor (+" + getNarrator().getRules().mayorVoteCount + " votes)");
-			else if (currentPlayer.is(Arsonist.ROLE_NAME))
+			}else if (currentPlayer.is(Mayor.class))
+				dScreen.setButtonText("Reveal as Mayor (+" + getNarrator().getRules().getInt(Rules.MAYOR_VOTE_POWER) + " votes)");
+			else if (currentPlayer.is(Arsonist.class))
 				dScreen.setButtonText("Burn all doused targets");
 		}else{
 			if (currentPlayer.isDead())

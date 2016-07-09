@@ -17,7 +17,6 @@ import shared.ai.Computer;
 import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.Rules;
 import shared.logic.exceptions.IllegalGameSettingsException;
 import shared.logic.exceptions.IllegalRoleCombinationException;
 import shared.logic.support.CommandHandler;
@@ -25,6 +24,7 @@ import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
 import shared.roles.RandomRole;
 

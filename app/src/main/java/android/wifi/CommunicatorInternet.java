@@ -1,8 +1,7 @@
 package android.wifi;
 
-import java.util.ArrayList;
-
-import shared.event.Event;
+import shared.event.EventList;
+import shared.event.Message;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorHandler;
 import shared.packaging.Packager;
@@ -14,12 +13,12 @@ public class CommunicatorInternet extends Communicator{
         this.c = c;
     }
 
-    public void sendMessage(Event e){
+    public void sendMessage(Message e){
         //c.write(message);
     }
 
 
-    public void sendMessage(ArrayList<String> message){
+    public void sendMessage(EventList message){
         
     }
 

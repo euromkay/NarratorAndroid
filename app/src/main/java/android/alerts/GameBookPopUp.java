@@ -156,7 +156,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
             else
                 n.addRole((RandomRole) rt);
         }
-        n.setRules(gl.getRules());
+        //n.setRules(gl.getRules());
         if (gl.inProgress()) {
             n.setSeed(gl.getSeed());
             n.startGame();
