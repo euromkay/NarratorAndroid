@@ -2,6 +2,7 @@ package android.screens;
 
 import java.util.ArrayList;
 
+import android.NActivity;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.view.View;
@@ -107,7 +108,7 @@ public class ListingAdapter extends BaseAdapter{
 		}
 
 	    result.setText(item);
-	    result.setTextColor(Integer.parseInt(viewColor.substring(1)));
+		NActivity.setTextColor(result, viewColor);
 	    
 	    return result;
 		

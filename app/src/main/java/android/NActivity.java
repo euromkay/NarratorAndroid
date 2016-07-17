@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 import android.widget.TextView;
 
 import android.parse.Server;
@@ -79,5 +80,11 @@ public abstract class NActivity extends FragmentActivity{
 	public static int convertTeamColor(String id){
 		id = id.replace("#", "");
 		return Integer.parseInt(id, 16);
+	}
+
+	public static void setTextColor(TextView v, String color){
+		color = color.substring(1);
+		int color_ = Integer.parseInt(color, 16);
+		v.setTextColor(color_);
 	}
 }
