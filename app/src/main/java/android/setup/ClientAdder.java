@@ -59,7 +59,7 @@ public class ClientAdder implements SetupListener{
         }else if(s.startsWith(Constants.SET_RULES)) {
             SetupDeliverer sd = new SetupDeliverer(s.substring(Constants.SET_RULES.length()));
             Packager p = new Packager(sd);
-            ns.setRules(new Rules(p), s.substring(Constants.SET_RULES.length()));
+            //ns.setRules(new Rules(p), s.substring(Constants.SET_RULES.length()));
         }else if(s.startsWith(Constants.START_GAME)){
         	Long l = Long.parseLong(s.substring(Constants.START_GAME.length()));
         	ns.startGame(l);

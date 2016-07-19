@@ -1,15 +1,15 @@
 package android.setup;
 
+import org.json.JSONException;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-
 import android.parse.Server;
 import android.texting.CommunicatorText;
 import android.texting.PhoneNumber;
 import android.texting.ReceiverText;
-
+import android.util.Log;
 import shared.event.OGIMessage;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -25,7 +25,9 @@ public class TextAdder extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent){
         Log.e("TextAdder", "gotem");
         if (intent.getExtras().getString("number") == null){
-            manager.updateNarrator(intent);
+        	try{
+        		manager.updateNarrator(intent);
+        	}catch(JSONException e){}
             return;
         }
         if(Server.IsLoggedIn())

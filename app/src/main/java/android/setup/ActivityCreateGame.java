@@ -2,15 +2,22 @@ package android.setup;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.NActivity;
+import android.SuccessListener;
+import android.alerts.PlayerPopUp;
 import android.content.Context;
 import android.os.Bundle;
+import android.parse.Server;
+import android.screens.ListingAdapter;
 import android.text.Html;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -21,58 +28,14 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import android.NActivity;
-
 import shared.event.Message;
-import voss.narrator.R;
-import android.SuccessListener;
-import android.alerts.PlayerPopUp;
-import android.parse.Server;
-import android.screens.ActivityHome;
-import android.screens.ListingAdapter;
 import shared.logic.Narrator;
-import shared.logic.Team;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
-import shared.roles.Agent;
-import shared.roles.Arsonist;
-import shared.roles.Blackmailer;
-import shared.roles.Bodyguard;
-import shared.roles.Citizen;
-import shared.roles.CultLeader;
-import shared.roles.Cultist;
-import shared.roles.Detective;
-import shared.roles.Doctor;
-import shared.roles.Executioner;
-import shared.roles.Framer;
-import shared.roles.Godfather;
-import shared.roles.Janitor;
-import shared.roles.Jester;
-import shared.roles.Lookout;
-import shared.roles.Mafioso;
-import shared.roles.MassMurderer;
-import shared.roles.Mayor;
-import shared.roles.SerialKiller;
-import shared.roles.Sheriff;
-import shared.roles.Veteran;
-import shared.roles.Vigilante;
-import shared.roles.Witch;
-
+import voss.narrator.R;
 
 
 public class ActivityCreateGame extends NActivity implements OnItemClickListener, OnClickListener, PlayerPopUp.AddPlayerListener {
-
-	public static final int TOWN = 0;
-	public static final int MAFIA = 1;
-	public static final int YAKUZA = 2;
-	public static final int NEUTRAL = 3;
-	public static final int RANDOM = 4;
-
-
-
-    private static final String[] neutralPointerList = {Constants.A_CULT,Constants.A_CULT, Constants.A_OUTCASTS, Constants.A_ARSONIST, Constants.A_SK, Constants.A_MM, Constants.A_BENIGN, Constants.A_BENIGN};
-    private static final String[] randomsPointerList = {Constants.A_RANDOM, Constants.A_TOWN, Constants.A_TOWN, Constants.A_TOWN, Constants.A_TOWN, Constants.A_MAFIA, Constants.A_YAKUZA, Constants.A_NEUTRAL};
 
 	public ListView cataLV, rolesLV, rolesListLV;
 	public TextView playersInGameTV, rolesLeftTV;
@@ -113,35 +76,35 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		super.onPause();
 	}
 	
-	private int[] getColorArray(int ... values){
-		int[] array = new int[values.length];
 
-		for(int i = 0; i < values.length; i++){
-			array[i] = ParseColor(this, values[i]);
-		}
-			
-		
-		return array;
-		
-	}
 	public static final String ID_KEY = "game_id";
 	private SetupManager manager;
+	private Object managerLock = new Object();
 	private void setup(Bundle b){
-		if(manager == null){
-			setupRoleCatalogue();
-			connectNarrator(new NarratorConnectListener() {
-				public void onConnect() {
-					setupManager();
+		SetFont(R.id.create_info_label, this, false);
+		chatButton = (Button) findViewById(R.id.create_toChat);
+		chatET = (EditText) findViewById(R.id.create_chatET);
+		chatTV = (TextView) findViewById(R.id.create_chatTV);
+		synchronized (managerLock){
+			if(manager == null){
+				if(ns == null){
+					connectNarrator(new NarratorConnectListener() {
+						public void onConnect() {
+							setup(null);
+						}
+					});
 				}
-			});
-			setupCategories();
+				manager = new SetupManager(this, ns);
+			}
+
+		}
+		/*if(manager == null){
+			
 			findViewById(R.id.roles_show_Players).setOnClickListener(this);
 			changeRoleType(TOWN);
 
 			SetFont(R.id.create_info_label, this, false);
 
-			chatET = (EditText) findViewById(R.id.create_chatET);
-			chatTV = (TextView) findViewById(R.id.create_chatTV);
 
 			chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -164,17 +127,15 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			}else
 				chatButton.setVisibility(View.GONE);
 			SetFont(R.id.create_chatButton, this, false);
-		}
+		}*/
 	}
-	private void setupManager(){
-		if(manager != null)
-			return;
-		manager = new SetupManager(this, ns);
-
-
+	public void onConnect(SetupManager sm) throws JSONException{
+		manager = sm;
 		if(networkCapable())
 			manager.setupConnection();
 
+		refreshFactions();
+		setupRoleCatalogue();
 		setupRoleList();
 
 		rolesLeftTV = (TextView) findViewById(R.id.roles_hint_title);
@@ -193,7 +154,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		
 		setHostCode();
 
-		teamDescription(TOWN);
+		refreshDescription();
 
 		findViewById(R.id.create_chatButton).setOnClickListener(this);
 		updateChat();
@@ -207,13 +168,22 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 
-	private void setupCategories(){
+	private JSONObject activeFaction;
+	private void refreshFactions() throws JSONException {
 		cataLV = (ListView) findViewById(R.id.roles_categories_LV);
 	
-		final String[] CATEGORYTYPES = {"Town", "Mafia", "Yakuza", "Neutral", "Randoms"};
-		final String[] categoryColors = new String[]{Constants.A_TOWN, Constants.A_MAFIA, Constants.A_YAKUZA, Constants.A_NEUTRAL, Constants.A_RANDOM};//getColorArray(R.color.town, R.color.mafia, R.color.yakuza, R.color.neutral, R.color.white);
-		ListingAdapter adapter = new ListingAdapter(CATEGORYTYPES, this);
-		adapter.setColors(categoryColors);
+		ArrayList<String> data = new ArrayList<>();
+		ArrayList<String> cData = new ArrayList<>();
+		JSONArray allFactions = manager.ns.getFactions();
+		JSONObject faction;
+		for(int i = 0; i < allFactions.length(); i++) {
+			faction = allFactions.getJSONObject(i);
+			data.add(faction.getString("name"));
+			cData.add(faction.getString("color"));
+		}
+
+		ListingAdapter adapter = new ListingAdapter(data, this);
+		adapter.setColors(cData);
 		adapter.setLayoutID(R.layout.create_roles_left_item);
 
 		cataLV.setAdapter(adapter);
@@ -264,41 +234,43 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
     }
 
 
-
-	private int currentCatalogue;
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		RoleTemplate role;
 		switch(parent.getId()){
 		
 		case R.id.roles_categories_LV:
 			if(chatVisible())
 				switchChat();
-			currentCatalogue = position;
-			changeRoleType(position);
+			try {
+				activeFaction = manager.ns.getFactions().getJSONObject(position);
 
-			teamDescription(currentCatalogue);
+				changeRoleType(position);
 
+				refreshDescription();
+			}catch(JSONException e){}
 			return;
 			
 		case R.id.roles_bottomLV:
 			//position = rolesLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
-				role = getSelectedRole(position);
-
-				if(manager.isHost())
-					manager.addRole(role);
-
-				roleDescription(role);
+				if(activeFaction == null)
+					return;
+				try{
+					activeRule = activeFaction.getJSONObject("fMembers");
+					if(manager.isHost())
+						manager.addRole(activeRule.getString("name"), activeRule.getString("color"));
+					manager.screenController.setRoleInfo(activeRule);
+				}catch(JSONException ef){}
 			}
 			break;
 			
 		case R.id.roles_rolesList:
 			position = rolesListLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
-				role = manager.ns.local.getAllRoles().get(position);
+
+				RoleTemplate role = manager.ns.local.getAllRoles().get(position);
 
 				if(manager.isHost())
-					manager.removeRole(role);
+					manager.removeRole(role.getName(), role.getColor());
 
 				roleDescription(role);
 			}
@@ -308,105 +280,56 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			
 		
  	}
-	private void teamDescription(int i){
-		Team t = null;
-		String color = "#FFFFFF";ParseColor(this, R.color.white);
-		String text = "";
-		switch (i) {
-			case TOWN:
-				t = manager.getNarrator().getTeam(Constants.A_TOWN);
-				break;
-			case MAFIA:
-				t = manager.getNarrator().getTeam(Constants.A_MAFIA);
-				break;
-			case YAKUZA:
-				t = manager.getNarrator().getTeam(Constants.A_YAKUZA);
-				break;
-			case NEUTRAL:
-				text = "These roles are the miscellaneous roles without teams.";
-				color = Constants.A_NEUTRAL;//ParseColor(this, R.color.neutral);
-				break;
-			case RANDOM:
-				text = "These are random types that will spawn unknown roles.";
-				color = Constants.A_RANDOM;//ParseColor(this, R.color.white);
+	private JSONObject activeRule = null;
+	private void refreshDescription() throws JSONException{
+		String color, text;
+		if(activeRule == null){
+			color = Constants.A_RANDOM;
+			text = "";
+		}else{
+			color = activeRule.getString("color");
+			text = activeRule.getString("name");
 		}
 
-		if (t != null) {
-			text = t.getDescription();
-			color = t.getColor();
-		}
 
-		setDescriptionText(text, convertTeamColor(color));
 
-		if(i == RANDOM)
-			manager.screenController.setRoleInfo(SetupScreenController.DAY, color, null);
-		else
-			manager.screenController.setRoleInfo(SetupScreenController.NONE, Constants.A_NORMAL, null);
+		setDescriptionText(text, color);
+
+		manager.screenController.setRoleInfo(activeRule);
+
 	}
 
 	private void roleDescription(RoleTemplate rt){
-		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), super.convertTeamColor(rt.getColor()));
-
-
+		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), rt.getColor());
 		//manager.screenController.setRoleInfo(role, rt.getColor(), null);
 	}
 
 
-	private void setDescriptionText(String text, int color){
+	private void setDescriptionText(String text, String color){
 		TextView tv = (TextView) findViewById(R.id.create_info_label);
 		tv.setText(text);
-		tv.setTextColor(color);
+		NActivity.setTextColor(tv, color);
 
 	}
-	
-	private void changeRoleType(int position){
-		String[] rolesList;
-		String[] colors;
+
+	private void changeRoleType(int position) throws JSONException{
+		ArrayList<String> rolesList = new ArrayList<>(), colors = new ArrayList<>();
+		JSONObject faction = manager.ns.getFactions().getJSONObject(position);
+		JSONArray members = faction.getJSONArray("members");
 		
-		switch(position){
-		case TOWN:
-			rolesList = getResources().getStringArray(R.array.roles_townRoles);
-			colors = fillArray(Constants.A_TOWN, rolesList.length);
-			break;
-			
-		case MAFIA:
-			rolesList = getResources().getStringArray(R.array.roles_mafiaRoles);
-			colors = fillArray(Constants.A_MAFIA, rolesList.length);
-			break;
-
-        case YAKUZA:
-            rolesList = getResources().getStringArray(R.array.roles_mafiaRoles);
-            colors = fillArray(Constants.A_YAKUZA, rolesList.length);
-            break;
-			
-		case NEUTRAL:
-			rolesList = getResources().getStringArray(R.array.roles_neutralRoles);
-			colors = neutralPointerList;
-			break;
-			
-		case RANDOM:
-			rolesList = getResources().getStringArray(R.array.roles_randomRoles);
-			colors = randomsPointerList;
-			break;
-			
-		default:
-			throw new IndexOutOfBoundsException();
+		
+		JSONObject member;
+		for(int i = 0; i < members.length(); i++){
+			member = members.getJSONObject(i);
+			rolesList.add(member.getString("name"));
+			colors.add(member.getString("color"));
 		}
-
+		
 		ListingAdapter ada = new ListingAdapter(rolesList, this);
 		ada.setColors(colors);
 		ada.setLayoutID(R.layout.create_roles_left_item);
 		rolesLV.setAdapter(ada);
 		
-	}
-	private String[] fillArray(String color, int length){
-		String[] array = new String[length];
-		
-		//int color = readColorPointer(colorPointer);
-		for(int j = 0; j < length; j++)
-			array[j] = color;
-		
-		return array;
 	}
 
     private int readColorPointer(int colorPointer){
@@ -551,30 +474,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		return manager.ns.local;
 	}
 
-	private RoleTemplate getSelectedRole(int position){
-		String[] rolesList = null;
-		switch (currentCatalogue){
-			case TOWN:
-				rolesList = getResources().getStringArray(R.array.roles_townRoles);
-				break;
-			case MAFIA:
-				rolesList = getResources().getStringArray(R.array.roles_mafiaRoles);
-				break;
-			case YAKUZA:
-				rolesList = getResources().getStringArray(R.array.roles_mafiaRoles);
-				break;
-			case NEUTRAL:
-				rolesList = getResources().getStringArray(R.array.roles_neutralRoles);
-				break;
-			case RANDOM:
-				rolesList = getResources().getStringArray(R.array.roles_randomRoles);
-				break;
-		}
-		
-		String s = rolesList[position];
-
-		return null;
-	}
+	/*private JSONObject getSelectedRole(int position){
+		return activeFaction.getJSONArray("members").getJSONObject(position);
+	}*/
 
 
 

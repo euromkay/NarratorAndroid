@@ -1,7 +1,6 @@
 package android.setup;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import android.CommunicatorPhone;
 import android.NarratorService;
@@ -13,8 +12,11 @@ import android.parse.ParseConstants;
 import android.parse.Server;
 import android.parse.ServerResponder;
 import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import shared.ai.Computer;
-import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.exceptions.IllegalGameSettingsException;
@@ -23,6 +25,7 @@ import shared.logic.support.CommandHandler;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
+import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
@@ -51,9 +54,6 @@ public class SetupManager {
         listeners = new ArrayList<>();
 
         this.rand = new Random();
-        
-        //if(Narrator.DEBUG && isHost() && narrator.getAllRoles().size() == 0 && false)
-            //debugSettings();
 
         intentFilter = new IntentFilter();
         if(Server.IsLoggedIn())
@@ -69,23 +69,23 @@ public class SetupManager {
         screenController = new SetupScreenController(a, isHost());
         listeners.add(ns);
         listeners.add(screenController);
+
+        try {
+            if (Server.IsLoggedIn()) {
+
+            } else {
+                a.onConnect(this);
+            }
+        }catch(JSONException e){}
     }
+
+
 
     private ServerResponder sResponder;
     private HostAdder hAdder;
     //private ClientAdder cAdder;
     public void setupConnection(){
-        if (Server.IsLoggedIn()){
-            sResponder = new ServerResponder(ns.getGameListing(), this);
-        }else{
-        	if(isHost()){
-        		hAdder = new HostAdder(ns);
-        		listeners.add(hAdder);
-        	}else{
-        		new ClientAdder(this);
-        		//listeners.add(cAdder);
-        	}
-        }
+        sResponder = new ServerResponder(ns.getGameListing(), this);
     }
 
     public Narrator getNarrator(){
@@ -146,16 +146,31 @@ public class SetupManager {
     	}
     	return role;
     }
-    
-    public synchronized void addRole(RoleTemplate role){
-        role = TranslateRole(role);
-        
-        for(SetupListener sL: listeners){
-            sL.onRoleAdd(role);
+
+    public synchronized void addRole(RandomRole rr){
+        if(Server.IsLoggedIn()){
+
+        }else{
+            for (SetupListener sL : listeners) {
+                sL.onRoleAdd(rr);
+            }
         }
     }
 
-    public synchronized void removeRole(RoleTemplate role){
+    public synchronized void addRole(String roleName, String color){
+        if(Server.IsLoggedIn()){
+
+        }else {
+            RoleTemplate rt = ns.getNarrator().getAllRoles().get(roleName, color);
+            for (SetupListener sL : listeners) {
+                sL.onRoleAdd(rt);
+            }
+        }
+
+    }
+
+    public synchronized void removeRole(String roleName, String color){
+        RoleTemplate role = ns.getNarrator().getAllRoles().get(roleName, color);
         for(SetupListener sL: listeners){
             sL.onRoleRemove(role);
         }
@@ -266,14 +281,14 @@ public class SetupManager {
     }
 
     private void addRandomRole(int count){
+        RandomRole rr;
         for (int i = 0; i < count; i++){
-        	addRole(getRandomRole(rand));
-            
-            
+            rr = getRandomRole(rand);
+        	addRole(rr);
         }
     }
 
-	public static RoleTemplate getRandomRole(Random rand){
+	public static RandomRole getRandomRole(Random rand){
 		switch (rand.nextInt(8)){
         case 0:
             return RandomRole.TownRandom();
@@ -290,24 +305,10 @@ public class SetupManager {
 		}
 	}
 
-    @SuppressWarnings("unused")
-	private void addRole(Member m, int count){
-        for(int i = 0; i < count; i++){
-            addRole(m);
-        }
-    }
 
 
 
-    private void addRole(RandomRole m){
-        addRole(m, 1);
-    }
 
-    private void addRole(RandomRole r, int j){
-        for (int i = 0; i < j; i++){
-            addRole(r);
-        }
-    }
 
     public void talk(String message){
         if(!Server.IsLoggedIn())
@@ -323,35 +324,34 @@ public class SetupManager {
 
     }
 
-    public void setRules(String rules){
-        Packager p = new Packager(new SetupDeliverer(rules));
-        Rules r = new Rules(p);
-        ns.local.setRules(r);
-        screenController.setRoleInfo(screenController.activeRole, Constants.A_NORMAL, r);
+    public void setRules(JSONObject ruleToBeChanged){
+        //ns.local.setRules(r);
+        //screenController.setRoleInfo(screenController.activeRole, Constants.A_NORMAL);
     }
 
-    public void updateNarrator(Intent i){
-        String message = i.getStringExtra("stuff");
-        String[] command = message.split(",");
+    public void updateNarrator(Intent i) throws JSONException{
 
-        switch(command[0]){
+        JSONObject oj = new JSONObject(i.getStringExtra("stuff"));
+
+
+        switch(oj.getString("command")){
             case ParseConstants.ADD_PLAYER:
-                addPlayer(command[1], new CommunicatorNull());
+                addPlayer(oj.getString("name"), new CommunicatorNull());
                 return;
             case ParseConstants.REMOVE_PLAYER:
-                removePlayer(command[1], true);
+                removePlayer(oj.getString("name"), true);
                 return;
             case ParseConstants.ADD_ROLE:
                 if (!isHost())
-                    addRole(RoleTemplate.FromIp(command[1]));
+                    addRole(oj.getString("roleName"), oj.getString("roleColor"));
                 return;
             case ParseConstants.REMOVE_ROLE:
                 if (!isHost())
-                    removeRole(RoleTemplate.FromIp(command[1]));
+                    removeRole(oj.getString("roleName"), oj.getString("roleColor"));
                 return;
             case ParseConstants.RULES:
                 if(!isHost())
-                    setRules(command[1]);
+                    setRules(oj.getJSONObject("rule"));
                 return;
             case ParseConstants.STARTGAME:
                 Server.UpdateGame(ns, new SuccessListener() {
@@ -366,11 +366,11 @@ public class SetupManager {
                 });
                 return;
             default:
-                if(command[0].equals(Server.GetCurrentUserName()))
+                /*if(command[0].equals(Server.GetCurrentUserName()))
                     return;
                 message = message.substring(command[0].length() + 1);//1 length for comma
                 ns.onRead(message, null);//adds it to my narrator
-                screen.updateChat();
+                screen.updateChat();*/
         }
     }
 

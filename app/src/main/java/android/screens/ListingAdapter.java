@@ -14,10 +14,10 @@ import android.setup.ActivityCreateGame;
 
 public class ListingAdapter extends BaseAdapter{
 
-	private ArrayList<String> colors;
+	public ArrayList<String> colors;
 	private String color;
 
-	private ArrayList<String> data;
+	public ArrayList<String> data;
 	private int layoutID;
 	private Activity c;
 	private Typeface font;

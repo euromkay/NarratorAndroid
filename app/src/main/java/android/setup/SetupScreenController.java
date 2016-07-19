@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import shared.logic.support.rules.Rules;
 import voss.narrator.R;
 import shared.logic.support.Communicator;
@@ -25,23 +27,6 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     private EditText[] eText;
     private TextView[] tView;
     private TextWatcher[] tWatcher;
-
-    public static final int DAY = -1;
-    public static final int NONE = 0;
-    public static final int DOCTOR = 1;
-    public static final int VIGILANTE = 2;
-    public static final int VETERAN = 3;
-    public static final int MAYOR = 4;
-    public static final int BLOCKER = 5;
-    public static final int EXECUTIONER = 6;
-    public static final int WITCH = 7;
-    public static final int SERIAL_KILLER = 8;
-    public static final int ARSONIST = 9;
-    public static final int MASS_MURDERER = 10;
-    public static final int GODFATHER = 11;
-    public static final int CULT = 12;
-
-
 
     private Rules rules;
     public SetupScreenController(ActivityCreateGame a, boolean isHost) {
@@ -78,7 +63,6 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             }
 
             public void afterTextChanged(Editable s) {
-                //String t = s.toString();
                 try{
                     firstET(Integer.parseInt(s.toString()));
                     screen.getManager().ruleChange();
@@ -119,8 +103,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         toast = screen.toast(name + " has joined.");
     }
     public void onPlayerRemove(String s){
-    	screen.toast(s + " has left the lobby.");
-
+        if(toast != null)
+            toast.cancel();
+        toast = screen.toast(s + " has left the lobby.");
     }
 
     private void hideAll(){
@@ -172,8 +157,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
     }
 
-    public int activeRole;
-    public void setRoleInfo(int i, String color, Rules r){
+    public void setRoleInfo(JSONObject activeRule){
         return;
     }
     private void setDay(){

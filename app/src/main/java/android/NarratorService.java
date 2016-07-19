@@ -1,6 +1,10 @@
 package android;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
@@ -13,8 +17,6 @@ import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
-
 import android.parse.GameListing;
 import android.parse.Server;
 import android.screens.ActivityHome;
@@ -22,6 +24,7 @@ import android.setup.ClientAdder;
 import android.setup.HostAdder;
 import android.setup.SetupListener;
 import android.setup.SetupManager;
+import android.util.Log;
 import android.wifi.ChatManager;
 import android.wifi.SocketClient;
 import android.wifi.SocketHost;
@@ -33,13 +36,15 @@ import shared.logic.support.CommandHandler;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
+import shared.logic.support.Faction;
+import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
-import shared.logic.support.rules.Rules;
 
 public class NarratorService extends Service implements Callback, SetupListener{
 
 	
 	public Narrator local;//this is the one i keep communicators in
+	public FactionManager fManager;
 	private CommandHandler ch;
 	public int onStartCommand(Intent i, int flags, int startId){
 		if(local == null)
@@ -48,6 +53,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	}
 	public void refresh(){
 		local = Narrator.Default();
+		fManager = new FactionManager(local);
 		ch = new CommandHandler(local);
 
 	}
@@ -57,13 +63,12 @@ public class NarratorService extends Service implements Callback, SetupListener{
         return mBinder;
     }
 
-	public void setRules(Rules rules, String original) {
-
+	/*public void setRules(Rules rules, String original) {
 		if(sManager==null)
 			local.setRules(rules);
 		else
 			sManager.setRules(original);
-	}
+	}*/
 
 	public class MyBinder extends Binder {
         public NarratorService getService() {
@@ -79,11 +84,21 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		return local;
 	}
 
-	
-	
-
-//	public static final boolean GLOBAL = false;
-//	public static final boolean LOCAL = true;
+	public JSONArray getFactions() throws JSONException{
+		if(Server.IsLoggedIn()){
+			return null;
+		}else{
+			JSONArray factions = new JSONArray();
+			JSONObject jFaction;
+			for(Faction faction: fManager.factions){
+				jFaction = new JSONObject();
+				jFaction.put("color", faction.getColor());
+				jFaction.put("name", faction.getName());
+				factions.put(jFaction);
+			}
+			return factions;
+		}
+	}
 
 	public SocketHost socketHost;
 	private ServiceConnection socketHostServiceConnection;
@@ -102,7 +117,6 @@ public class NarratorService extends Service implements Callback, SetupListener{
 				socketHost = null;
 			}
         }, Context.BIND_AUTO_CREATE);
-		
 	}
 
 
@@ -237,14 +251,14 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		if(sManager == null){
 			onRoleAdd(SetupManager.TranslateRole(rt));
 		}else{
-			sManager.addRole(rt);
+			sManager.addRole(rt.getName(), rt.getColor());
 		}
 	}
 	public void removeRole(RoleTemplate rt){
 		if(sManager == null){
 			onRoleRemove(rt);
 		}else{
-			sManager.removeRole(rt);
+			sManager.removeRole(rt.getName(), rt.getColor());
 		}
 	}
 	

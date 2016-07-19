@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.view.View;
 import android.widget.TextView;
 
 import android.parse.Server;
@@ -48,9 +47,7 @@ public abstract class NActivity extends FragmentActivity{
     }
     
     public boolean networkCapable(){
-		if (Server.IsLoggedIn())
-			return true;
-		return Build.VERSION.SDK_INT >= 18;
+		return Server.IsLoggedIn();
 	}
 
 	public interface NarratorConnectListener{
