@@ -1,6 +1,12 @@
 package android.setup;
 
-import android.NActivity;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -9,14 +15,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONObject;
-
-import shared.logic.support.rules.Rules;
-import voss.narrator.R;
 import shared.logic.support.Communicator;
-import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import voss.narrator.R;
 
 public class SetupScreenController implements SetupListener, CompoundButton.OnCheckedChangeListener {
 
@@ -24,16 +25,17 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     private ActivityCreateGame screen;
 
     public CheckBox[] cBox;
-    private EditText[] eText;
-    private TextView[] tView;
+    public EditText[] eText;
+    public TextView[] tView;
     private TextWatcher[] tWatcher;
+    private HashMap<Integer, String> ruleMap;
 
-    private Rules rules;
     public SetupScreenController(ActivityCreateGame a, boolean isHost) {
         this.screen = a;
-        rules = screen.ns.local.getRules();
         toast = Toast.makeText(screen, "", Toast.LENGTH_SHORT);
 
+        ruleMap = new HashMap<>();
+        
         cBox = new CheckBox[3];
         cBox[0] = (CheckBox) screen.findViewById(R.id.create_check1);
         cBox[1] = (CheckBox) screen.findViewById(R.id.create_check2);
@@ -64,8 +66,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
             public void afterTextChanged(Editable s) {
                 try{
-                    firstET(Integer.parseInt(s.toString()));
-                    screen.getManager().ruleChange();
+                    int val = Integer.parseInt(s.toString());
+                    String rule = ruleMap.get(eText[0].getId());
+                    screen.getManager().ruleChange(rule, val);
                 }catch(NumberFormatException | NullPointerException f){}
             }
         });
@@ -84,8 +87,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             public void afterTextChanged(Editable s) {
                 //String t = s.toString();
                 try {
-                    secondET(Integer.parseInt(s.toString()));
-                    screen.getManager().ruleChange();
+                	int val = Integer.parseInt(s.toString());
+                    String rule = ruleMap.get(eText[0].getId());
+                    screen.getManager().ruleChange(rule, val);
                 } catch (NumberFormatException | NullPointerException f){}
                 }
             });
@@ -95,7 +99,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     public void onRoleAdd(RoleTemplate listing){
         screen.refreshRolesList();
     }
-    public void onRoleRemove(RoleTemplate listing){ screen.refreshRolesList();}
+    public void onRoleRemove(String name, String color){ screen.refreshRolesList();}
 
     public void onPlayerAdd(String name, Communicator c){
         if(toast != null)
@@ -119,67 +123,62 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             et.setVisibility(View.GONE);
     }
 
-
     public void onCheckedChanged(CompoundButton buttonView, boolean newValue) {
         CheckBox cb = (CheckBox) buttonView;
-        switch(cb.getId()){
-            case R.id.create_check1:
-                firstBox(newValue);
-                break;
-            case R.id.create_check2:
-                secondBox(newValue);
-                break;
-            case R.id.create_check3:
-                thirdBox(newValue);
-                break;
+        String id = ruleMap.get(cb.getId());
+
+        screen.getManager().ruleChange(id, newValue);
+    }
+
+    public void setRoleInfo(JSONObject activeRule) throws JSONException{
+        if(activeRule == null){
+            hideAll();
+            return;
         }
-
-        screen.getManager().ruleChange();
+        
+        JSONArray rules = activeRule.getJSONArray("rules");
+        String ruleName, ruleText;
+        JSONObject rule;
+        ArrayList<String> booleanTexts = new ArrayList<>(), numTexts = new ArrayList<>();
+        ArrayList<Boolean> bools = new ArrayList<>();
+        ArrayList<Integer> ints = new ArrayList<>();
+        for(int i = 0; i < rules.length(); i++){
+        	ruleName = rules.getString(i);
+        	rule = screen.ns.getRuleById(ruleName);
+        	ruleText = rule.getString("name");
+        	if(rule.getBoolean("isNum")){
+        		ruleMap.put(eText[numTexts.size()].getId(), ruleName);
+        		ints.add(rule.getInt("val"));
+        		numTexts.add(ruleText);
+        	}else{
+        		ruleMap.put(cBox[numTexts.size()].getId(), ruleName);
+        		booleanTexts.add(ruleText);
+        		bools.add(rule.getBoolean("val"));
+        	}
+        }
+        setBoolean(bools);
+        setBooleanTexts(booleanTexts);
+        setEdits(ints);
+        setETexts(numTexts);
+        activeRule.toString();
     }
-
-    private void firstBox(boolean b){
-
-    }
-
-    private void secondBox(boolean b){
-
-    }
-
-    private void thirdBox(boolean b){
-
-    }
-
-    private void firstET(int i){
-
-    }
-
-    private void secondET(int i){
-
-    }
-
-    public void setRoleInfo(JSONObject activeRule){
-        return;
-    }
-    private void setDay(){
-        setBooleanTexts("Day Start");
-        setTexts();
-        setEdits();
-    }
+    
 
 
 
-    private synchronized void setBoolean(boolean... bools){
+    private synchronized void setBoolean(ArrayList<Boolean> bools){
         for(int i = 0; i < cBox.length; i++)
             cBox[i].setOnCheckedChangeListener(null);
 
-        for(int i = 0 ; i < bools.length; i++){
-            cBox[i].setChecked(bools[i]);
+        for(int i = 0 ; i < bools.size(); i++){
+            cBox[i].setChecked(bools.get(i));
         }
 
         for(int i = 0; i < cBox.length; i++)
             cBox[i].setOnCheckedChangeListener(this);
     }
 
+    
     private void setColor(int color){
         for(CheckBox cb: cBox)
             cb.setTextColor(color);
@@ -188,38 +187,38 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             tv.setTextColor(color);
     }
 
-    private void setBooleanTexts(String... texts){
-        for(int i = 0 ; i < texts.length; i++){
+    private void setBooleanTexts(ArrayList<String> texts){
+        for(int i = 0 ; i < texts.size(); i++){
             cBox[i].setVisibility(View.VISIBLE);
-            cBox[i].setText(texts[i]);
+            cBox[i].setText(texts.get(i));
         }
 
-        for(int i = texts.length; i < cBox.length; i++){
+        for(int i = texts.size(); i < cBox.length; i++){
             cBox[i].setVisibility(View.GONE);
         }
     }
 
-    private void setTexts(String ... texts){
-        for(int i = 0 ; i < texts.length; i++){
+    private void setETexts(ArrayList<String> texts){
+        for(int i = 0 ; i < texts.size(); i++){
             tView[i].setVisibility(View.VISIBLE);
-            tView[i].setText(texts[i]);
+            tView[i].setText(texts.get(i));
         }
 
-        for(int i = texts.length; i < tView.length; i++){
+        for(int i = texts.size(); i < tView.length; i++){
             tView[i].setVisibility(View.GONE);
         }
     }
 
-    private synchronized void setEdits(int ... nums){
+    private synchronized void setEdits(ArrayList<Integer> nums){
         for(int i = 0; i < eText.length; i++)
             eText[i].removeTextChangedListener(tWatcher[i]);
 
-        for(int i = 0 ; i < nums.length; i++){
+        for(int i = 0 ; i < nums.size(); i++){
             eText[i].setVisibility(View.VISIBLE);
-            eText[i].setText(nums[i]+"");
+            eText[i].setText(nums.get(i)+"");
         }
 
-        for(int i = nums.length; i < tView.length; i++) {
+        for(int i = nums.size(); i < tView.length; i++) {
             eText[i].setVisibility(View.GONE);
         }
 

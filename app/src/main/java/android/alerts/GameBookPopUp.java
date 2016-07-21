@@ -143,7 +143,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
     public static synchronized void joinGame(GameListing gl, ActivityHome a, int mode){
         Server.Channel(gl);
 
-        a.ns.refresh();
+        //a.ns.refresh();
         Narrator n = a.ns.local;
         for (String name: gl.getPlayerNames()){
             n.addPlayer(name);

@@ -18,9 +18,9 @@ public class ServerResponder implements SetupListener{
         this.ac = manager.screen;
     }
 
-    public void onRoleRemove(RoleTemplate rt){
+    public void onRoleRemove(String roleName, String roleColor){
         if(ac.getManager().isHost())
-            Server.RemoveRole(rt, object, ac);
+            Server.RemoveRole(roleName, roleColor, object, ac);
     }
     public void onRoleAdd(RoleTemplate rt){
         if(ac.getManager().isHost())

@@ -60,7 +60,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	protected void onResume(){
 		super.onResume();
 		setup(null);
-		cataLV.setSelection(0);
+		//cataLV.setSelection(0);
 		if(manager != null)
 			manager.resumeTexting();
 	}
@@ -91,11 +91,11 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				if(ns == null){
 					connectNarrator(new NarratorConnectListener() {
 						public void onConnect() {
-							setup(null);
+							manager = new SetupManager(ActivityCreateGame.this, ns);
 						}
 					});
-				}
-				manager = new SetupManager(this, ns);
+				}else
+					manager = new SetupManager(this, ns);
 			}
 
 		}
@@ -230,14 +230,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
     private void setHostCode(){
-		if(manager.isHost() && !Server.IsLoggedIn())
-        	rolesLeftTV.setText("Host Code: " + manager.ns.getIp().replace("", "*"));
-		else
+		if(Server.IsLoggedIn()) {
+			//rolesLeftTV.setText("Host Code: " + manager.ns.getIp().replace("", "*"));
+		}else
 			rolesLeftTV.setVisibility(View.GONE);
     }
 
 
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+	public void onItemClick(AdapterView<?> parent, View unused, int position, long id) {
 		switch(parent.getId()){
 		
 		case R.id.roles_categories_LV:

@@ -10,7 +10,7 @@ import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
 
 
-public class HostAdder implements SetupListener{
+public class HostAdder {
 
     private NarratorService ns;
     public HostAdder(NarratorService ns){

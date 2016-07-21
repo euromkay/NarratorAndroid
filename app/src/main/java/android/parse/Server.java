@@ -1,9 +1,9 @@
 package android.parse;
 
 
-import android.app.Activity;
-import android.util.Log;
-import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
@@ -17,16 +17,15 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import android.NarratorService;
 import android.SuccessListener;
 import android.alerts.GameBookPopUp;
+import android.app.Activity;
 import android.screens.ActivityHome;
 import android.setup.SetupDeliverer;
 import android.setup.SetupManager;
+import android.util.Log;
+import android.widget.Toast;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.support.RoleTemplate;
@@ -300,10 +299,10 @@ public class Server {
 
 
 
-    public static void RemoveRole(RoleTemplate rt, GameListing gl, final Activity a){
+    public static void RemoveRole(String roleName, String roleColor, GameListing gl, final Activity a){
         HashMap<String, Object> params = new HashMap<>();
         params.put(ParseConstants.NARRATOR_INSTANCE, gl.getID());
-        params.put(ParseConstants.ROLES, rt.toIpForm());
+        //params.put(ParseConstants.ROLES, rt.toIpForm());//change this to work with server
         ParseCloud.callFunctionInBackground(ParseConstants.REMOVE_ROLE, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
@@ -352,7 +351,7 @@ public class Server {
         params.put("ruless", sd.toString());
         params.put(ParseConstants.PLAYERS, players);
         Log.i("Server start game", gl.getPlayerNames().size() + "/" + gl.getRoleNames().size());
-        params.put(ParseConstants.WHEN, narrator.getRules().DAY_START);
+        params.put(ParseConstants.WHEN, narrator.getRules().getBool(Rules.DAY_START));
         ParseCloud.callFunctionInBackground(ParseConstants.STARTGAME, params, new FunctionCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e != null) {
@@ -372,7 +371,7 @@ public class Server {
                 } else {
                     GameListing gl = new GameListing(parseObject);
                     ns.setGameListing(gl);
-                    ns.refresh();
+                    //ns.refresh();
                     for (String s : gl.getPlayerNames()) {
                         ns.local.addPlayer(s);
                     }
@@ -408,7 +407,7 @@ public class Server {
         GetNarratorInfo(id, new GetCallback<ParseObject>() {
             public void done(ParseObject parseObject, ParseException e) {
                 if (e == null) {
-                    ns.refresh();
+                    //ns.refresh();
                     GameListing gl = new GameListing(parseObject);
                     ns.setGameListing(gl);
 

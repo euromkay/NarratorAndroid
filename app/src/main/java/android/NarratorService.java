@@ -22,7 +22,6 @@ import android.parse.Server;
 import android.screens.ActivityHome;
 import android.setup.ClientAdder;
 import android.setup.HostAdder;
-import android.setup.SetupListener;
 import android.setup.SetupManager;
 import android.texting.StateObject;
 import android.util.Log;
@@ -41,7 +40,7 @@ import shared.logic.support.Faction;
 import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
 
-public class NarratorService extends Service implements Callback, SetupListener{
+public class NarratorService extends Service implements Callback{
 
 	
 	public Narrator local;//this is the one i keep communicators in
@@ -56,7 +55,7 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		local = Narrator.Default();
 		fManager = new FactionManager(local);
 		ch = new CommandHandler(local);
-
+		Log.d("NS", "Narrator started");
 	}
 	
     private final IBinder mBinder = new MyBinder();
@@ -410,4 +409,41 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		else
 			return local.isDay();
 	}
+	public JSONObject getRuleById(String ruleName) throws JSONException {
+		if(Server.IsLoggedIn()){
+			return null;
+		}else{
+			JSONObject jo = stateObject().addState(StateObject.RULES).send((Player) null);
+			return jo.getJSONObject("rules").getJSONObject(ruleName);
+		}
+	}
+	public void ruleChange(String id, boolean b) {
+		if(Server.IsLoggedIn()){
+			//Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+		}else if (isHost()) {
+			local.getRules().setBool(id, b);
+		}
+    }
+		
+	public void ruleChange(String id, int b) {
+		if(Server.IsLoggedIn()){
+			//Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+		}else if (isHost()) {
+			local.getRules().setInt(id, b);
+		}
+    }
+	
+	public void removeRole(String roleName, String color) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			RoleTemplate rt = local.getAllRoles().get(roleName, color);
+			local.removeRole(rt);
+		}
+		if(sManager != null)
+			sManager.onRoleRemove(roleName, color);
+		
+	}
+		
+	
 }

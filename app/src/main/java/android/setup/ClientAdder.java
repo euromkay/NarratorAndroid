@@ -12,15 +12,13 @@ import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
-import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
 
 
-public class ClientAdder implements SetupListener{
+public class ClientAdder {
 
-    private SetupManager manager;
     public ClientAdder(SetupManager sm){
-        manager = sm;
+        
     }
 
 

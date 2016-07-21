@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.IBinder;
@@ -80,8 +81,6 @@ public abstract class NActivity extends FragmentActivity{
 	}
 
 	public static void setTextColor(TextView v, String color){
-		color = color.substring(1);
-		int color_ = Integer.parseInt(color, 16);
-		v.setTextColor(color_);
+		v.setTextColor(Color.parseColor(color));
 	}
 }

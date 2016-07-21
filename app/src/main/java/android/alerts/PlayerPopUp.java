@@ -199,7 +199,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
 
     public void onRoleAdd(RoleTemplate l){}
-    public void onRoleRemove(RoleTemplate l){}
+    public void onRoleRemove(String s1, String s2){}
 
     public void onPlayerAdd(String name, Communicator c){
         updatePlayerList();

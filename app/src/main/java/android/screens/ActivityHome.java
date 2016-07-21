@@ -126,7 +126,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				if(isLoggedIn()) {
 					Server.RegisterGame(this, new Server.GameRegister() {
 						public void onSuccess(GameListing gl) {
-							ns.refresh();
+							//ns.refresh();
 							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
 							start(gl);
 						}

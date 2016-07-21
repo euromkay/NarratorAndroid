@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import voss.narrator.R;
@@ -65,9 +64,9 @@ public class IpPrompt extends DialogFragment{
         getDialog().setTitle("What is your name?");
     }
 
-    private ArrayAdapter<String> getAdapter(String[] players){
-        return new ArrayAdapter<>(getActivity().getApplicationContext(), android.R.layout.simple_list_item_1, players);
-    }
+    //private ArrayAdapter<String> getAdapter(String[] players){
+    //    return new ArrayAdapter<>(getActivity().getApplicationContext(), android.R.layout.simple_list_item_1, players);
+    //}
 
 
 

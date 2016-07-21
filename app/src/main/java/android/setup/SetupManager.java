@@ -2,6 +2,9 @@ package android.setup;
 
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.CommunicatorPhone;
 import android.NarratorService;
 import android.SuccessListener;
@@ -12,10 +15,6 @@ import android.parse.ParseConstants;
 import android.parse.Server;
 import android.parse.ServerResponder;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import shared.ai.Computer;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -27,15 +26,12 @@ import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
-import shared.logic.support.rules.Rules;
 import shared.logic.templates.BasicRoles;
-import shared.packaging.Packager;
 import shared.roles.Blocker;
 import shared.roles.CultLeader;
 import shared.roles.Driver;
 import shared.roles.MassMurderer;
 import shared.roles.RandomRole;
-import shared.roles.Role;
 import shared.roles.SerialKiller;
 
 
@@ -199,9 +195,12 @@ public class SetupManager {
     }
 
     public synchronized void removeRole(String roleName, String color){
-        RoleTemplate role = ns.getNarrator().getAllRoles().get(roleName, color);
-        for(SetupListener sL: listeners){
-            sL.onRoleRemove(role);
+    	ns.removeRole(roleName, color);
+    }
+    
+    public synchronized void onRoleRemove(String name, String color){
+    	for(SetupListener sL: listeners){
+            sL.onRoleRemove(name, color);
         }
     }
     
@@ -393,16 +392,10 @@ public class SetupManager {
                 screen.updateChat();*/
         }
     }
-
-    public void ruleChange() {
-        if(Server.IsLoggedIn())
-            Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
-        else if (isHost()) {
-            SetupDeliverer sd = new SetupDeliverer();
-            Packager p = new Packager(sd);
-            ns.local.getRules().writeToPackage(p);
-            if(hAdder != null)
-                hAdder.onRulesChange(sd.toString());
-        }
+    public void ruleChange(String id, boolean val) {
+    	ns.ruleChange(id, val);
+    }
+    public void ruleChange(String id, int val) {
+    	ns.ruleChange(id, val);
     }
 }

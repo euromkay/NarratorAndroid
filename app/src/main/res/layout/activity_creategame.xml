@@ -218,6 +218,7 @@
                 android:padding="6dp"
                 android:background="@color/category_tint"
                 android:textSize="11sp"
+                android:visibility="gone"
                 />
 
             <CheckBox
@@ -230,6 +231,7 @@
                 android:padding="6dp"
                 android:background="@color/category_tint"
                 android:textSize="11sp"
+                android:visibility="gone"
                 />
 
             <CheckBox
@@ -242,6 +244,7 @@
                 android:padding="6dp"
                 android:background="@color/category_tint"
                 android:textSize="11sp"
+                android:visibility="gone"
                 />
 
             <TextView
@@ -250,6 +253,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/create_check3"
                 android:textSize="11sp"
+                android:visibility="gone"
                 android:text="title"/>
 
             <EditText
@@ -258,6 +262,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
                 android:layout_below="@id/create_rulesTV1"
+                android:visibility="gone"
                 android:padding="6dp"/>
 
             <TextView
@@ -266,6 +271,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/create_rulesET1"
                 android:textSize="11sp"
+                android:visibility="gone"
                 android:text="title"/>
 
             <EditText
@@ -273,6 +279,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
+                android:visibility="gone"
                 android:layout_below="@id/create_rulesTV2"
                 android:padding="6dp"/>
 
