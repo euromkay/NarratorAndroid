@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.parse.Server;
 import android.screens.ListingAdapter;
 import android.text.Html;
+import android.texting.StateObject;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -174,10 +175,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 		ArrayList<String> data = new ArrayList<>();
 		ArrayList<String> cData = new ArrayList<>();
-		JSONArray allFactions = manager.ns.getFactions();
+		JSONObject allFactions = manager.ns.getFactions();
 		JSONObject faction;
-		for(int i = 0; i < allFactions.length(); i++) {
-			faction = allFactions.getJSONObject(i);
+		JSONArray factionNames = allFactions.getJSONArray(StateObject.factionNames);
+		String factionName;
+		for(int i = 0; i < factionNames.length(); i++) {
+			factionName = factionNames.getString(i);
+			faction = allFactions.getJSONObject(factionName);
 			data.add(faction.getString("name"));
 			cData.add(faction.getString("color"));
 		}
@@ -207,7 +211,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		refreshRolesList();
 		changeFont(R.id.roles_rightLV_title);
 	}
-
 	
 	public void refreshRolesList(){
 		ArrayList<String> names = new ArrayList<>();
@@ -241,9 +244,12 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			if(chatVisible())
 				switchChat();
 			try {
-				activeFaction = manager.ns.getFactions().getJSONObject(position);
+				JSONObject allFactions = manager.ns.getFactions(); 
+				String factionName = allFactions.getJSONArray(StateObject.factionNames).getString(position);
+				activeFaction = allFactions.getJSONObject(factionName);
 
-				changeRoleType(position);
+				
+				refreshFactionList();
 
 				refreshDescription();
 			}catch(JSONException e){}
@@ -255,11 +261,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				if(activeFaction == null)
 					return;
 				try{
-					activeRule = activeFaction.getJSONObject("fMembers");
-					if(manager.isHost())
-						manager.addRole(activeRule.getString("name"), activeRule.getString("color"));
+					activeRule = activeFaction.getJSONArray("members").getJSONObject(position);
+					if(manager.isHost()){
+						ns.addRole(activeRule.getString("name"), activeRule.getString("color"));
+					}
 					manager.screenController.setRoleInfo(activeRule);
-				}catch(JSONException ef){}
+				}catch(JSONException ef){
+					ef.printStackTrace();
+				}
 			}
 			break;
 			
@@ -312,9 +321,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 	}
 
-	private void changeRoleType(int position) throws JSONException{
+	private void refreshFactionList() throws JSONException{
 		ArrayList<String> rolesList = new ArrayList<>(), colors = new ArrayList<>();
-		JSONObject faction = manager.ns.getFactions().getJSONObject(position);
+		JSONObject faction = activeFaction;
 		JSONArray members = faction.getJSONArray("members");
 		
 		
@@ -331,17 +340,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		rolesLV.setAdapter(ada);
 		
 	}
-
-    private int readColorPointer(int colorPointer){
-        return ParseColor(this, colorPointer);
-    }
-
-    private int[] fillIntArray(int[] colorPointers){
-        int[] colors = new int[colorPointers.length];
-        for (int i = 0; i < colorPointers.length; i++)
-            colors[i] = readColorPointer(colorPointers[i]);
-        return colors;
-    }
 
 	private EditText chatET;
 	private TextView chatTV;

@@ -459,4 +459,8 @@ public class Server {
             }
         });*/
     }
+
+	public static boolean isHost() {
+		return false;
+	}
 }

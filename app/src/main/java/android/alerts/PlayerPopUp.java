@@ -1,10 +1,15 @@
 package android.alerts;
 
+import android.CommunicatorPhone;
+import android.NActivity;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.parse.Server;
+import android.setup.ActivityCreateGame;
+import android.setup.SetupListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +21,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.CommunicatorPhone;
-import android.NActivity;
-import voss.narrator.R;
-import android.parse.Server;
-import android.setup.ActivityCreateGame;
-import android.setup.SetupListener;
 import android.wifi.CommunicatorInternet;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -29,15 +28,18 @@ import shared.logic.PlayerList;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.RoleTemplate;
+import voss.narrator.R;
 
 
 public class PlayerPopUp extends DialogFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SetupListener{
 
 
     public View mainView;
-    ListView lv;
+    public ListView lv;
     public PlayerList players;
     private boolean first = true;
+    
+    public static final String COMPUTER_COMMAND = "set computers";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
@@ -82,8 +84,8 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         getDialog().setTitle("Players in Game - " + mListener.getNarrator().getPlayerCount());
     }
 
-    public void onItemClick(AdapterView<?> unusedA, View v, int i, long unusedL){
-        Player clicked = players.get(i);
+    public void onItemClick(AdapterView<?> unusedA, View clickedItem, int position, long unusedL){
+        Player clicked = players.get(position);
 
         if(clicked.getCommunicator().getClass() == CommunicatorInternet.class)
             return;
@@ -98,9 +100,10 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }else if(!activity.getManager().isHost()) {
         	activity.getManager().requestRemovePlayer(clicked.getName());
         }else {
-            TextView tv = (TextView) v;
+            TextView tv = (TextView) clickedItem;
             tv.setTextColor(ActivityCreateGame.ParseColor(activity, R.color.redBlood));
             clicked.setComputer();
+            clicked.setCommunicator(new CommunicatorPhone());
             if (first){
                 activity.toast(clicked.getName() + " is now a computer. Click again to delete.");
                 first = false;
@@ -121,7 +124,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         if (name.length() == 0)
             return;
 
-        if(name.equals("set computers")){
+        if(name.equals(COMPUTER_COMMAND)){
             for(int i = 0; i < players.size(); i++)
                 players.get(i).setComputer();
             updatePlayerList();
@@ -263,5 +266,9 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         private int getColor(int id){
             return NActivity.ParseColor(c, id);
         }
+
+		public int size(){
+			return data.size();
+		}
     }
 }

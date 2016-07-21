@@ -382,8 +382,14 @@ implements
 	}
 	protected void check(PlayerList selected){
 		if (selected != null){
-			for(Player p: selected)
-				actionLV.setItemChecked(actionList.indexOf(p), true);
+			for(Player p: selected){
+				int index = actionList.indexOf(p);
+				if(index == -1){
+					selected.toString();
+				}
+				
+				actionLV.setItemChecked(index, true);
+			}
 		}
 
 	}

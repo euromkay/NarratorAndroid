@@ -1,7 +1,5 @@
 package android;
 
-import java.util.Random;
-
 import voss.narrator.R;
 import android.util.Log;
 import android.view.View;
@@ -14,12 +12,14 @@ import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.exceptions.PlayerTargetingException;
+import shared.logic.support.Random;
 import shared.roles.Framer;
+import shared.roles.Role;
 
 public class GUIController extends Controller implements TextInput{
 
     public ActivityDay dScreen;
-    private Random rand;
+    public Random rand;
     private TextController logger;
     public GUIController(ActivityDay dScreen){
         this.dScreen = dScreen;
@@ -64,7 +64,7 @@ public class GUIController extends Controller implements TextInput{
     		logger.setNightTarget(slave, choice, ability);
     	}
     	selectSlave(slave);
-        swipeAbilityPanel(slave, ability);
+        swipeAbilityPanel(ability);
         clickPlayer(choice);
     }
 
@@ -78,16 +78,14 @@ public class GUIController extends Controller implements TextInput{
     private void clickPlayer(Player p){
         int position = dScreen.actionList.indexOf(p);
         if (position == -1){
-        	System.out.println(p.getNarrator().getHappenings());
             throw new PlayerTargetingException(p + " not found\n" );
         }
         
         dScreen.onItemClick(null, null, position, 0);
     }
 
-    private boolean swipeAbilityPanel(Player slave, String action){
+    public boolean swipeAbilityPanel(String action){
         setActionPanel();
-        int cycles = slave.getAbilities().length;
         
         int swipe;
         if(rand.nextBoolean())
@@ -95,7 +93,7 @@ public class GUIController extends Controller implements TextInput{
         else
         	swipe = SimpleGestureFilter.SWIPE_LEFT;
         
-        for (int i = 0; i < cycles; i++){
+        for (int i = 0; i < Role.MAIN_ABILITY; i++){
             if (dScreen.commandTV.getText().toString().equals(action))
                 return true;
             else
@@ -121,7 +119,7 @@ public class GUIController extends Controller implements TextInput{
     	}
     }
 
-    protected void selectSlave(Player slave){
+    public void selectSlave(Player slave){
     	GUIController.selectScreen(dScreen, slave);
     }
     
@@ -211,7 +209,7 @@ public class GUIController extends Controller implements TextInput{
 	public void cancelNightTarget(Player slave, Player target, String ability){
 		logger.cancelNightTarget(slave, target, ability);
 		selectSlave(slave);
-        swipeAbilityPanel(slave, ability);
+        swipeAbilityPanel(ability);
         PlayerList pList = dScreen.getCheckedPlayers();
         clickPlayer(pList.get(0));
 	}

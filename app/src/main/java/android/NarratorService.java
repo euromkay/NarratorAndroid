@@ -24,6 +24,7 @@ import android.setup.ClientAdder;
 import android.setup.HostAdder;
 import android.setup.SetupListener;
 import android.setup.SetupManager;
+import android.texting.StateObject;
 import android.util.Log;
 import android.wifi.ChatManager;
 import android.wifi.SocketClient;
@@ -84,19 +85,34 @@ public class NarratorService extends Service implements Callback, SetupListener{
 		return local;
 	}
 
-	public JSONArray getFactions() throws JSONException{
+	private StateObject stateObject(){
+		return new StateObject(local, fManager){
+			
+			public boolean isActive(Player p) {
+				return true;
+			}
+
+			public JSONObject getObject() throws JSONException {
+				JSONObject jo = new JSONObject();
+				JSONArray arr = new JSONArray();
+				jo.put(StateObject.type, arr);
+				return jo;
+			}
+
+			public void write(Player p, JSONObject jo) throws JSONException {
+				
+			}
+			
+		};
+	}
+	
+	public JSONObject getFactions() throws JSONException{
 		if(Server.IsLoggedIn()){
 			return null;
 		}else{
-			JSONArray factions = new JSONArray();
-			JSONObject jFaction;
-			for(Faction faction: fManager.factions){
-				jFaction = new JSONObject();
-				jFaction.put("color", faction.getColor());
-				jFaction.put("name", faction.getName());
-				factions.put(jFaction);
-			}
-			return factions;
+			StateObject so = stateObject();
+			so.addState(StateObject.RULES);
+			return so.send((Player) null).getJSONObject(StateObject.factions);
 		}
 	}
 
@@ -247,11 +263,31 @@ public class NarratorService extends Service implements Callback, SetupListener{
 	public void removeSetupManager(){
 		sManager = null;
 	}
-	public void addRole(RoleTemplate rt){
-		if(sManager == null){
-			onRoleAdd(SetupManager.TranslateRole(rt));
+	public void addRole(String name, String color){
+		//if server is hosting narrator instance, then you don't do anything here.  you just have to track the object that the server gives you
+		//if you're hosting
+		if(Server.IsLoggedIn()){
+			
 		}else{
-			sManager.addRole(rt.getName(), rt.getColor());
+			RoleTemplate rt = null;
+			Faction f = fManager.getFaction(color);
+			if(f != null)
+				rt = f.getRole(name);
+			if(rt == null){
+				f = fManager.getFaction(Constants.A_NEUTRAL);
+				rt = f.getRole(name);
+				if(rt == null){
+					f = fManager.getFaction(Constants.A_RANDOM);
+					rt = f.getRole(name);
+				}
+			}else{
+				rt = f.getRole(name);
+			}
+
+			local.addRole(rt);
+			//onRoleAdd(SetupManager.TranslateRole(rt));
+			if(sManager != null)
+				sManager.addRole(rt);
 		}
 	}
 	public void removeRole(RoleTemplate rt){
@@ -360,5 +396,18 @@ public class NarratorService extends Service implements Callback, SetupListener{
 			} catch (IllegalArgumentException|NullPointerException e) {}
 		}
 		Log.e("NarratorService", "ondestroy triggered");
+	}
+	public boolean isInProgress() {
+		if(Server.IsLoggedIn()){
+			return false;
+		}else{
+			return local.isInProgress();
+		}
+	}
+	public boolean isDay() {
+		if(Server.IsLoggedIn())
+			return false;
+		else
+			return local.isDay();
 	}
 }

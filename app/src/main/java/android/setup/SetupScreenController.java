@@ -120,17 +120,17 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     }
 
 
-    public void onCheckedChanged(CompoundButton buttonView, boolean unused) {
+    public void onCheckedChanged(CompoundButton buttonView, boolean newValue) {
         CheckBox cb = (CheckBox) buttonView;
         switch(cb.getId()){
             case R.id.create_check1:
-                firstBox(cb.isChecked());
+                firstBox(newValue);
                 break;
             case R.id.create_check2:
-                secondBox(cb.isChecked());
+                secondBox(newValue);
                 break;
             case R.id.create_check3:
-                thirdBox(cb.isChecked());
+                thirdBox(newValue);
                 break;
         }
 

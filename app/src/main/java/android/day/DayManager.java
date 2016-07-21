@@ -1,18 +1,16 @@
 package android.day;
 
-import android.content.Intent;
-
+import android.GUIController;
 import android.NarratorService;
 import android.PhoneBook;
+import android.content.Intent;
 import android.parse.GameListing;
 import android.parse.Server;
 import android.setup.TextAdder;
 import android.texting.TextController;
 import android.texting.TextHandler;
 import android.texting.TextInput;
-
 import shared.ai.Brain;
-import shared.ai.Simulations;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -33,6 +31,7 @@ public class DayManager implements TextInput{
 	public NarratorService ns;
 	public PhoneBook phoneBook;
 	protected TextHandler tHandler;
+	private Brain b;
 	public DayManager(NarratorService ns){
 		this.ns = ns;
 	}
@@ -51,17 +50,20 @@ public class DayManager implements TextInput{
 
 		tC = new TextController(this);
 
-		Brain b = new Brain(new PlayerList(), new Random());
+		b = new Brain(new PlayerList(), new Random());
 
 		for(Player p: ns.local.getAllPlayers()){
 			if(p.isComputer()){
-				b.slaves.add(p);
+				if(Server.IsLoggedIn())
+					b.addSlave(p, new GUIController(dScreen));
+				else{
+					b.addSlave(p, new TestController(ns.local));
+				}
 			}
 		}
 
 
 	}
-	private Simulations simulations;
 
 
 	
@@ -229,8 +231,13 @@ public class DayManager implements TextInput{
 	}
 
 	public void nextSimulation(){
-		if(simulations!= null)
-			simulations.next();
+		if(ns.isInProgress()){
+			if(ns.isDay()){
+				b.dayAction();
+			}else{
+				b.nightAction();
+			}
+		}
 	}
 
 	

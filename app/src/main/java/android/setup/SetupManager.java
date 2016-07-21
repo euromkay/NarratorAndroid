@@ -28,8 +28,15 @@ import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
+import shared.logic.templates.BasicRoles;
 import shared.packaging.Packager;
+import shared.roles.Blocker;
+import shared.roles.CultLeader;
+import shared.roles.Driver;
+import shared.roles.MassMurderer;
 import shared.roles.RandomRole;
+import shared.roles.Role;
+import shared.roles.SerialKiller;
 
 
 public class SetupManager {
@@ -67,7 +74,6 @@ public class SetupManager {
 
 
         screenController = new SetupScreenController(a, isHost());
-        listeners.add(ns);
         listeners.add(screenController);
 
         try {
@@ -76,7 +82,9 @@ public class SetupManager {
             } else {
                 a.onConnect(this);
             }
-        }catch(JSONException e){}
+        }catch(JSONException e){
+        	e.printStackTrace();
+        }
     }
 
 
@@ -156,12 +164,33 @@ public class SetupManager {
             }
         }
     }
-
-    public synchronized void addRole(String roleName, String color){
+    
+    private String translateName(String input){
+		switch(input){
+		case BasicRoles.BUS_DRIVER:
+			return Driver.ROLE_NAME;
+		case BasicRoles.CHAUFFEUR:
+			return Driver.ROLE_NAME;
+		case BasicRoles.ESCORT:
+			return Blocker.ROLE_NAME;
+		case BasicRoles.CONSORT:
+			return Blocker.ROLE_NAME;
+		case MassMurderer.ROLE_NAME:
+			return MassMurderer.class.getSimpleName();
+		case SerialKiller.ROLE_NAME:
+			return SerialKiller.class.getSimpleName();
+		case CultLeader.ROLE_NAME:
+			return CultLeader.class.getSimpleName();
+		default:
+			return input;
+		}
+	}
+    
+    public synchronized void addRole(RoleTemplate rt){
+    	
         if(Server.IsLoggedIn()){
 
         }else {
-            RoleTemplate rt = ns.getNarrator().getAllRoles().get(roleName, color);
             for (SetupListener sL : listeners) {
                 sL.onRoleAdd(rt);
             }
@@ -183,21 +212,12 @@ public class SetupManager {
     	listeners.remove(sl);
     }
     public synchronized void addPlayer(String name, Communicator c){
-    	if(isHost() || Server.IsLoggedIn()){ //c should never be null, so it'll hit the narrator and then the controller
-    		for(SetupListener sl: listeners){
-    			if(c == null & (sl == ns || sl == hAdder))
-    				continue;//will only update the screen with a toast, or the playerpopup
+    	if(isHost()){ //c should never be null, so it'll hit the narrator and then the controller
+    		ns.onPlayerAdd(name, c);
+    		for(SetupListener sl: listeners)
     			sl.onPlayerAdd(name, c);
-    		}
-    	}else{
-    		if(c == null){//already added
-    			for(SetupListener sl: listeners){
-        			if(sl != ns)//will only update the screen with a toast, or the playerpopup
-        				sl.onPlayerAdd(name, null);
-        		}
-    		}else{//requesting host to add
-                if(!Server.IsLoggedIn())
-    			    ns.socketClient.send(Constants.NEW_PLAYER_ADDITION + name);
+    		if(Server.IsLoggedIn() && Server.isHost()){
+    			
     		}
     	}
     }
@@ -343,7 +363,7 @@ public class SetupManager {
                 return;
             case ParseConstants.ADD_ROLE:
                 if (!isHost())
-                    addRole(oj.getString("roleName"), oj.getString("roleColor"));
+                    //addRole(oj.getString("roleName"), oj.getString("roleColor"));
                 return;
             case ParseConstants.REMOVE_ROLE:
                 if (!isHost())

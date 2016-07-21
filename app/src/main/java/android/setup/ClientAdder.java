@@ -52,7 +52,7 @@ public class ClientAdder implements SetupListener{
             
         }else if(s.startsWith(Constants.ADD_ROLE)) {
             RoleTemplate l = RoleTemplate.FromIp(s.substring(Constants.ADD_ROLE.length()));
-            ns.addRole(l);
+            //ns.addRole(l);
         }else if(s.startsWith(Constants.REMOVE_ROLE)) {
             RoleTemplate l = RoleTemplate.FromIp(s.substring(Constants.REMOVE_ROLE.length()));
             ns.removeRole(l);
