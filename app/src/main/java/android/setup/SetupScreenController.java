@@ -16,7 +16,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import shared.logic.support.Communicator;
+import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
 import voss.narrator.R;
 
 public class SetupScreenController implements SetupListener, CompoundButton.OnCheckedChangeListener {
@@ -93,7 +95,14 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
                 } catch (NumberFormatException | NullPointerException f){}
                 }
             });
+        
+        TextView newTeamButton = (TextView) screen.findViewById(R.id.create_createTeamButton);
+        if(!isHost){
+        	newTeamButton.setVisibility(View.GONE);
+        }
     }
+    
+    
 
 
     public void onRoleAdd(RoleTemplate listing){
@@ -133,10 +142,27 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     public void setRoleInfo(JSONObject activeRule) throws JSONException{
         if(activeRule == null){
             hideAll();
+    		screen.setDescriptionText("", "", Constants.A_RANDOM);
             return;
         }
         
-        JSONArray rules = activeRule.getJSONArray("rules");
+		String color = activeRule.getString("color");
+		String name = activeRule.getString("name");
+		String description = activeRule.getString("description");
+		
+		screen.setDescriptionText(name, description, color);
+        
+        JSONArray rules = null;
+        if(name.equals("Randoms")){
+        	rules = new JSONArray();
+        	rules.put(Rules.DAY_START[0]);
+        	rules.put(Rules.DAY_LENGTH[0]);
+        	rules.put(Rules.NIGHT_LENGTH[0]);
+        	screen.findViewById(R.id.create_info_label).setVisibility(View.GONE);
+        	screen.findViewById(R.id.create_info_description).setVisibility(View.GONE);
+        }else{
+        	rules = activeRule.getJSONArray("rules");
+        }
         String ruleName, ruleText;
         JSONObject rule;
         ArrayList<String> booleanTexts = new ArrayList<>(), numTexts = new ArrayList<>();
@@ -179,13 +205,13 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     }
 
     
-    private void setColor(int color){
+    /*private void setColor(int color){
         for(CheckBox cb: cBox)
             cb.setTextColor(color);
 
         for(TextView tv: tView)
             tv.setTextColor(color);
-    }
+    }*/
 
     private void setBooleanTexts(ArrayList<String> texts){
         for(int i = 0 ; i < texts.size(); i++){

@@ -172,15 +172,24 @@
                     android:padding="6dp"
                     android:layout_marginTop="6dp"
                     android:background="@color/category_tint"
-                    android:textSize="11sp"
+                    android:textSize="17sp"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/create_info_description"
+                    android:layout_below="@id/create_info_label"
+                    android:padding="6dp"
+                    android:background="@color/category_tint"
+                    android:textSize="14sp"
                     />
 
                 <CheckBox
                     android:id="@+id/create_check1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/create_info_label"
-                    android:text="sakdfjalsdkfj"
+                    android:layout_below="@id/create_info_description"
                     android:scaleY="0.8"
                     android:padding="6dp"
                     android:background="@color/category_tint"

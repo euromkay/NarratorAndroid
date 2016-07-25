@@ -254,6 +254,9 @@ public abstract class StateObject {
 			
 			if(f.isEditable)
 				jFaction.put("rules", f.getRules());
+			else{
+				jFaction.put("rules", new JSONArray());
+			}
 			jFactions.put(f.getName(), jFaction);
 			jFactions.put(f.getColor(), jFaction);
 			

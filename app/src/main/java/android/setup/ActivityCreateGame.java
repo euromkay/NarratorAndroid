@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import android.NActivity;
 import android.SuccessListener;
 import android.alerts.PlayerPopUp;
+import android.alerts.TeamBuilder;
 import android.content.Context;
 import android.os.Bundle;
 import android.parse.Server;
@@ -16,9 +17,11 @@ import android.screens.ListingAdapter;
 import android.text.Html;
 import android.texting.StateObject;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -31,7 +34,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import shared.event.Message;
 import shared.logic.Narrator;
-import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
 import voss.narrator.R;
 
@@ -86,6 +88,21 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		chatButton = (Button) findViewById(R.id.create_toChat);
 		chatET = (EditText) findViewById(R.id.create_chatET);
 		chatTV = (TextView) findViewById(R.id.create_chatTV);
+		findViewById(R.id.roles_show_Players).setOnClickListener(this);
+		findViewById(R.id.create_createTeamButton).setOnClickListener(this);
+		chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					sendMessage();
+					return true;
+				}
+				else if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+					sendMessage();
+					return true;
+				}
+				return false;
+			}
+		});
 		synchronized (managerLock){
 			if(manager == null){
 				if(ns == null){
@@ -100,26 +117,10 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 		}
 		/*if(manager == null){
+
+
+
 			
-			findViewById(R.id.roles_show_Players).setOnClickListener(this);
-			changeRoleType(TOWN);
-
-			SetFont(R.id.create_info_label, this, false);
-
-
-			chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-					if (actionId == EditorInfo.IME_ACTION_DONE) {
-						sendMessage();
-						return true;
-					}
-					else if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
-						sendMessage();
-						return true;
-					}
-					return false;
-				}
-			});
 
 			chatButton = (Button) findViewById(R.id.create_toChat);
 			if(Server.IsLoggedIn()) {
@@ -170,7 +171,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 
 	private JSONObject activeFaction;
-	private void refreshFactions() throws JSONException {
+	public void refreshFactions() throws JSONException {
 		cataLV = (ListView) findViewById(R.id.roles_categories_LV);
 	
 		ArrayList<String> data = new ArrayList<>();
@@ -247,12 +248,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				JSONObject allFactions = manager.ns.getFactions(); 
 				String factionName = allFactions.getJSONArray(StateObject.factionNames).getString(position);
 				activeFaction = allFactions.getJSONObject(factionName);
-
+				activeRule = activeFaction;
 				
 				refreshFactionList();
 
 				refreshDescription();
-			}catch(JSONException e){}
+			}catch(JSONException e){
+				e.printStackTrace();
+			}
 			return;
 			
 		case R.id.roles_bottomLV:
@@ -291,35 +294,27 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
  	}
 	private JSONObject activeRule = null;
 	private void refreshDescription() throws JSONException{
-		String color, text;
-		if(activeRule == null){
-			color = Constants.A_RANDOM;
-			text = "";
-		}else{
-			color = activeRule.getString("color");
-			text = activeRule.getString("name");
-		}
-
-
-
-		setDescriptionText(text, color);
-
 		manager.screenController.setRoleInfo(activeRule);
-
 	}
 
 	private void roleDescription(RoleTemplate rt){
-		setDescriptionText(rt.getName() + ":\n\n" + rt.getDescription(), rt.getColor());
+		setDescriptionText(rt.getName(), rt.getDescription(), rt.getColor());
 		//manager.screenController.setRoleInfo(role, rt.getColor(), null);
 	}
 
 
-	private void setDescriptionText(String text, String color){
-		TextView tv = (TextView) findViewById(R.id.create_info_label);
-		tv.setText(text);
-		NActivity.setTextColor(tv, color);
-
+	public void setDescriptionText(String name, String description, String color){
+		TextView tvName = (TextView) findViewById(R.id.create_info_label);
+		tvName.setText(name);
+		NActivity.setTextColor(tvName, color);
+		tvName.setVisibility(View.VISIBLE);
+		
+		TextView tvDescrip = (TextView) findViewById(R.id.create_info_description);
+		tvDescrip.setText(description);
+		tvDescrip.setVisibility(View.VISIBLE);
 	}
+	
+	
 
 	private void refreshFactionList() throws JSONException{
 		ArrayList<String> rolesList = new ArrayList<>(), colors = new ArrayList<>();
@@ -404,6 +399,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				sendMessage();
 				return;
 
+			case R.id.create_createTeamButton:
+				openCreateTeamDialog();
+				
             case R.id.roles_startGame:
 				if (Server.IsLoggedIn()){
 					if(manager.isHost()){
@@ -429,8 +427,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
                 showPlayerList();
 				break;
         }
-
 	}
+	
+	
 
 	public void pushChatDown() {
 		final ScrollView chatLV = (ScrollView) findViewById(R.id.create_chatHolder);
@@ -457,6 +456,10 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private void showPlayerList(){
 		new PlayerPopUp().show(getFragmentManager(), "playerlist");
 	}
+	
+	public void openCreateTeamDialog(){
+		new TeamBuilder().show(getFragmentManager(), "newTeam");
+	}
 
 	public void onPopUpDismiss(){
 		
@@ -471,10 +474,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			manager.toString();
 		return manager.ns.local;
 	}
-
-	/*private JSONObject getSelectedRole(int position){
-		return activeFaction.getJSONArray("members").getJSONObject(position);
-	}*/
 
 
 

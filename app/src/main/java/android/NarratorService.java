@@ -444,6 +444,19 @@ public class NarratorService extends Service implements Callback{
 			sManager.onRoleRemove(roleName, color);
 		
 	}
+	public void newTeam(String name, String color) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			fManager.addFaction(name, color);
+			try {
+				sManager.screen.refreshFactions();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
 		
 	
 }
