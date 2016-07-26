@@ -108,13 +108,21 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				if(ns == null){
 					connectNarrator(new NarratorConnectListener() {
 						public void onConnect() {
-							manager = new SetupManager(ActivityCreateGame.this, ns);
+							try {
+								manager = new SetupManager(ActivityCreateGame.this, ns);
+							} catch (JSONException e) {
+								e.printStackTrace();
+							}
 						}
 					});
-				}else
-					manager = new SetupManager(this, ns);
+				} else
+					try {
+						manager = new SetupManager(this, ns);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
 			}
-
+			
 		}
 		/*if(manager == null){
 
@@ -170,7 +178,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 
-	private JSONObject activeFaction;
+	public JSONObject activeFaction;
 	public void refreshFactions() throws JSONException {
 		cataLV = (ListView) findViewById(R.id.roles_categories_LV);
 	
@@ -292,14 +300,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			
 		
  	}
-	private JSONObject activeRule = null;
-	private void refreshDescription() throws JSONException{
+	public JSONObject activeRule = null;
+	public void refreshDescription() throws JSONException{
 		manager.screenController.setRoleInfo(activeRule);
 	}
 
 	private void roleDescription(RoleTemplate rt){
 		setDescriptionText(rt.getName(), rt.getDescription(), rt.getColor());
-		//manager.screenController.setRoleInfo(role, rt.getColor(), null);
 	}
 
 
@@ -316,11 +323,22 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 	
 
-	private void refreshFactionList() throws JSONException{
+	public void refreshFactionList() throws JSONException{
 		ArrayList<String> rolesList = new ArrayList<>(), colors = new ArrayList<>();
 		JSONObject faction = activeFaction;
+		if(faction == null){
+			rolesLV.setVisibility(View.GONE);
+			return;
+		}else{
+			rolesLV.setVisibility(View.VISIBLE);
+		}
+			
 		JSONArray members = faction.getJSONArray("members");
-		
+		if(members.length() == 0){
+			rolesLV.setVisibility(View.GONE);
+			return;
+		}
+
 		
 		JSONObject member;
 		for(int i = 0; i < members.length(); i++){
@@ -333,7 +351,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		ada.setColors(colors);
 		ada.setLayoutID(R.layout.create_roles_left_item);
 		rolesLV.setAdapter(ada);
-		
+
+
 	}
 
 	private EditText chatET;
@@ -401,6 +420,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 			case R.id.create_createTeamButton:
 				openCreateTeamDialog();
+				return;
 				
             case R.id.roles_startGame:
 				if (Server.IsLoggedIn()){

@@ -18,7 +18,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="new Team Name" />
+        android:hint="Team Name" />
     <EditText
         android:id="@+id/newTeam_colorET"
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:layout_marginBottom="4dp"
         android:layout_marginRight="4dp"
         android:fontFamily="sans-serif"
-        android:hint="new Team Color"/>
+        android:hint="#RRGGBB"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

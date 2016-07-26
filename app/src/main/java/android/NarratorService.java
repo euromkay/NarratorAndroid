@@ -20,6 +20,7 @@ import android.os.Message;
 import android.parse.GameListing;
 import android.parse.Server;
 import android.screens.ActivityHome;
+import android.setup.ActivityCreateGame;
 import android.setup.ClientAdder;
 import android.setup.HostAdder;
 import android.setup.SetupManager;
@@ -444,13 +445,23 @@ public class NarratorService extends Service implements Callback{
 			sManager.onRoleRemove(roleName, color);
 		
 	}
-	public void newTeam(String name, String color) {
+	public void newTeam(String name, String color, SuccessListener sL) {
 		if(Server.IsLoggedIn()){
 			
 		}else{
-			fManager.addFaction(name, color);
+			Faction f = fManager.addFaction(name, color);
+			f.setDescription("Custom team");
+			if(sManager == null)
+				return;
 			try {
-				sManager.screen.refreshFactions();
+				sL.onSuccess();
+				ActivityCreateGame ac = sManager.screen;
+				ac.refreshFactions();
+				ac.activeFaction = getFactions().getJSONObject(f.getName());
+				ac.activeRule = sManager.screen.activeFaction;
+				ac.refreshFactionList();
+				ac.refreshDescription();
+				return;
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}

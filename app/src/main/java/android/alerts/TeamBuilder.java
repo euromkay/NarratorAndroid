@@ -1,6 +1,7 @@
 package android.alerts;
 
 import android.NarratorService;
+import android.SuccessListener;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.graphics.Color;
@@ -26,6 +27,7 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 	public TextView preview;
 	public View mainView;
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+		getDialog().setTitle("New Team Builder");
 		mainView = inflater.inflate(R.layout.create_team_builder_layout, container);
 		
 		colorInput = (EditText) mainView.findViewById(R.id.newTeam_colorET);
@@ -36,7 +38,7 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 		mainView.findViewById(R.id.newTeam_submit).setOnClickListener(this);
 		nameInput.addTextChangedListener(this);
 		colorInput.addTextChangedListener(this);
-		return null;
+		return mainView;
 	}
 
 	public void onClick(View v) {
@@ -50,11 +52,10 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 			String color = colorInput.getText().toString().toUpperCase();
 			if(name.length() == 0 || color.length() == 0)
 				return;
-			
-			if(!color.startsWith("#"))
-				color = "#" + color;
-			
-			if(color.length() != 4 && color.length() != 7){
+
+			color = cleanUpRGB(color);
+
+			if(color.length() != 7){
 				setErrorText(RGB_ERROR_CODE);
 				return;
 			}
@@ -64,7 +65,15 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 			}
 			
 			try{
-				ns.newTeam(name, color);
+				ns.newTeam(name, color, new SuccessListener(){
+					public void onSuccess(){
+						getDialog().cancel();
+					}
+					public void onFailure(String message){
+						setErrorText(message);
+					}
+
+				});
 			}catch(IllegalGameSettingsException e){
 				setErrorText(e.getMessage());
 			}
@@ -76,6 +85,7 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 	public static final String RGB_ERROR_CODE = "RGB codes are typically 6 characters long";
 	
 	private boolean isHex(String color){
+		color = cleanUpRGB(color);
 		try{
 			Color.parseColor(color);
 			return true;
@@ -86,7 +96,7 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 	
 	private void setErrorText(String message){
 		preview.setText(message);
-		preview.setTextColor(Color.parseColor("#F00"));
+		preview.setTextColor(Color.parseColor("#FF0000"));
 	}
 	
     public void onAttach(Activity a){
@@ -107,10 +117,19 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 		String name = nameInput.getText().toString();
 		name = name.replace(" ", "");
 		preview.setText(name);
-		if(!color.startsWith("#"))
-			color = "#" + color;
+		color = cleanUpRGB(color);
 		if(!isHex(color))
 			return;
 		preview.setTextColor(Color.parseColor(color));
+	}
+	private static String cleanUpRGB(String s){
+		if(s.startsWith("#"))
+			s = s.substring(1);
+
+		if(s.length() == 3){
+			s = "" + s.charAt(0) + s.charAt(0) + s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2);
+		}
+
+		return "#" + s;
 	}
 }

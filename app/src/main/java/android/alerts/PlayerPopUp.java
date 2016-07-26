@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -42,7 +43,6 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     public static final String COMPUTER_COMMAND = "set computers";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-
         mainView = inflater.inflate(R.layout.create_player_list, container);
 
         lv = (ListView) mainView.findViewById(R.id.listView1);

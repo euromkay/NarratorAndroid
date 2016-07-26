@@ -26,13 +26,7 @@ import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
-import shared.logic.templates.BasicRoles;
-import shared.roles.Blocker;
-import shared.roles.CultLeader;
-import shared.roles.Driver;
-import shared.roles.MassMurderer;
 import shared.roles.RandomRole;
-import shared.roles.SerialKiller;
 
 
 public class SetupManager {
@@ -50,7 +44,7 @@ public class SetupManager {
     private Random rand;
     public NarratorService ns;
     
-    public SetupManager(ActivityCreateGame a, NarratorService ns){
+    public SetupManager(ActivityCreateGame a, NarratorService ns) throws JSONException{
     	this.ns = ns;
     	ns.setSetupManager(this);
         screen = a;
@@ -81,6 +75,7 @@ public class SetupManager {
         }catch(JSONException e){
         	e.printStackTrace();
         }
+        screen.refreshFactionList();
     }
 
 
@@ -160,27 +155,6 @@ public class SetupManager {
             }
         }
     }
-    
-    private String translateName(String input){
-		switch(input){
-		case BasicRoles.BUS_DRIVER:
-			return Driver.ROLE_NAME;
-		case BasicRoles.CHAUFFEUR:
-			return Driver.ROLE_NAME;
-		case BasicRoles.ESCORT:
-			return Blocker.ROLE_NAME;
-		case BasicRoles.CONSORT:
-			return Blocker.ROLE_NAME;
-		case MassMurderer.ROLE_NAME:
-			return MassMurderer.class.getSimpleName();
-		case SerialKiller.ROLE_NAME:
-			return SerialKiller.class.getSimpleName();
-		case CultLeader.ROLE_NAME:
-			return CultLeader.class.getSimpleName();
-		default:
-			return input;
-		}
-	}
     
     public synchronized void addRole(RoleTemplate rt){
     	

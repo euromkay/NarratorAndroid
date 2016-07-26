@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.parse.Server;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -142,9 +143,11 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
     public void setRoleInfo(JSONObject activeRule) throws JSONException{
         if(activeRule == null){
             hideAll();
+            screen.findViewById(R.id.create_info_wrapper).setVisibility(View.GONE);
     		screen.setDescriptionText("", "", Constants.A_RANDOM);
             return;
         }
+        screen.findViewById(R.id.create_info_wrapper).setVisibility(View.VISIBLE);
         
 		String color = activeRule.getString("color");
 		String name = activeRule.getString("name");
@@ -156,10 +159,19 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         if(name.equals("Randoms")){
         	rules = new JSONArray();
         	rules.put(Rules.DAY_START[0]);
-        	rules.put(Rules.DAY_LENGTH[0]);
-        	rules.put(Rules.NIGHT_LENGTH[0]);
+        	if(Server.IsLoggedIn()){
+        		rules.put(Rules.DAY_LENGTH[0]);
+        		rules.put(Rules.NIGHT_LENGTH[0]);
+        	}
         	screen.findViewById(R.id.create_info_label).setVisibility(View.GONE);
         	screen.findViewById(R.id.create_info_description).setVisibility(View.GONE);
+        }else if(activeRule.has("isEditable") && activeRule.getBoolean("isEditable")){
+        	rules = new JSONArray();
+        	rules.put(color + "kill");
+        	rules.put(color + "identity");
+        	rules.put(color + "liveToWin");
+        	rules.put(color + "priority");
+        	
         }else{
         	rules = activeRule.getJSONArray("rules");
         }
