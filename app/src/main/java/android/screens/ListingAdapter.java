@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.NActivity;
 import android.app.Activity;
 import android.graphics.Typeface;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -19,39 +20,26 @@ public class ListingAdapter extends BaseAdapter{
 
 	public ArrayList<String> data;
 	private int layoutID;
-	private Activity c;
 	private Typeface font;
 	private int length;
+	public LayoutInflater layoutInflater;
 
 	public ListingAdapter(Activity c){
-		this.c = c;
 		this.layoutID = R.layout.create_roles_right_item;
 		color = "#FFFFFF";//ActivityCreateGame.ParseColor(c, R.color.white);
 		font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
+		layoutInflater = c.getLayoutInflater();
 	}
 
-	public ListingAdapter(ArrayList<String> data, Activity c){
+	public ListingAdapter(ArrayList<String> data, Activity c) {
 		this(c);
 		this.data = data;
 		length = data.size();
-	}
-	public ListingAdapter(String[] data, Activity c){
-		this(c);
-		this.data = new ArrayList<>();
-		for(String s: data)
-			this.data.add(s);
-
-		length = data.length;
 	}
 
 	public ListingAdapter setColors(ArrayList<String> list){
 		this.colors = list;
 		return this;
-	}
-	public void setColors(String[] inputColors){
-		colors = new ArrayList<>();
-		for(String i: inputColors)
-			colors.add(i);
 	}
 
 	public void setLimit(int limit){
@@ -87,7 +75,7 @@ public class ListingAdapter extends BaseAdapter{
 		TextView result;
 
 	    if (convertView == null) {
-	        result = (TextView) c.getLayoutInflater().inflate(layoutID, parent, false);
+	        result = (TextView) layoutInflater.inflate(layoutID, parent, false);
 	    } else {
 	        result = (TextView) convertView;
 	    }
@@ -111,8 +99,6 @@ public class ListingAdapter extends BaseAdapter{
 		NActivity.setTextColor(result, viewColor);
 	    
 	    return result;
-		
-		
 	}
 	
 }

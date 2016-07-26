@@ -104,23 +104,21 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
         this.ns = ((ActivityCreateGame) a).ns;
     }
 
-	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-	}
+	public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-	public void onTextChanged(CharSequence s, int start, int before, int count) {
-		//unused
-	}
+	public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
 	public void afterTextChanged(Editable s) {
 		//unused
-		String color = colorInput.getText().toString();
+		String color = colorInput.getText().toString().toUpperCase();
 		String name = nameInput.getText().toString();
 		name = name.replace(" ", "");
 		preview.setText(name);
 		color = cleanUpRGB(color);
-		if(!isHex(color))
-			return;
-		preview.setTextColor(Color.parseColor(color));
+		if(isHex(color))
+			preview.setTextColor(Color.parseColor(color));
+		else
+			preview.setTextColor(Color.parseColor("#FFFFFF"));
 	}
 	private static String cleanUpRGB(String s){
 		if(s.startsWith("#"))

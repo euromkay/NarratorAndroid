@@ -139,15 +139,25 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
         screen.getManager().ruleChange(id, newValue);
     }
+    
+    private void hideView(int id){
+    	screen.findViewById(id).setVisibility(View.GONE);
+    }
+    private void showView(int id){
+    	screen.findViewById(id).setVisibility(View.VISIBLE);
+    }
 
     public void setRoleInfo(JSONObject activeRule) throws JSONException{
+    	hideView(R.id.create_editMembersButton);
+    	hideView(R.id.create_editAlliesButton);
+    	hideView(R.id.create_deleteTeamButton);
         if(activeRule == null){
             hideAll();
-            screen.findViewById(R.id.create_info_wrapper).setVisibility(View.GONE);
+            hideView(R.id.create_info_wrapper);
     		screen.setDescriptionText("", "", Constants.A_RANDOM);
             return;
         }
-        screen.findViewById(R.id.create_info_wrapper).setVisibility(View.VISIBLE);
+        showView(R.id.create_info_wrapper);
         
 		String color = activeRule.getString("color");
 		String name = activeRule.getString("name");
@@ -171,7 +181,9 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         	rules.put(color + "identity");
         	rules.put(color + "liveToWin");
         	rules.put(color + "priority");
-        	
+        	showView(R.id.create_editMembersButton);
+        	showView(R.id.create_editAlliesButton);
+        	showView(R.id.create_deleteTeamButton);
         }else{
         	rules = activeRule.getJSONArray("rules");
         }

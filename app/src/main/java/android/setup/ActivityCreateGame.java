@@ -10,6 +10,7 @@ import android.NActivity;
 import android.SuccessListener;
 import android.alerts.PlayerPopUp;
 import android.alerts.TeamBuilder;
+import android.alerts.TeamEditor;
 import android.content.Context;
 import android.os.Bundle;
 import android.parse.Server;
@@ -90,6 +91,9 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		chatTV = (TextView) findViewById(R.id.create_chatTV);
 		findViewById(R.id.roles_show_Players).setOnClickListener(this);
 		findViewById(R.id.create_createTeamButton).setOnClickListener(this);
+		findViewById(R.id.create_deleteTeamButton).setOnClickListener(this);
+		findViewById(R.id.create_editAlliesButton).setOnClickListener(this);
+		findViewById(R.id.create_editMembersButton).setOnClickListener(this);
 		chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -144,7 +148,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		if(networkCapable())
 			manager.setupConnection();
 
-		refreshFactions();
+		refreshAvailableFactions();
 		setupRoleCatalogue();
 		setupRoleList();
 
@@ -179,7 +183,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 
 	public JSONObject activeFaction;
-	public void refreshFactions() throws JSONException {
+	public void refreshAvailableFactions() throws JSONException {
 		cataLV = (ListView) findViewById(R.id.roles_categories_LV);
 	
 		ArrayList<String> data = new ArrayList<>();
@@ -245,6 +249,17 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			rolesLeftTV.setVisibility(View.GONE);
     }
 
+    public void resetView(){
+    	try{
+    		JSONObject allFactions = manager.ns.getFactions();
+    		String factionName = activeFaction.getString("name");
+    		activeFaction = allFactions.getJSONObject(factionName);
+    		//need to handle activeRules
+    		
+    	}catch(JSONException e){
+    		e.printStackTrace();
+    	}
+    }
 
 	public void onItemClick(AdapterView<?> parent, View unused, int position, long id) {
 		switch(parent.getId()){
@@ -258,7 +273,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				activeFaction = allFactions.getJSONObject(factionName);
 				activeRule = activeFaction;
 				
-				refreshFactionList();
+				refreshAvailableRolesList();
 
 				refreshDescription();
 			}catch(JSONException e){
@@ -267,7 +282,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			return;
 			
 		case R.id.roles_bottomLV:
-			//position = rolesLV.getCheckedItemPosition();
 			if(position != AbsListView.INVALID_POSITION){
 				if(activeFaction == null)
 					return;
@@ -323,7 +337,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 	
 
-	public void refreshFactionList() throws JSONException{
+	public void refreshAvailableRolesList() throws JSONException{
 		ArrayList<String> rolesList = new ArrayList<>(), colors = new ArrayList<>();
 		JSONObject faction = activeFaction;
 		if(faction == null){
@@ -406,7 +420,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 
 	}
-	
+
+	public static final int REGULAR = 0;
+	public static final int EDITING_ALLIES = 1;
+	public static final int EDITING_ROLES = 2;
+	public int mode = REGULAR;
+
+
 	public void onClick(View v) {
 		switch(v.getId()) {
 
@@ -420,8 +440,28 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 			case R.id.create_createTeamButton:
 				openCreateTeamDialog();
+
 				return;
 				
+			case R.id.create_deleteTeamButton:
+				try {
+					String color = activeFaction.getString("color");
+					ns.deleteTeam(color);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				return;
+				
+			case R.id.create_editAlliesButton:
+				mode = EDITING_ALLIES;
+				new TeamEditor().show(getFragmentManager(), "editTeam");
+				return;
+				
+			case R.id.create_editMembersButton:
+				mode = EDITING_ROLES;
+				new TeamEditor().show(getFragmentManager(), "editTeam");
+				return;
+			
             case R.id.roles_startGame:
 				if (Server.IsLoggedIn()){
 					if(manager.isHost()){
@@ -505,6 +545,8 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		this.unbindNarrator();
 		super.onDestroy();
 	}
+
+	
 
 }
 

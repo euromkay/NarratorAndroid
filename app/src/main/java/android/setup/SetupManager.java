@@ -75,7 +75,7 @@ public class SetupManager {
         }catch(JSONException e){
         	e.printStackTrace();
         }
-        screen.refreshFactionList();
+        screen.refreshAvailableRolesList();
     }
 
 

@@ -237,6 +237,9 @@ public abstract class StateObject {
 				jRT.put("description", rt.getDescription());
 				jRT.put("color", rt.getColor());
 				jRT.put("rules", new JSONArray(rt.getRules()));
+				if(!rt.isRandom()){
+					jRT.put("simpleName", ((Member) rt).getSimpleName());
+				}
 				jFactions.put(rt.getName() + rt.getColor(), jRT);
 				fMembers.put(jRT);
 			}
@@ -248,8 +251,6 @@ public abstract class StateObject {
 				blacklisted.put(jRT);
 			}
 			jFaction.put("blacklisted", blacklisted);
-			
-			
 			
 			
 			if(f.isEditable)

@@ -309,6 +309,57 @@
                 android:layout_below="@id/create_rulesTV2"
                 android:padding="6dp"/>
 
+            <Button
+                android:id="@+id/create_editAlliesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Allies"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:minHeight="0dp"
+                android:background="@layout/main_button"
+                android:layout_below="@id/create_rulesET2"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"/>
+
+            <Button
+                android:id="@+id/create_editMembersButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Roles"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:minHeight="0dp"
+                android:background="@layout/main_button"
+                android:layout_below="@id/create_editAlliesButton"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"/>
+
+            <Button
+                android:id="@+id/create_deleteTeamButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete Team"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:minHeight="0dp"
+                android:background="@layout/main_button"
+                android:layout_below="@id/create_editMembersButton"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"/>
+
 
         </RelativeLayout>
 

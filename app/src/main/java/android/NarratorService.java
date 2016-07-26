@@ -31,6 +31,7 @@ import android.wifi.SocketClient;
 import android.wifi.SocketHost;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.Team;
 import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PhaseException;
 import shared.logic.support.CommandHandler;
@@ -395,7 +396,6 @@ public class NarratorService extends Service implements Callback{
 				unbindService(socketHostServiceConnection);
 			} catch (IllegalArgumentException|NullPointerException e) {}
 		}
-		Log.e("NarratorService", "ondestroy triggered");
 	}
 	public boolean isInProgress() {
 		if(Server.IsLoggedIn()){
@@ -456,10 +456,10 @@ public class NarratorService extends Service implements Callback{
 			try {
 				sL.onSuccess();
 				ActivityCreateGame ac = sManager.screen;
-				ac.refreshFactions();
+				ac.refreshAvailableFactions();
 				ac.activeFaction = getFactions().getJSONObject(f.getName());
 				ac.activeRule = sManager.screen.activeFaction;
-				ac.refreshFactionList();
+				ac.refreshAvailableRolesList();
 				ac.refreshDescription();
 				return;
 			} catch (JSONException e) {
@@ -467,6 +467,65 @@ public class NarratorService extends Service implements Callback{
 			}
 		}
 		
+	}
+	public void deleteTeam(String color) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			fManager.removeTeam(color);
+			if(sManager == null)
+				return;
+			ActivityCreateGame ac = sManager.screen;
+			try {
+				ac.activeFaction = null;
+				ac.activeRule = null;
+				ac.refreshAvailableFactions();
+				ac.refreshAvailableRolesList();
+				ac.refreshDescription();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	public void setEnemies(String color, String teamColor, SuccessListener sl) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			Team curTeam = local.getTeam(teamColor);
+			Team enemyTeam = local.getTeam(color);
+			curTeam.setEnemies(enemyTeam);
+			sl.onSuccess();
+		}
+	}
+	public void setAllies(String color, String teamColor, SuccessListener sl) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			Team curTeam = local.getTeam(teamColor);
+			Team allyTeam = local.getTeam(color);
+			curTeam.setAllies(allyTeam);
+			sl.onSuccess();
+		}
+	}
+	
+	public void addTeamRole(String className, String teamColor, SuccessListener sl){
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			Faction f = fManager.getFaction(teamColor);
+			f.makeAvailable(className);
+			sl.onSuccess();
+		}
+	}
+	public void removeTeamRole(String name, String teamColor, SuccessListener sl) {
+		if(Server.IsLoggedIn()){
+			
+		}else{
+			Faction f = fManager.getFaction(teamColor);
+			f.makeUnavailable(name);
+			sl.onSuccess();
+		}
 	}
 		
 	
