@@ -4,12 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.GUIController;
+import android.NActivity;
+import android.SuccessListener;
+import android.alerts.ExitGameAlert;
+import android.alerts.ExitGameAlert.ExitGameListener;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
 import android.os.Bundle;
+import android.parse.GameListing;
+import android.parse.ParseConstants;
+import android.parse.Server;
+import android.screens.ListingAdapter;
+import android.screens.MembersAdapter;
+import android.screens.SimpleGestureFilter;
+import android.screens.SimpleGestureFilter.SimpleGestureListener;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -18,6 +31,8 @@ import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.texting.PhoneNumber;
+import android.texting.TextHandler;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Gravity;
@@ -41,27 +56,9 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.GUIController;
-import android.NActivity;
-
 import shared.event.Header;
 import shared.event.Message;
 import shared.event.OGIMessage;
-import voss.narrator.R;
-import android.SuccessListener;
-import android.alerts.ExitGameAlert;
-import android.alerts.ExitGameAlert.ExitGameListener;
-import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
-import android.parse.GameListing;
-import android.parse.ParseConstants;
-import android.parse.Server;
-import android.screens.ListingAdapter;
-import android.screens.MembersAdapter;
-import android.screens.SimpleGestureFilter;
-import android.screens.SimpleGestureFilter.SimpleGestureListener;
-import android.texting.PhoneNumber;
-import android.texting.TextHandler;
-import packaging.Board;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -70,6 +67,7 @@ import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Constants;
 import shared.roles.Framer;
+import voss.narrator.R;
 
 
 public class ActivityDay extends NActivity
@@ -118,11 +116,11 @@ implements
 		registerReceiver(intentReceiver, iF);
 	}
 
-	protected void onSaveInstanceState(Bundle b){
-		super.onSaveInstanceState(b);
-		if (b != null)
-			b.putParcelable(Narrator.KEY, Board.GetParcel(manager.getNarrator()));
-	}
+	//protected void onSaveInstanceState(Bundle b){
+		//super.onSaveInstanceState(b);
+		//if (b != null)
+			//b.putParcelable(Narrator.KEY, Board.GetParcel(manager.getNarrator()));
+	//}
 	public void onBackPressed(){
 		if (!manager.getNarrator().isInProgress()){
 			stopTexting();

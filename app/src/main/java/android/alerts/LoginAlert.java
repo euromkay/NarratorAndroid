@@ -1,30 +1,29 @@
 package android.alerts;
 
 
-import android.app.Activity;
+import android.SuccessListener;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.parse.Server;
+import android.screens.ActivityHome;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import voss.narrator.R;
-import android.parse.Server;
 
-public class LoginAlert extends DialogFragment implements View.OnClickListener, Server.LoginListener{
+public class LoginAlert extends DialogFragment implements View.OnClickListener, SuccessListener{
 
-    private View mainView;
-    private Activity activity;
-    public void setServer(Activity a){
+    public View mainView;
+    private ActivityHome activity;
+    public void setServer(ActivityHome a){
         activity = a;
     }
 
-
+    public EditText userET, pwET;
 
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -37,6 +36,9 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
         builder.setView(mainView);
 
+        userET = (EditText) mainView.findViewById(R.id.login_username);
+        pwET   = (EditText) mainView.findViewById(R.id.login_password);
+        
         return builder.create();
     }
 
@@ -46,20 +48,13 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         switch (v.getId()){
 
             case R.id.login_loginButton:
-                EditText userET = (EditText) mainView.findViewById(R.id.login_username);
-                EditText pwET = (EditText) mainView.findViewById(R.id.login_password);
 
                 String username = userET.getText().toString();
                 String password = pwET.getText().toString();
 
-                Server.Login(username, password, this);
+                Server.Login(username, password, activity, this);
                 break;
             case R.id.login_signup:
-                EditText emailET = (EditText) mainView.findViewById(R.id.login_email);
-                if(emailET.getVisibility() != View.VISIBLE) {
-                    emailET.setVisibility(View.VISIBLE);
-                    return;
-                }
                 userET = (EditText) mainView.findViewById(R.id.login_username);
                 pwET = (EditText) mainView.findViewById(R.id.login_password);
 
@@ -72,9 +67,8 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 }
 
                 password = pwET.getText().toString();
-                String email = emailET.getText().toString();
 
-                Server.SignUp(username, password, email, this);
+                Server.SignUp(username, password, this, activity);
                 break;
             case R.id.login_cancelLogin:
                 getDialog().cancel();
@@ -83,7 +77,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
     }
 
     public void onSuccess(){
-        Toast.makeText(activity, "Successfully logged in", Toast.LENGTH_SHORT).show();
+        activity.toast("Successfully logged in");
         Button v = (Button) activity.findViewById(R.id.home_login_signup);
         v.setText("Signout");
         try {
@@ -91,7 +85,11 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         }catch(NullPointerException e){}
     }
 
-    public void onBadPassword(){
+    public void onFailure(String message){
+        setHeader(message);
+    }
+
+    /*public void onBadPassword(){
         setHeader("Incorrect password");
     }
 
@@ -105,7 +103,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
     public void onUsernameTaken(){
         setHeader("Username is already taken!");
-    }
+    }*/
 
     public void setHeader(String s){
         TextView tv = (TextView) mainView.findViewById(R.id.home_loginErrorHandler);

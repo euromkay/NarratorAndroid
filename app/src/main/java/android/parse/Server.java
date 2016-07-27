@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
@@ -21,9 +27,11 @@ import android.NarratorService;
 import android.SuccessListener;
 import android.alerts.GameBookPopUp;
 import android.app.Activity;
+import android.net.Uri;
 import android.screens.ActivityHome;
 import android.setup.SetupDeliverer;
 import android.setup.SetupManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 import shared.logic.Narrator;
@@ -31,6 +39,7 @@ import shared.logic.Player;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
+import voss.narrator.R;
 
 
 @SuppressWarnings("unused")
@@ -44,6 +53,8 @@ public class Server {
         void onUsernameTaken();
     }
 
+
+
     public interface GameRegister{
         void onSuccess(GameListing gl);
         void onFailure(String t);
@@ -56,81 +67,94 @@ public class Server {
         void onError(String s);
     }
 
+    private static FirebaseAuth mAuth;
+    private static FirebaseAuth.AuthStateListener mAuthListener;
+    public static void Init(){
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+
+                } else {
+
+                }
+                // ...
+            }
+        };
+    }
+
     public static boolean IsLoggedIn(){
-        return ParseUser.getCurrentUser() != null;
+        return mAuth.getCurrentUser() != null;
+    }
+
+    public static void Start(){
+        mAuth.addAuthStateListener(mAuthListener);
+    }
+
+    public static void Stop(){
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     public static void LogOut(){
-        ParseUser.logOut();
+        FirebaseAuth.getInstance().signOut();
     }
 
 
 
-    public static void Login(String username, String password, final LoginListener loginListener){
+    public static void Login(String username, String password, final ActivityHome ah, final SuccessListener sL){
         if (username.length() == 0 || password.length() == 0){
             return;
         }
-        ParseUser.logInInBackground(username, password, new LogInCallback() {
-            public void done(ParseUser user, ParseException e) {
-                if (e == null && user != null) {
-                    loginListener.onSuccess();
-                } else if (user == null) {
-                    loginListener.onBadPassword();
-                } else {
-                    switch (e.getCode()) {
-                        case ParseException.INVALID_EMAIL_ADDRESS:
-                            loginListener.onBadEmail();
-                            break;
-                        case ParseException.EMAIL_MISSING:
-                            loginListener.onBadEmail();
-                            break;
-                        case ParseException.EMAIL_TAKEN:
-                            loginListener.onEmailTaken();
-                            break;
+        username = username + "@sc2mafia.com";
+        mAuth.signInWithEmailAndPassword(username, password)
+                .addOnCompleteListener(ah, new OnCompleteListener<AuthResult>() {
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (!task.isSuccessful()) {
+                            sL.onFailure("Signin failed: " + task.getException());
+                        }else
+                            sL.onSuccess();
                     }
-                }
-            }
-        });
+                });
     }
 
-    public static void SignUp(String usern, final String password, String email, final LoginListener loginListener){
-        final String username = usern.replaceAll("\\s","");
+    public static void SignUp(String username, final String password, final SuccessListener sL, final ActivityHome ah){
+        if(username.contains("@")){
+            sL.onFailure("Username cannot be an email.");
+        }
         if (username.length() == 0 || password.length() == 0){
             return;
         }
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("email", email);
-        ParseCloud.callFunctionInBackground("signup", params, new FunctionCallback<ParseObject>() {
-            public void done(ParseObject x, ParseException e) {
-                if (e == null) {
-                    try {
-                        ParseUser.logIn(username, password);
-                    } catch (ParseException f) {
-                        Log.e("Server login", f.getMessage());
-                    }
-                    loginListener.onSuccess();
-                } else {
-                    Log.e("Server signup error", e.getMessage() + e.getCode());
-                    switch (e.getCode()) {
-                        case ParseException.INVALID_EMAIL_ADDRESS:
-                            loginListener.onBadEmail();
-                            break;
-                        case ParseException.EMAIL_TAKEN:
-                            loginListener.onEmailTaken();
-                            break;
-                        case 141:
-                            loginListener.onUsernameTaken();
-                            break;
-                        case ParseException.USERNAME_TAKEN:
-                            loginListener.onUsernameTaken();
-                            break;
+        final String displayName = username.replaceAll("\\s","");
+        final String email = displayName + "@sc2mafia.com";
+
+
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(ah, new OnCompleteListener<AuthResult>() {
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (!task.isSuccessful()) {
+                            sL.onFailure("Signup failed");
+                        }else{
+                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(displayName)
+                                    .build();
+
+                            user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                sL.onSuccess();
+                                            }
+                                        }
+                                    });
+                        }
 
                     }
-                }
-            }
-        });
+                });
     }
 
 
@@ -183,8 +207,8 @@ public class Server {
     }
 
     public static String GetCurrentUserName(){
-        if(ParseUser.getCurrentUser() != null)
-            return ParseUser.getCurrentUser().getUsername();
+        if(Server.IsLoggedIn())
+            return mAuth.getCurrentUser().getDisplayName();
         return "";
     }
 

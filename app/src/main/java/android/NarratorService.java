@@ -1,6 +1,11 @@
 package android;
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -528,5 +533,55 @@ public class NarratorService extends Service implements Callback{
 		}
 	}
 		
+	public void sendMessage(JSONObject jo) throws JSONException{
+		jo.put("name", Server.GetCurrentUserName());
+		mWebSocketClient.send(jo.toString());
+	}
 	
+	private WebSocketClient mWebSocketClient;
+	public void connectWebSocket() {
+		  URI uri;
+		  try {
+		    uri = new URI("ws://narrator.systeminplace.net:3000");
+		  } catch (URISyntaxException e) {
+		    e.printStackTrace();
+		    return;
+		  }
+
+		  mWebSocketClient = new WebSocketClient(uri) {
+		    public void onOpen(ServerHandshake serverHandshake) {
+		    	JSONObject jo = new JSONObject();
+		    	try {
+					jo.put("server", true);
+					jo.put("message", "greeting");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+		    }
+
+
+		    public void onMessage(String s) {
+		      //final String message = s;
+
+		      /*runOnUiThread(new Runnable() {
+		        @Override
+		        public void run() {
+		          TextView textView = (TextView)findViewById(R.id.messages);
+		          textView.setText(textView.getText() + "\n" + message);
+		        }
+		      });*/
+		    }
+
+
+		    public void onClose(int i, String s, boolean b) {
+		      Log.i("Websocket", "Closed " + s);
+		    }
+
+
+		    public void onError(Exception e) {
+		      Log.i("Websocket", "Error " + e.getMessage());
+		    }
+		  };
+		  mWebSocketClient.connect();
+		}
 }

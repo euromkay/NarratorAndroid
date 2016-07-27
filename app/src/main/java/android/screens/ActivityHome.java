@@ -4,31 +4,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.Window;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.parse.FunctionCallback;
 import com.parse.ParseException;
 
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
 import android.NActivity;
-import voss.narrator.R;
 import android.SuccessListener;
 import android.alerts.GameBookPopUp;
 import android.alerts.IpPrompt;
@@ -38,29 +19,54 @@ import android.alerts.NamePrompt;
 import android.alerts.NamePrompt.NamePromptListener;
 import android.alerts.PhoneBookPopUp;
 import android.alerts.PhoneBookPopUp.AddPhoneListener;
+import android.app.Activity;
+import android.app.DialogFragment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.day.ActivityDay;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
 import android.parse.GameListing;
 import android.parse.Server;
 import android.setup.ActivityCreateGame;
+import android.support.v4.content.ContextCompat;
 import android.texting.CommunicatorText;
 import android.texting.PhoneNumber;
 import android.texting.ReceiverText;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.wifi.SocketClient;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import voss.narrator.R;
 
 public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
+
 
 
 	public void creating(Bundle b){
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_home);
-		
+
+		Server.Init();
+
 		setText(R.id.home_join);
 		setText(R.id.home_host);
 		setText(R.id.home_login_signup);
 		setText(R.id.home_tutorial);
 		setText(R.id.home_currentGames);
+
+
 
 
 		if(isLoggedIn()){
@@ -99,6 +105,18 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		creating(b);
 	}
 
+	protected void onStart(){
+		super.onStart();
+		Server.Start();
+	}
+
+	protected void onStop(){
+		super.onStop();
+		Server.Stop();
+	}
+
+
+
 	private void setText(int id){
 		SetFont(id, this, true);
 		findViewById(id).setOnClickListener(this);
@@ -124,7 +142,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
-					Server.RegisterGame(this, new Server.GameRegister() {
+					return;
+					/*Server.RegisterGame(this, new Server.GameRegister() {
 						public void onSuccess(GameListing gl) {
 							//ns.refresh();
 							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
@@ -134,7 +153,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 						public void onFailure(String t) {
 							toast(t);
 						}
-					});
+					});*/
 				}else{
 					if(buildNumber() < 16)
 						toast("You will not be able to participate in wireless games.");
@@ -169,21 +188,18 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				break;
 
 			case R.id.home_login_signup:
-				toast("Temporarily unavailable.");
-				break;
-				/*if (isLoggedIn()){
+				if (isLoggedIn()){
 					Server.LogOut();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
-				}else if(!isInternetAvailable()){
+				}else if(isInternetAvailable()){
 					LoginAlert loginer = new LoginAlert();
 					loginer.setServer(this);
 					loginer.show(getFragmentManager(), "logginer");
 				}else{
 					toast("You must be connected to the internet to login.");
 				}
-				break;*/
-
+				break;
 		}
 	}
 
@@ -194,15 +210,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	public boolean isInternetAvailable() {
-		try {
-			InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
-			if (ipAddr.equals("")) 
-				return false;
-			else 
-				return true;
-		} catch (Exception e) {
-			return false;
-		}
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
 
 	private void startTutorial(){
