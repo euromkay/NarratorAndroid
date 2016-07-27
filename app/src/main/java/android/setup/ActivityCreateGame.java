@@ -447,6 +447,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				try {
 					String color = activeFaction.getString("color");
 					ns.deleteTeam(color);
+					refreshRolesList();
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
