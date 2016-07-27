@@ -514,7 +514,7 @@ public class NarratorService extends Service implements Callback{
 			
 		}else{
 			Faction f = fManager.getFaction(teamColor);
-			f.makeAvailable(className);
+			f.makeAvailable(className, fManager);
 			sl.onSuccess();
 		}
 	}
@@ -523,7 +523,7 @@ public class NarratorService extends Service implements Callback{
 			
 		}else{
 			Faction f = fManager.getFaction(teamColor);
-			f.makeUnavailable(name);
+			f.makeUnavailable(name, fManager);
 			sl.onSuccess();
 		}
 	}
