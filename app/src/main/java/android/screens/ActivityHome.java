@@ -77,9 +77,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		}
 
 
-		try {
+		/*try {
 			final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-			Server.CheckVersion(pInfo.versionCode, new FunctionCallback() {
+			//Server.CheckVersion(pInfo.versionCode, new FunctionCallback() {
 				public void done(Object o, ParseException e) {
 					displayUpdate();
 				}
@@ -88,7 +88,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 					displayUpdate();
 				}
 			});
-		}catch(PackageManager.NameNotFoundException e){}
+		}catch(PackageManager.NameNotFoundException e){}*/
+		
 		connectNarrator(null);
 	}
 
@@ -163,7 +164,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_join:
 				if(isLoggedIn()) {
-					displayGames(GameBookPopUp.JOIN);
+					Server.JoinPublic(this);
+					//displayGames(GameBookPopUp.JOIN);
 				}else if(networkCapable()){
 					showIpPrompt();
 					//showNamePrompt("Join");

@@ -75,11 +75,6 @@ public abstract class NActivity extends FragmentActivity{
 		}
 	}
 
-	public static int convertTeamColor(String id){
-		id = id.replace("#", "");
-		return Integer.parseInt(id, 16);
-	}
-
 	public static void setTextColor(TextView v, String color){
 		v.setTextColor(Color.parseColor(color));
 	}

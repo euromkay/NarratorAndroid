@@ -29,10 +29,6 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
         
         if (n.isStarted()){
         	onGameStart();
-        	if(n.isDay())
-                onDayStart(null);
-            else
-                onNightStart(null);
         }
     }
     
@@ -51,7 +47,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             if(t.knowsTeam() && t.getMembers().getLivePlayers().size() > 1){
                 message += " Your teammates are " +t.getMembers().sortByName().toString() + ".";
             }
-            texter.sendMessage(new OGIMessage(texter, message));
+            new OGIMessage(texter, message);
         }
         if(n.isDay())
             onDayStart(null);
@@ -69,7 +65,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             message += "\nSee team members - " + SQuote(TEAM_INFO);
         message += "\nGet day help - " + SQuote(DAY_HELP);
         message += "\nGet night help - " + SQuote(NIGHT_HELP);
-        owner.sendMessage(new OGIMessage(owner, message));
+        new OGIMessage(owner, message);
     }
 
     private static final String HELP = "help";

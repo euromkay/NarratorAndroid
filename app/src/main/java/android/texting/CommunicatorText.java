@@ -1,7 +1,5 @@
 package android.texting;
 
-import java.util.ArrayList;
-
 import shared.event.EventList;
 import shared.event.Message;
 import shared.logic.support.Communicator;

@@ -1,6 +1,7 @@
 package android.screens;
 
 import android.NActivity;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,7 @@ public class MembersAdapter extends BaseAdapter{
 
         result.setText(name);
         result.setTypeface(font);
-        result.setTextColor(c.convertTeamColor(color));
+        result.setTextColor(Color.parseColor(color));
 
         return result;
 

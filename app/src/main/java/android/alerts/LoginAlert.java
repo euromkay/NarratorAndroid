@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.wifi.NodeListener;
 import voss.narrator.R;
 
 public class LoginAlert extends DialogFragment implements View.OnClickListener, SuccessListener{
@@ -80,8 +81,17 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         activity.toast("Successfully logged in");
         Button v = (Button) activity.findViewById(R.id.home_login_signup);
         v.setText("Signout");
+        activity.ns.addNodeListener(new NodeListener(){
+        	
+        	public boolean onMessageReceive(String message){
+        		try{
+        			LoginAlert.this.getDialog().cancel();
+        		}catch(NullPointerException e){}
+        		return true;
+        	}
+        });
+        Server.Greet(activity);
         try {
-            getDialog().cancel();
         }catch(NullPointerException e){}
     }
 

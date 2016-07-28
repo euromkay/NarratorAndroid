@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.parse.GameListing;
 import android.parse.ParseConstants;
@@ -543,7 +544,7 @@ implements
 				showActionPanel();
 		}
 	}
-	protected boolean wideMode(){
+	public boolean wideMode(){
 		return infoButton.getVisibility() == View.GONE;
 	}
 	private void setSelected(int id){
@@ -873,7 +874,7 @@ implements
 		}catch (IllegalArgumentException e){}
 	}
 	public void setTrimmings(String input){
-		int color = convertTeamColor(input);
+		int color = Color.parseColor(input.substring(0));
 		rolesTV.setTextColor(color);
 		roleTV.setTextColor(color);
 		alliesTV.setTextColor(color);

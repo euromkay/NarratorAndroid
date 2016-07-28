@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -14,7 +17,6 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
-import com.parse.LogInCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -27,7 +29,6 @@ import android.NarratorService;
 import android.SuccessListener;
 import android.alerts.GameBookPopUp;
 import android.app.Activity;
-import android.net.Uri;
 import android.screens.ActivityHome;
 import android.setup.SetupDeliverer;
 import android.setup.SetupManager;
@@ -39,7 +40,6 @@ import shared.logic.Player;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
 import shared.packaging.Packager;
-import voss.narrator.R;
 
 
 @SuppressWarnings("unused")
@@ -82,6 +82,11 @@ public class Server {
                 // ...
             }
         };
+    }
+    
+    public static void Destroy(){
+    	mAuth = null;
+    	mAuthListener = null;
     }
 
     public static boolean IsLoggedIn(){
@@ -485,5 +490,21 @@ public class Server {
 
 	public static boolean isHost() {
 		return false;
+	}
+
+	public static void Greet(ActivityHome activity) {
+		activity.ns.connectWebSocket();
+		
+	}
+
+	public static void JoinPublic(ActivityHome aHome) {
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put("action", true);
+			jo.put("message", "joinPublic");
+			aHome.ns.sendMessage(jo);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 }

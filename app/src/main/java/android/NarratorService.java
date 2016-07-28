@@ -3,6 +3,7 @@ package android;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -32,6 +33,7 @@ import android.setup.SetupManager;
 import android.texting.StateObject;
 import android.util.Log;
 import android.wifi.ChatManager;
+import android.wifi.NodeListener;
 import android.wifi.SocketClient;
 import android.wifi.SocketHost;
 import shared.logic.Narrator;
@@ -63,6 +65,8 @@ public class NarratorService extends Service implements Callback{
 		fManager = new FactionManager(local);
 		ch = new CommandHandler(local);
 		Log.d("NS", "Narrator started");
+		if(nListeners == null)
+			nListeners = new ArrayList<>();
 	}
 	
     private final IBinder mBinder = new MyBinder();
@@ -538,7 +542,8 @@ public class NarratorService extends Service implements Callback{
 		mWebSocketClient.send(jo.toString());
 	}
 	
-	private WebSocketClient mWebSocketClient;
+	public WebSocketClient mWebSocketClient;
+	private ArrayList<NodeListener> nListeners;
 	public void connectWebSocket() {
 		  URI uri;
 		  try {
@@ -549,11 +554,12 @@ public class NarratorService extends Service implements Callback{
 		  }
 
 		  mWebSocketClient = new WebSocketClient(uri) {
-		    public void onOpen(ServerHandshake serverHandshake) {
+		    public void onOpen(ServerHandshake unused) {
 		    	JSONObject jo = new JSONObject();
 		    	try {
 					jo.put("server", true);
 					jo.put("message", "greeting");
+					sendMessage(jo);
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -561,15 +567,15 @@ public class NarratorService extends Service implements Callback{
 
 
 		    public void onMessage(String s) {
-		      //final String message = s;
-
-		      /*runOnUiThread(new Runnable() {
-		        @Override
-		        public void run() {
-		          TextView textView = (TextView)findViewById(R.id.messages);
-		          textView.setText(textView.getText() + "\n" + message);
-		        }
-		      });*/
+		    	ArrayList<NodeListener> toRemove = new ArrayList<>();
+		    	for(NodeListener nL: nListeners){
+		    		if(nL.onMessageReceive(s))
+		    			toRemove.add(nL);
+		    	}
+		    	for(NodeListener nL: toRemove){
+		    		nListeners.remove(nL);
+		    	}
+		    	
 		    }
 
 
@@ -584,4 +590,10 @@ public class NarratorService extends Service implements Callback{
 		  };
 		  mWebSocketClient.connect();
 		}
+	public void addNodeListener(NodeListener nL) {
+		nListeners.add(nL);
+	}
+	public void removeNodeListener(NodeListener nL){
+		nListeners.remove(nL);
+	}
 }

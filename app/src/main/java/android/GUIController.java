@@ -1,12 +1,11 @@
 package android;
 
-import voss.narrator.R;
-import android.util.Log;
-import android.view.View;
 import android.day.ActivityDay;
 import android.screens.SimpleGestureFilter;
 import android.texting.TextController;
 import android.texting.TextInput;
+import android.util.Log;
+import android.view.View;
 import shared.ai.Controller;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -15,6 +14,7 @@ import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
 import shared.roles.Framer;
 import shared.roles.Role;
+import voss.narrator.R;
 
 public class GUIController extends Controller implements TextInput{
 
@@ -132,8 +132,8 @@ public class GUIController extends Controller implements TextInput{
         if(dScreen.manager.getCurrentPlayer() == slf)
             return;
 
-        View v = dScreen.findViewById(R.id.day_playerDrawerButton);
-        dScreen.onClick(v);
+        View b = dScreen.findViewById(R.id.day_playerDrawerButton);
+        dScreen.onClick(b);
 
         if (slf != null && slf.isDead()){
             throw new PlayerTargetingException(slf.getDescription() + " is dead and can't be selected on Player Click");
@@ -148,6 +148,9 @@ public class GUIController extends Controller implements TextInput{
 
     public void actionPanelClick(){
         dScreen.onClick(dScreen.actionButton);
+    }
+    public void infoPanelClick(){
+        dScreen.onClick(dScreen.infoButton);
     }
 
     public void endNight(Player slave){
