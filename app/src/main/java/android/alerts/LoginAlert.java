@@ -53,7 +53,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 String username = userET.getText().toString();
                 String password = pwET.getText().toString();
 
-                Server.Login(username, password, activity, this);
+                activity.server.Login(username, password, activity, this);
                 break;
             case R.id.login_signup:
                 userET = (EditText) mainView.findViewById(R.id.login_username);
@@ -69,7 +69,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
                 password = pwET.getText().toString();
 
-                Server.SignUp(username, password, this, activity);
+                activity.server.SignUp(username, password, this, activity);
                 break;
             case R.id.login_cancelLogin:
                 getDialog().cancel();

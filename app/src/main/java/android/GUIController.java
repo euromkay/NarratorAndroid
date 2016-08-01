@@ -120,26 +120,26 @@ public class GUIController extends Controller implements TextInput{
     }
 
     public void selectSlave(Player slave){
-    	GUIController.selectScreen(dScreen, slave);
+    	GUIController.selectScreen(dScreen, slave.getName());
     }
     
     public void selectHost(Player host){
-    	GUIController.selectScreen(dScreen, host);
+    	GUIController.selectScreen(dScreen, host.getName());
         dScreen.onClick(dScreen.actionButton);
     }
 
-    public static void selectScreen(ActivityDay dScreen, Player slf){
-        if(dScreen.manager.getCurrentPlayer() == slf)
+    public static void selectScreen(ActivityDay dScreen, String slf){
+        if(dScreen.manager.getCurrentPlayer().equals(slf))
             return;
 
         View b = dScreen.findViewById(R.id.day_playerDrawerButton);
         dScreen.onClick(b);
 
-        if (slf != null && slf.isDead()){
-            throw new PlayerTargetingException(slf.getDescription() + " is dead and can't be selected on Player Click");
-        }
-        if(!dScreen.manager.getNarrator().getAllPlayers().has(slf))
-        	throw new PlayerTargetingException("Player not part of game!");
+        //if (slf != null && slf.isDead()){
+        //    throw new PlayerTargetingException(slf.getDescription() + " is dead and can't be selected on Player Click");
+        //}
+        //if(!dScreen.manager.getNarrator().getAllPlayers().has(slf))
+        	//throw new PlayerTargetingException("Player not part of game!");
         dScreen.onPlayerClick(slf);
 
         dScreen.closeDrawer();

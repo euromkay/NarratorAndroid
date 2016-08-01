@@ -46,11 +46,11 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
         gameLV = (ListView) mainView.findViewById(R.id.listView1);
 
         if (mode == JOIN) {
-            Server.GetAllGames(15, this);
+            //Server.GetAllGames(15, this);
             goButton.setText("Search");
             setTitle("Open Games:");
         }else{ //resume
-            Server.GetMyGames(this);
+            //Server.GetMyGames(this);
             goButton.setText("Continue");
             setTitle("Current Games");
         }
@@ -175,7 +175,7 @@ public class GameBookPopUp extends DialogFragment implements Server.GameFoundLis
 
         if (mode == JOIN){
             Server.AddPlayer(gl);
-            n.addPlayer(Server.GetCurrentUserName());
+            //n.addPlayer(Server.GetCurrentUserName());
         }
 
         a.start(gl);//NewGame(gl.getID(), Server.GetCurrentUserName().equals(gl.getHostName()));

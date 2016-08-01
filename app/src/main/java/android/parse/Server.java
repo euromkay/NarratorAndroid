@@ -67,9 +67,11 @@ public class Server {
         void onError(String s);
     }
 
-    private static FirebaseAuth mAuth;
-    private static FirebaseAuth.AuthStateListener mAuthListener;
-    public static void Init(){
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    public void Init(){
+    	if(mAuth != null)
+    		return;
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -84,32 +86,34 @@ public class Server {
         };
     }
     
-    public static void Destroy(){
+    public void Destroy(){
     	mAuth = null;
     	mAuthListener = null;
     }
 
-    public static boolean IsLoggedIn(){
+    public boolean IsLoggedIn(){
+    	if(mAuth == null)
+    		Init();
         return mAuth.getCurrentUser() != null;
     }
 
-    public static void Start(){
+    public void Start(){
         mAuth.addAuthStateListener(mAuthListener);
     }
 
-    public static void Stop(){
+    public void Stop(){
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
 
-    public static void LogOut(){
+    public void LogOut(){
         FirebaseAuth.getInstance().signOut();
     }
 
 
 
-    public static void Login(String username, String password, final ActivityHome ah, final SuccessListener sL){
+    public void Login(String username, String password, final ActivityHome ah, final SuccessListener sL){
         if (username.length() == 0 || password.length() == 0){
             return;
         }
@@ -125,7 +129,7 @@ public class Server {
                 });
     }
 
-    public static void SignUp(String username, final String password, final SuccessListener sL, final ActivityHome ah){
+    public void SignUp(String username, final String password, final SuccessListener sL, final ActivityHome ah){
         if(username.contains("@")){
             sL.onFailure("Username cannot be an email.");
         }
@@ -163,7 +167,7 @@ public class Server {
     }
 
 
-    public static void RegisterGame(final ActivityHome a, final GameRegister g){
+    public void RegisterGame(final ActivityHome a, final GameRegister g){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
         query.whereEqualTo(ParseConstants.INSTANCE_HOST_KEY, ParseUser.getCurrentUser().getUsername());
         query.whereEqualTo(ParseConstants.ACTIVE, true);
@@ -183,7 +187,7 @@ public class Server {
         });
     }
 
-    private static void CreateGame(final GameRegister g){
+    private void CreateGame(final GameRegister g){
         final ParseObject game = new ParseObject(ParseConstants.NARRATOR_INSTANCE);
         game.put(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
         game.put(ParseConstants.ACTIVE, true);
@@ -211,13 +215,13 @@ public class Server {
         });
     }
 
-    public static String GetCurrentUserName(){
-        if(Server.IsLoggedIn())
+    public String GetCurrentUserName(){
+        if(IsLoggedIn())
             return mAuth.getCurrentUser().getDisplayName();
         return "";
     }
 
-    public static void GetAllGames(int limit, final GameFoundListener gf){
+    public void GetAllGames(int limit, final GameFoundListener gf){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
         query.whereNotEqualTo(ParseConstants.INSTANCE_HOST_KEY, GetCurrentUserName());
         query.whereNotEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());//not in the game
@@ -228,7 +232,7 @@ public class Server {
         GetGames(query, gf);
     }
 
-    public static void GetMyGames(final GameFoundListener gf){
+    public void GetMyGames(final GameFoundListener gf){
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.NARRATOR_INSTANCE);
         query.whereEqualTo(ParseConstants.PLAYERS, GetCurrentUserName());
         query.whereEqualTo(ParseConstants.ACTIVE, Boolean.TRUE);
@@ -236,7 +240,7 @@ public class Server {
         GetGames(query, gf);
     }
 
-    private static void GetGames(ParseQuery<ParseObject> query, final GameFoundListener gf){
+    private void GetGames(ParseQuery<ParseObject> query, final GameFoundListener gf){
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> list, ParseException e) {
                 if (e == null) {
@@ -248,7 +252,7 @@ public class Server {
                     GameListing gl;
                     for (ParseObject po : list) {
                         gl = new GameListing(po);
-                        if(gl.getPlayerNames().contains(Server.GetCurrentUserName())) {
+                        if(gl.getPlayerNames().contains(GetCurrentUserName())) {
                             games.add(gl);
                             continue;
                         }
@@ -502,6 +506,17 @@ public class Server {
 		try {
 			jo.put("action", true);
 			jo.put("message", "joinPublic");
+			aHome.ns.sendMessage(jo);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void HostPublic(ActivityHome aHome) {
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put("action", true);
+			jo.put("message", "hostPublic");
 			aHome.ns.sendMessage(jo);
 		} catch (JSONException e) {
 			e.printStackTrace();

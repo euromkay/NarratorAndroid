@@ -1,32 +1,30 @@
 package android.day;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import voss.narrator.R;
-import shared.logic.Player;
-import shared.logic.PlayerList;
 
 
 public class PlayerDrawerAdapter extends RecyclerView.Adapter<PlayerDrawerAdapter.ViewHolder> {
-    private PlayerList mDataset;
+    private JSONArray mDataset;
     private OnPlayerClickListener mListener;
 
     /**
      * Interface for receiving click events from cells.
      */
     public interface OnPlayerClickListener {
-        void onPlayerClick(Player p);
+        void onPlayerClick(String name);
         int getMyColor(int id);
         void onExitAttempt();
     }
 
-    /**
-     * Custom viewholder for our planet views.
-     */
+    
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView mTextView;
 
@@ -36,7 +34,7 @@ public class PlayerDrawerAdapter extends RecyclerView.Adapter<PlayerDrawerAdapte
         }
     }
 
-    public PlayerDrawerAdapter(PlayerList myDataset, OnPlayerClickListener listener) {
+    public PlayerDrawerAdapter(JSONArray myDataset, OnPlayerClickListener listener) {
         mDataset = myDataset;
         mListener = listener;
         setHasStableIds(false);
@@ -72,7 +70,7 @@ public class PlayerDrawerAdapter extends RecyclerView.Adapter<PlayerDrawerAdapte
             return;
         }
 
-        if (position == mDataset.size() + 1){
+        if (position == mDataset.length() + 1){
             tv.setText("Close Game");
             tv.setTextColor(mListener.getMyColor(R.color.redBlood));
             tv.setOnClickListener(new View.OnClickListener() {
@@ -83,28 +81,34 @@ public class PlayerDrawerAdapter extends RecyclerView.Adapter<PlayerDrawerAdapte
             return;
         }
 
-        final Player p = mDataset.get(position - 1);
+		try {
+			final String name = mDataset.getString(position - 1);
+			tv.setText(name);
+	        tv.setTextColor(mListener.getMyColor(R.color.white));
+	        tv.setOnClickListener(new View.OnClickListener() {
+	            @Override
+	            public void onClick(View view) {
+	                mListener.onPlayerClick(name);
+	                if (prev != null)
+	                    prev.setTextColor(mListener.getMyColor(R.color.white));
+	                tv.setTextColor(mListener.getMyColor(R.color.yellow));
+	                prev = tv;
+	            }
+	        });
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-        tv.setText(p.getName());
-        tv.setTextColor(mListener.getMyColor(R.color.white));
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mListener.onPlayerClick(p);
-                if (prev != null)
-                    prev.setTextColor(mListener.getMyColor(R.color.white));
-                tv.setTextColor(mListener.getMyColor(R.color.yellow));
-                prev = tv;
-            }
-        });
+        
     }
 
 
     public int getItemCount() {
-        return mDataset.size() + 2;
+        return mDataset.length() + 2;
     }
     
-    public PlayerList getPlayersInView(){
+    public JSONArray getPlayersInView(){
     	return mDataset;
     }
 }

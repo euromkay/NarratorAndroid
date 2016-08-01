@@ -23,7 +23,7 @@ import shared.roles.Framer;
 public class DayManager implements TextInput{
 
 	
-	private   Player currentPlayer;
+	private String currentPlayer;
 
 	
 	public DayScreenController dScreenController;
@@ -54,7 +54,7 @@ public class DayManager implements TextInput{
 
 		for(Player p: ns.local.getAllPlayers()){
 			if(p.isComputer()){
-				if(Server.IsLoggedIn())
+				if(dScreenController.dScreen.server.IsLoggedIn())
 					b.addSlave(p, new GUIController(dScreen));
 				else{
 					b.addSlave(p, new TestController(ns.local));
@@ -83,8 +83,10 @@ public class DayManager implements TextInput{
 		}
 	}
 
-	public void dayAction(Player p) {
-
+	public void dayAction(String name) {
+		if(server.isLoggedIn()){
+			
+		}
 		if(isHost()){
 			p.doDayAction();
 			tC.doDayAction(p);
@@ -214,9 +216,9 @@ public class DayManager implements TextInput{
 
 	
 
-	protected void setCurrentPlayer(Player p){
-		currentPlayer = p;
-		dScreenController.currentPlayer = p;
+	protected void setCurrentPlayer(String name){
+		currentPlayer = name;
+		dScreenController.currentPlayer = name;
 	}
 	protected void setNextAbility(int direction){
 		dScreenController.setNextAbility(direction);
@@ -251,7 +253,7 @@ public class DayManager implements TextInput{
 
 
 	public boolean isHost() {
-		if(Server.IsLoggedIn())
+		if(dScreenController.dScreen.server.IsLoggedIn())
 			return false;
 		if(dScreenController.dScreen.networkCapable())
 			return ns.socketHost != null;
@@ -264,19 +266,19 @@ public class DayManager implements TextInput{
 			if(ns.socketHost != null)
 				ns.socketHost.write(s);
 		}else{
-			if(Server.IsLoggedIn()) {
+			if(dScreenController.dScreen.server.IsLoggedIn()) {
 				s = "," + s;
 				if(!sync)
-					s = Server.GetCurrentUserName() + s;
+					s = dScreenController.dScreen.server.GetCurrentUserName() + s;
 				else
 					s = " " + s;
 				double day = ns.local.getDayNumber();
 				if(ns.local.isNight())
 					day += 0.5;
 				Server.PushCommand(ns.getGameListing(), s, day);
-			}else
-				ns.socketClient.send(s);
-
+			}else{
+				//ns.socketClient.send(s);
+			}
 		}
 	}
 
@@ -292,7 +294,7 @@ public class DayManager implements TextInput{
 
 		String sender = command[0];
 		message = message.substring(sender.length() + 1);//1 length for comma
-		if(sender.equals(" ") || !sender.equals(Server.GetCurrentUserName())){//everyone should do it.
+		if(sender.equals(" ") || !sender.equals(dScreenController.dScreen.server.GetCurrentUserName())){//everyone should do it.
 			ns.onRead(message, null);//nulll for chat manager, unused in this function, also its synch protected.
 		}
 	}

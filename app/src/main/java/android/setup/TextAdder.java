@@ -5,7 +5,6 @@ import org.json.JSONException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.parse.Server;
 import android.texting.CommunicatorText;
 import android.texting.PhoneNumber;
 import android.texting.ReceiverText;
@@ -30,7 +29,7 @@ public class TextAdder extends BroadcastReceiver{
         	}catch(JSONException e){}
             return;
         }
-        if(Server.IsLoggedIn())
+        if(manager.screen.server.IsLoggedIn())
             return;
         PhoneNumber number = new PhoneNumber(intent.getExtras().getString("number"));
         String name = intent.getExtras().getString("message");
@@ -65,7 +64,6 @@ public class TextAdder extends BroadcastReceiver{
         }
         //abortBroadcast();
         manager.addPlayer(name, new CommunicatorText(number));
-
 
     }
 

@@ -17,6 +17,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.day.ActivityDay;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -51,7 +52,7 @@ import shared.logic.support.RoleTemplate;
 
 public class NarratorService extends Service implements Callback{
 
-	
+	Server server;
 	public Narrator local;//this is the one i keep communicators in
 	public FactionManager fManager;
 	private CommandHandler ch;
@@ -73,13 +74,6 @@ public class NarratorService extends Service implements Callback{
     public IBinder onBind(Intent arg0) {
         return mBinder;
     }
-
-	/*public void setRules(Rules rules, String original) {
-		if(sManager==null)
-			local.setRules(rules);
-		else
-			sManager.setRules(original);
-	}*/
 
 	public class MyBinder extends Binder {
         public NarratorService getService() {
@@ -117,8 +111,8 @@ public class NarratorService extends Service implements Callback{
 	}
 	
 	public JSONObject getFactions() throws JSONException{
-		if(Server.IsLoggedIn()){
-			return null;
+		if(server.IsLoggedIn()){
+			return gameState.factions;
 		}else{
 			StateObject so = stateObject();
 			so.addState(StateObject.RULES);
@@ -145,9 +139,13 @@ public class NarratorService extends Service implements Callback{
         }, Context.BIND_AUTO_CREATE);
 	}
 
-
-    private boolean isHost(){
-    	return socketClient == null;
+    public boolean isHost(){
+    	if(server.IsLoggedIn()){
+    		if(gameState == null)
+    			gameState = new GameState(this);
+    		return gameState.isHost;
+    	}
+    	return true;
     }
 
 	public SocketClient socketClient;
@@ -213,12 +211,12 @@ public class NarratorService extends Service implements Callback{
 	public SuccessListener sc;
 	public void submitName(String name, SuccessListener sc) {
 		this.sc = sc;
-		ClientAdder.SubmitName(name, socketClient);
+		//ClientAdder.SubmitName(name, socketClient);
 	}
 	
 	public void onRead(String message, ChatManager c){
 		synchronized(local){
-			if(Server.IsLoggedIn()){
+			if(server.IsLoggedIn()){
 				try {
 					ch.parseCommand(message);
 				}catch(Throwable e){
@@ -273,11 +271,23 @@ public class NarratorService extends Service implements Callback{
 	public void removeSetupManager(){
 		sManager = null;
 	}
+	public void put(JSONObject jo, String key, Object o){
+		try {
+			jo.put(key, o);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void addRole(String name, String color){
 		//if server is hosting narrator instance, then you don't do anything here.  you just have to track the object that the server gives you
 		//if you're hosting
-		if(Server.IsLoggedIn()){
-			
+		if(server.IsLoggedIn()){
+			JSONObject jo = new JSONObject();
+			put(jo, StateObject.roleColor, color);
+			put(jo, StateObject.roleName, name);
+			put(jo, StateObject.message, StateObject.addRole);
+			sendMessage(jo);
 		}else{
 			RoleTemplate rt = null;
 			Faction f = fManager.getFaction(color);
@@ -374,7 +384,7 @@ public class NarratorService extends Service implements Callback{
 
 		sManager.startDay();
 
-		if(!Server.IsLoggedIn() && isHost() && socketHost != null){
+		if(!server.IsLoggedIn() && isHost() && socketHost != null){
 			if (socketHost.sockets.isEmpty()){
 				socketHost.onDestroy();
 			}else{
@@ -407,57 +417,75 @@ public class NarratorService extends Service implements Callback{
 		}
 	}
 	public boolean isInProgress() {
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			return false;
 		}else{
 			return local.isInProgress();
 		}
 	}
 	public boolean isDay() {
-		if(Server.IsLoggedIn())
+		if(server.IsLoggedIn())
 			return false;
 		else
 			return local.isDay();
 	}
 	public JSONObject getRuleById(String ruleName) throws JSONException {
-		if(Server.IsLoggedIn()){
-			return null;
+		if(server.IsLoggedIn()){
+			return gameState.rules.getJSONObject(ruleName);
 		}else{
 			JSONObject jo = stateObject().addState(StateObject.RULES).send((Player) null);
 			return jo.getJSONObject("rules").getJSONObject(ruleName);
 		}
 	}
 	public void ruleChange(String id, boolean b) {
-		if(Server.IsLoggedIn()){
-			//Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+		if(server.IsLoggedIn()){
+			try {
+				gameState.rules.getJSONObject(id).put("val", b);
+				JSONObject jo = new JSONObject();
+				put(jo, StateObject.message, StateObject.ruleChanges);
+				put(jo, StateObject.ruleChanges, gameState.rules);
+				sendMessage(jo);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}else if (isHost()) {
 			local.getRules().setBool(id, b);
 		}
     }
 		
 	public void ruleChange(String id, int b) {
-		if(Server.IsLoggedIn()){
-			//Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
+		if(server.IsLoggedIn()){
+			//server.UpdateRules(ns.getGameListing(), ns.local.getRules());
 		}else if (isHost()) {
 			local.getRules().setInt(id, b);
 		}
     }
 	
 	public void removeRole(String roleName, String color) {
-		if(Server.IsLoggedIn()){
-			
+		if(server.IsLoggedIn()){
+			JSONObject jo = new JSONObject();
+			put(jo, StateObject.roleColor, color);
+			put(jo, StateObject.roleName, roleName);
+			put(jo, StateObject.message, StateObject.removeRole);
+			sendMessage(jo);
 		}else{
 			RoleTemplate rt = local.getAllRoles().get(roleName, color);
 			local.removeRole(rt);
 		}
 		if(sManager != null)
-			sManager.onRoleRemove(roleName, color);
-		
+			sManager.onRoleRemove(roleName, color);	
 	}
+	
 	public void newTeam(String name, String color, SuccessListener sL) {
-		if(Server.IsLoggedIn()){
-			
-		}else{
+		color = color.toUpperCase();
+		if(server.IsLoggedIn()){
+			sL.onSuccess();//too lazy to figure out a signaling message from the instance object;
+			JSONObject jo = new JSONObject();
+			put(jo, StateObject.message, "addTeam");
+			put(jo, StateObject.color, color);
+			put(jo, "teamName", name);
+			sendMessage(jo);
+			}else{
 			Faction f = fManager.addFaction(name, color);
 			f.setDescription("Custom team");
 			if(sManager == null)
@@ -478,7 +506,7 @@ public class NarratorService extends Service implements Callback{
 		
 	}
 	public void deleteTeam(String color) {
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			
 		}else{
 			fManager.removeTeam(color);
@@ -498,7 +526,7 @@ public class NarratorService extends Service implements Callback{
 		
 	}
 	public void setEnemies(String color, String teamColor, SuccessListener sl) {
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			
 		}else{
 			Team curTeam = local.getTeam(teamColor);
@@ -508,7 +536,7 @@ public class NarratorService extends Service implements Callback{
 		}
 	}
 	public void setAllies(String color, String teamColor, SuccessListener sl) {
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			
 		}else{
 			Team curTeam = local.getTeam(teamColor);
@@ -519,7 +547,7 @@ public class NarratorService extends Service implements Callback{
 	}
 	
 	public void addTeamRole(String className, String teamColor, SuccessListener sl){
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			
 		}else{
 			Faction f = fManager.getFaction(teamColor);
@@ -528,7 +556,7 @@ public class NarratorService extends Service implements Callback{
 		}
 	}
 	public void removeTeamRole(String name, String teamColor, SuccessListener sl) {
-		if(Server.IsLoggedIn()){
+		if(server.IsLoggedIn()){
 			
 		}else{
 			Faction f = fManager.getFaction(teamColor);
@@ -537,13 +565,14 @@ public class NarratorService extends Service implements Callback{
 		}
 	}
 		
-	public void sendMessage(JSONObject jo) throws JSONException{
-		jo.put("name", Server.GetCurrentUserName());
+	public void sendMessage(JSONObject jo){
+		put(jo, "name", server.GetCurrentUserName());
 		mWebSocketClient.send(jo.toString());
 	}
 	
 	public WebSocketClient mWebSocketClient;
 	private ArrayList<NodeListener> nListeners;
+	protected NActivity activity;
 	public void connectWebSocket() {
 		  URI uri;
 		  try {
@@ -575,7 +604,24 @@ public class NarratorService extends Service implements Callback{
 		    	for(NodeListener nL: toRemove){
 		    		nListeners.remove(nL);
 		    	}
-		    	
+		    	try{
+		    		JSONObject jo = new JSONObject(s);
+		    		if(hasBoolean("lobbyUpdate", jo))
+		    			return;
+		    		
+		    		if(hasBoolean("guiUpdate", jo)){
+		    			activityCheck(jo);
+		    			if(gameState == null)
+		    				gameState = new GameState(NarratorService.this);
+		    			gameState.parse(jo);
+		    		}
+		    		if(jo.has("chatReset"))
+		    			gameState.chat = jo.getString("message");
+		    		
+		    			
+		    	}catch(JSONException e){
+		    		e.printStackTrace();
+		    	}
 		    }
 
 
@@ -590,10 +636,75 @@ public class NarratorService extends Service implements Callback{
 		  };
 		  mWebSocketClient.connect();
 		}
+	public GameState gameState;
+	private void activityCheck(JSONObject jo) throws JSONException{
+		if(!jo.has(StateObject.gameStart))
+			return;
+		boolean gameStarted = jo.getBoolean(StateObject.gameStart);
+		if(gameStarted){
+			if(activity.getClass() != ActivityDay.class){
+				Intent i = new Intent(activity, ActivityDay.class);
+				activity.startActivity(i);
+			}
+		}else{
+			if(activity.getClass() != ActivityCreateGame.class){
+				Intent i = new Intent(activity, ActivityCreateGame.class);
+				activity.startActivity(i);
+			}
+		}
+	}
+	
+	private boolean hasBoolean(String s, JSONObject jo){
+		try{
+			if(!jo.has(s))
+				return false;
+			boolean b = jo.getBoolean(s);
+			return b;
+		}catch(JSONException e){
+			e.printStackTrace();
+		}
+		return false;
+	}
 	public void addNodeListener(NodeListener nL) {
 		nListeners.add(nL);
 	}
 	public void removeNodeListener(NodeListener nL){
 		nListeners.remove(nL);
+	}
+	public String getChat() {
+		if(server.IsLoggedIn()){
+			return gameState.chat;
+		}else{
+			return local.getEventManager().getEvents(shared.event.Message.PUBLIC).access(shared.event.Message.PUBLIC, true);
+		}
+	}
+	public JSONObject getPlayers() {
+		if(server.IsLoggedIn()){
+			return gameState.players;
+		}else{
+			StateObject so = stateObject();
+			so.addState(StateObject.PLAYERLISTS);
+			try{
+				return so.send((Player) null).getJSONObject(StateObject.playerLists);
+			}catch(JSONException e){
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
+	
+	public JSONArray getRoles(){
+		if(server.IsLoggedIn()){
+			return gameState.rolesList;
+		}else{
+			try{
+				StateObject so = stateObject();
+				so.addState(StateObject.ROLESLIST);
+				return so.send((Player) null).getJSONArray(StateObject.roles);
+			}catch(JSONException e){
+				e.printStackTrace();
+			}
+			return null;
+		}
 	}
 }

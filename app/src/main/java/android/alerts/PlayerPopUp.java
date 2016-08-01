@@ -1,5 +1,9 @@
 package android.alerts;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.CommunicatorPhone;
 import android.NActivity;
 import android.app.Activity;
@@ -7,14 +11,13 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.parse.Server;
 import android.setup.ActivityCreateGame;
 import android.setup.SetupListener;
+import android.texting.StateObject;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -25,7 +28,6 @@ import android.widget.Toast;
 import android.wifi.CommunicatorInternet;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.PlayerList;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.RoleTemplate;
@@ -37,7 +39,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
     public View mainView;
     public ListView lv;
-    public PlayerList players;
+    public JSONArray players;
     private boolean first = true;
     
     public static final String COMPUTER_COMMAND = "set computers";
@@ -47,9 +49,9 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         lv = (ListView) mainView.findViewById(R.id.listView1);
 
-        ListAdapter adapter = getAdapter(players);
+        ListAdapter adapter = getAdapter();
         lv.setAdapter(adapter);
-        if (Server.IsLoggedIn()) {
+        if (activity.server.IsLoggedIn()) {
             mainView.findViewById(R.id.addPlayerContent).setVisibility(View.GONE);
             mainView.findViewById(R.id.addPlayerConfirm).setVisibility(View.GONE);
         }else {
@@ -85,7 +87,16 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     }
 
     public void onItemClick(AdapterView<?> unusedA, View clickedItem, int position, long unusedL){
-        Player clicked = players.get(position);
+        
+        if(activity.server.IsLoggedIn()){
+        	return;
+        } 
+        Player clicked = null;
+		try {
+			clicked = activity.ns.local.getPlayerByName(players.getJSONObject(position).getString(StateObject.playerName));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
         if(clicked.getCommunicator().getClass() == CommunicatorInternet.class)
             return;
@@ -111,12 +122,14 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }
     }
 
-    private ListAdapter getAdapter(PlayerList players){
+    private ListAdapter getAdapter(){
         return new ListAdapter(players, activity);
     }
 
 
     public void onClick(View v) {
+    	if(activity.server.IsLoggedIn())
+    		return;
         EditText et = (EditText) mainView.findViewById(R.id.addPlayerContent);
         String name = et.getText().toString();
 
@@ -124,9 +137,10 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         if (name.length() == 0)
             return;
 
+        Narrator n = activity.ns.local;
         if(name.equals(COMPUTER_COMMAND)){
-            for(int i = 0; i < players.size(); i++)
-                players.get(i).setComputer();
+            for(Player p: n.getAllPlayers())
+                p.setComputer();
             updatePlayerList();
             return;
         }
@@ -146,14 +160,24 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     }
 
     public void updatePlayerList(){
-        players = mListener.getNarrator().getAllPlayers();
-        lv.setAdapter(getAdapter(players));
+    	updatePlayerData();
+        lv.setAdapter(getAdapter());
+    }
+    
+    private void updatePlayerData(){
+    	JSONObject playerObject = activity.ns.getPlayers(); 
+        try {
+			players = playerObject.getJSONArray("Lobby");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	
     }
 
     public void pushPlayersDown(){
         lv.post(new Runnable() {
             public void run() {
-                lv.setSelection(players.size()-1);
+                lv.setSelection(players.length()-1);
             }
         });
     }
@@ -185,7 +209,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         try {
             mListener = (AddPlayerListener) a;
             mListener.onPopUpCreate(this);
-            players = mListener.getNarrator().getAllPlayers();
+            updatePlayerData();
         } catch (ClassCastException e) {
             throw new ClassCastException(a.toString() + " must implement AddPlayerListenerListener");
         }
@@ -215,22 +239,27 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
     public class ListAdapter extends BaseAdapter{
 
-        private PlayerList data;
+        private JSONArray data;
         private NActivity c;
         private Typeface font;
 
-        public ListAdapter(PlayerList data, NActivity c){
+        public ListAdapter(JSONArray data, NActivity c){
             this.data = data;
             this.c = c;
             font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
         }
 
         public int getCount() {
-            return data.size();
+            return data.length();
         }
 
         public String getItem(int position) {
-            return data.get(position).getName();
+            try {
+				return data.getString(position);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+            return null;
         }
 
         public long getItemId(int position) {
@@ -245,18 +274,22 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             } else {
                 result = (TextView) convertView;
             }
-
-            Player p = data.get(position);
-            String name = p.getName();
-            int color;
-            if (p.isComputer()){
-                color = getColor(R.color.redBlood);
-            }else{
-                color = getColor(R.color.white);
+ 
+            try{
+	            JSONObject player = data.getJSONObject(position);
+	            String name = player.getString(StateObject.playerName);
+	            int color;
+	            if (player.getBoolean("isComputer")){
+	                color = getColor(R.color.redBlood);
+	            }else{
+	                color = getColor(R.color.white);
+	            }
+	            result.setText(name);
+	            //result.setTypeface(font);
+	            result.setTextColor(color);
+            }catch(JSONException e){
+            	e.printStackTrace();
             }
-            result.setText(name);
-            //result.setTypeface(font);
-            result.setTextColor(color);
 
             return result;
 
@@ -268,7 +301,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         }
 
 		public int size(){
-			return data.size();
+			return data.length();
 		}
     }
 }

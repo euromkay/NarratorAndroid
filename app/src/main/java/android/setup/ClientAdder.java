@@ -80,8 +80,6 @@ public class ClientAdder {
         
     }
 
-	public static void SubmitName(String name, SocketClient socketClient) {
-		socketClient.send(Constants.SUBMIT_NAME + name);
-	}
+	
 
 }

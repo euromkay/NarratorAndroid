@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.parse.Server;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -169,7 +168,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         if(name.equals("Randoms")){
         	rules = new JSONArray();
         	rules.put(Rules.DAY_START[0]);
-        	if(Server.IsLoggedIn()){
+        	if(screen.server.IsLoggedIn()){
         		rules.put(Rules.DAY_LENGTH[0]);
         		rules.put(Rules.NIGHT_LENGTH[0]);
         	}

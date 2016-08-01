@@ -24,13 +24,7 @@ public class SocketClient extends Service implements Runnable {
     private ChatManager chat;
     private String hostIp;
 
-    public int onStartCommand(Intent i, int flags, int startId){
-        if(Server.IsLoggedIn())
-            return Service.START_STICKY;
-        hostIp = i.getStringExtra(HOST_IP_ADDRESS);
-        
-        return Service.START_STICKY;
-    }
+    
 
     private final IBinder mBinder = new MyBinder();
     public IBinder onBind(Intent arg0) {
@@ -78,11 +72,6 @@ public class SocketClient extends Service implements Runnable {
         return chat;
     }
 
-    public void send(String s){
-        if(Server.IsLoggedIn())
-            return;
-        chat.write(s);
-    }
 
     public void onDestroy(){
         if(chat != null)

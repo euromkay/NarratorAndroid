@@ -2,10 +2,10 @@ package android.day;
 
 import java.util.ArrayList;
 
-import android.CommunicatorPhone;
-import android.parse.Server;
-import android.screens.SimpleGestureFilter;
+import org.json.JSONArray;
 
+import android.CommunicatorPhone;
+import android.screens.SimpleGestureFilter;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -222,8 +222,8 @@ public class DayScreenController implements NarratorListener{
 	private void setupPlayerDrawer() {
 		Narrator n = getNarrator();
 		PlayerList list;
-		if(Server.IsLoggedIn()){
-			list = new PlayerList(n.getPlayerByName(Server.GetCurrentUserName()));
+		if(dScreen.server.IsLoggedIn()){
+			list = new PlayerList(n.getPlayerByName(dScreen.server.GetCurrentUserName()));
 		}else if(manager.isHost()) {
 			list = n.getLivePlayers();
 		}else{
@@ -234,7 +234,11 @@ public class DayScreenController implements NarratorListener{
 				}
 			}
 		}
-		dScreen.setupPlayerDrawer(list);
+		JSONArray jArray = new JSONArray();
+		for(Player p: list){
+			jArray.put(p.getName());
+		}
+		dScreen.setupPlayerDrawer(jArray);
 	}
 	protected void updatePlayerControlPanel(){
 		if (dScreen.drawerOut())//when the drawer closes, it'll update, so no need to do it now, you don't even know who you're supposed to udpate it for!

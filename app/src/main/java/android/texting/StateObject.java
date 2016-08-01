@@ -31,6 +31,8 @@ public abstract class StateObject {
 	public static final String GRAVEYARD = "Graveyard";
 	public static final String ROLEINFO = "RoleInfo";
 	
+	public static final String message = "message";
+	
 	
 	private Narrator n;
 	private FactionManager fManager; 
@@ -307,6 +309,7 @@ public abstract class StateObject {
 				jo.put(StateObject.playerVote, pi.getVoters().size());
 			}
 			arr.put(jo);
+			jo.put("isComputer", pi.isComputer());
 		}
 			
 		
@@ -382,29 +385,34 @@ public abstract class StateObject {
 	public abstract JSONObject getObject() throws JSONException;
 	public abstract void write(Player p, JSONObject jo) throws JSONException;
 	
-	public JSONObject send(Player p) throws JSONException{
-		JSONObject obj = getObject();
-		for(String state: states){
-			if(state.equals(RULES))
-				addJRules(obj);
-			else if(state.equals(ROLESLIST))
-				addJRolesList(obj);
-			else if(state.equals(PLAYERLISTS))
-				addJPlayerLists(obj, p);
-			else if(state.equals(DAYLABEL))
-				addJDayLabel(obj);
-			else if(state.equals(GRAVEYARD))
-				addJGraveYard(obj);
-			else if(state.equals(ROLEINFO))
-				addJRoleInfo(p, obj);
+	public JSONObject send(Player p){
+		try{
+			JSONObject obj = getObject();
+			for(String state: states){
+				if(state.equals(RULES))
+					addJRules(obj);
+				else if(state.equals(ROLESLIST))
+					addJRolesList(obj);
+				else if(state.equals(PLAYERLISTS))
+					addJPlayerLists(obj, p);
+				else if(state.equals(DAYLABEL))
+					addJDayLabel(obj);
+				else if(state.equals(GRAVEYARD))
+					addJGraveYard(obj);
+				else if(state.equals(ROLEINFO))
+					addJRoleInfo(p, obj);
+				
+			}
+			for(String key: extraKeys.keySet()){
+				obj.put(key, extraKeys.get(key));
+			}
+			
+			write(p, obj);
+			return obj;
+		}catch(JSONException e){
 			
 		}
-		for(String key: extraKeys.keySet()){
-			obj.put(key, extraKeys.get(key));
-		}
-		
-		write(p, obj);
-		return obj;
+		return null;
 	}
 	
 	public void send(PlayerList players) throws JSONException {
@@ -465,8 +473,10 @@ public abstract class StateObject {
 	public static final String startGame = "startGame";
 	public static final String host = "host";
 	public static final String timer = "timer";
+	
 	public static final String rules = "rules";
-	public static final String ruleChange = "ruleChange";
+	public static final String ruleChanges = "ruleChanges";
+	public static final String ruleID = "ruleID";
 
 	public static final String playerName = "playerName";
 	public static final String playerIndex = "playerIndex";

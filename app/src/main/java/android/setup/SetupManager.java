@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import android.day.ActivityDay;
 import android.parse.ParseConstants;
 import android.parse.Server;
-import android.parse.ServerResponder;
 import android.util.Log;
 import shared.ai.Computer;
 import shared.logic.Narrator;
@@ -43,9 +42,11 @@ public class SetupManager {
 
     private Random rand;
     public NarratorService ns;
+    private Server server;
     
     public SetupManager(ActivityCreateGame a, NarratorService ns) throws JSONException{
     	this.ns = ns;
+    	server = a.server;
     	ns.setSetupManager(this);
         screen = a;
         listeners = new ArrayList<>();
@@ -53,7 +54,7 @@ public class SetupManager {
         this.rand = new Random();
 
         intentFilter = new IntentFilter();
-        if(Server.IsLoggedIn())
+        if(server.IsLoggedIn())
             intentFilter.addAction(ParseConstants.PARSE_FILTER);
         else
             intentFilter.addAction("SMS_RECEIVED_ACTION");
@@ -67,7 +68,7 @@ public class SetupManager {
         listeners.add(screenController);
 
         try {
-            if (Server.IsLoggedIn()) {
+            if (server.IsLoggedIn()) {
 
             } else {
                 a.onConnect(this);
@@ -75,35 +76,20 @@ public class SetupManager {
         }catch(JSONException e){
         	e.printStackTrace();
         }
+        a.onConnect(this);
         screen.refreshAvailableRolesList();
     }
 
 
 
-    private ServerResponder sResponder;
-    private HostAdder hAdder;
-    //private ClientAdder cAdder;
-    public void setupConnection(){
-        sResponder = new ServerResponder(ns.getGameListing(), this);
-    }
+    
 
     public Narrator getNarrator(){
         return ns.local;
     }
 
     public boolean isHost(){
-        if(Server.IsLoggedIn()) {
-            try {
-                return Server.GetCurrentUserName().equals(ns.getGameListing().getHostName());
-            }catch(NullPointerException e){
-                if(ns == null)
-                    throw new NullPointerException("ns was null");
-                if(ns.getGameListing() == null)
-                    throw new NullPointerException("game listing was null");
-                throw new NullPointerException("neither were null");
-            }
-        }
-        return ns.socketClient == null;
+    	return ns.isHost();
     }
 
     public void setSeed(long l){
@@ -111,7 +97,7 @@ public class SetupManager {
     }
 
     protected void onRuleChange(){
-        if(Server.IsLoggedIn()){
+        if(server.IsLoggedIn()){
             Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
         }
     }
@@ -147,7 +133,7 @@ public class SetupManager {
     }
 
     public synchronized void addRole(RandomRole rr){
-        if(Server.IsLoggedIn()){
+        if(server.IsLoggedIn()){
 
         }else{
             for (SetupListener sL : listeners) {
@@ -158,7 +144,7 @@ public class SetupManager {
     
     public synchronized void addRole(RoleTemplate rt){
     	
-        if(Server.IsLoggedIn()){
+        if(server.IsLoggedIn()){
 
         }else {
             for (SetupListener sL : listeners) {
@@ -189,19 +175,19 @@ public class SetupManager {
     		ns.onPlayerAdd(name, c);
     		for(SetupListener sl: listeners)
     			sl.onPlayerAdd(name, c);
-    		if(Server.IsLoggedIn() && Server.isHost()){
+    		if(server.IsLoggedIn() && Server.isHost()){
     			
     		}
     	}
     }
 
     public void requestRemovePlayer(String name){
-		ns.socketClient.send(Constants.REMOVE_PLAYER + name);
+		//ns.socketClient.send(Constants.REMOVE_PLAYER + name);
     }
 
     public synchronized void removePlayer(String name, boolean notifyOnlyScreen){
     	for(SetupListener sl: listeners){
-	    	if(notifyOnlyScreen && sl == hAdder)
+	    	if(notifyOnlyScreen)
 	    		continue;//will only update the screen with a toast, or the playerpopup
 	    	sl.onPlayerRemove(name);
     	}
@@ -238,7 +224,6 @@ public class SetupManager {
     }
 
     public void exitGame(){
-        sResponder.exitGame();
         screen.onBackPressed();
     }
 
@@ -304,13 +289,13 @@ public class SetupManager {
 
 
     public void talk(String message){
-        if(!Server.IsLoggedIn())
+        if(!server.IsLoggedIn())
             return;
 
-        Player p = ns.local.getPlayerByName(Server.GetCurrentUserName());
+        Player p = ns.local.getPlayerByName(server.GetCurrentUserName());
         p.say(message, Constants.REGULAR_CHAT);
 
-        message = Server.GetCurrentUserName() + "," + Server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + null + " " + message;
+        message = server.GetCurrentUserName() + "," + server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + null + " " + message;
         Server.PushCommand(ns.getGameListing(), message, 0);
 
         screen.updateChat();

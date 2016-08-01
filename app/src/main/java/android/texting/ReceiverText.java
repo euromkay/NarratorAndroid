@@ -28,6 +28,7 @@ public class ReceiverText extends BroadcastReceiver {
 			i.putExtra("message",  message.replaceAll("[^a-zA-Z0-9 ]",""));
 			i.putExtra("number", number.replaceAll("[^a-zA-Z0-9 ]",""));
 			context.sendBroadcast(i);
+			Log.i("RECEIVER_TEXT", message);
 		}
 		
 	}

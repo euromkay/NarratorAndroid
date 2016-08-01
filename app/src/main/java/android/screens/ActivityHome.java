@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
-import com.parse.FunctionCallback;
-import com.parse.ParseException;
-
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
 import android.NActivity;
@@ -24,7 +21,6 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.day.ActivityDay;
 import android.net.ConnectivityManager;
@@ -53,12 +49,10 @@ import voss.narrator.R;
 public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
 
 
-
 	public void creating(Bundle b){
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_home);
 
-		Server.Init();
 
 		setText(R.id.home_join);
 		setText(R.id.home_host);
@@ -108,12 +102,16 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 	protected void onStart(){
 		super.onStart();
-		Server.Start();
+		if(server != null)
+			server.Start();
+		else
+			isStarted = true;
 	}
 
 	protected void onStop(){
 		super.onStop();
-		Server.Stop();
+		if(server != null)
+			server.Stop();
 	}
 
 
@@ -131,7 +129,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	private boolean isLoggedIn(){
-		return Server.IsLoggedIn();
+		return server != null && server.IsLoggedIn();
 	}
 
 	public static int buildNumber(){
@@ -143,7 +141,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
-					return;
+					Server.HostPublic(this);
 					/*Server.RegisterGame(this, new Server.GameRegister() {
 						public void onSuccess(GameListing gl) {
 							//ns.refresh();
@@ -191,7 +189,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_login_signup:
 				if (isLoggedIn()){
-					Server.LogOut();
+					server.LogOut();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
 				}else if(isInternetAvailable()){

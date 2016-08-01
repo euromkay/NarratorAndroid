@@ -18,8 +18,13 @@ import android.parse.Server;
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
 
+    public Server server;
+    protected boolean isStarted = false;
 	private ServiceConnection sC = null;
     protected void connectNarrator(final NarratorConnectListener ncl){
+    	server = new Server();
+    	if(isStarted)
+    		server.Start();
 		Intent i = new Intent(this, NarratorService.class);
 		startService(i);
 		if(sC == null) {
@@ -27,6 +32,8 @@ public abstract class NActivity extends FragmentActivity{
 				public void onServiceConnected(ComponentName className, IBinder binder) {
 					NarratorService.MyBinder b = (NarratorService.MyBinder) binder;
 					ns = b.getService();
+					ns.server = server;
+					ns.activity = NActivity.this;
 					if (ncl != null)
 						ncl.onConnect();
 
@@ -48,7 +55,7 @@ public abstract class NActivity extends FragmentActivity{
     }
     
     public boolean networkCapable(){
-		return Server.IsLoggedIn();
+		return server.IsLoggedIn();
 	}
 
 	public interface NarratorConnectListener{

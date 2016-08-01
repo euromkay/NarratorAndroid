@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.GUIController;
+import android.JUtils;
 import android.NActivity;
 import android.SuccessListener;
 import android.alerts.ExitGameAlert;
@@ -134,14 +138,18 @@ implements
 		}else {
 			if(onePersonActive()){
 				if (manager.getCurrentPlayer() == null)
-					onPlayerClick(playersInDrawer.get(0));
+					try {
+						onPlayerClick(playersInDrawer.getString(0));
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
 				else
 					onPlayerClick(null);
 			}else
 				onPlayerClick(null);
 			onDrawerClosed(null);
 
-			if(!Server.IsLoggedIn())
+			if(!server.IsLoggedIn())
 				onClick(infoButton);
 
 		}
@@ -278,14 +286,20 @@ implements
 			endGame();
 			return;
 		}
+		String topInDrawer = JUtils.getString(playersInDrawer, 0);
 		if(onePersonActive()) {
 			toast("Press back to switch between general information and your information.");
-			if(playersInDrawer.get(0).isAlive())
-				GUIController.selectScreen(this, playersInDrawer.get(0));
+			if(server.IsLoggedIn())
+				if(ns.gameState.isAlive){
+					GUIController.selectScreen(this, topInDrawer);
+			}else{
+				if(ns.local.getPlayerByName(topInDrawer).isAlive())
+					GUIController.selectScreen(this, topInDrawer);
+			}
 		}
 	}
 	private boolean onePersonActive(){
-		return playersInDrawer.size() == 1;
+		return playersInDrawer.length() == 1;
 	}
 	public Narrator getNarrator(){
 		return manager.getNarrator();
@@ -297,8 +311,8 @@ implements
 		findViewById(id).setOnClickListener(this);
 
 	}
-	private PlayerList playersInDrawer;
-	protected void setupPlayerDrawer(PlayerList livePlayers){
+	private JSONArray playersInDrawer;
+	protected void setupPlayerDrawer(JSONArray livePlayers){
 		LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 		layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 		playerMenu.setLayoutManager(layoutManager);
@@ -644,14 +658,12 @@ implements
 		}
 	}
 
-	public void onPlayerClick(Player p){
-		String name;
-		if (p == null || p.equals(p.getSkipper()))
+	public void onPlayerClick(String name){
+		if (name == null || name.equals(DayScreenController.PlayerMenuHeader))
 			name = "Main Screen selected.";
-		else
-			name = p.getDescription();
+		
 		log(name + " taking the helm.");
-		manager.setCurrentPlayer(p);
+		manager.setCurrentPlayer(name);
 	}
 
 	public void onExitAttempt() {
@@ -861,8 +873,8 @@ implements
 		speaker.shutdown();
 		stopTexting();
 
-		if(Server.IsLoggedIn()) {
-			if (Server.GetCurrentUserName().equals(ns.getGameListing().getHostName())) {
+		if(server.IsLoggedIn()) {
+			if (server.GetCurrentUserName().equals(ns.getGameListing().getHostName())) {
 				Server.SetGameInactive(ns.getGameListing());
 			}
 			Server.Unchannel(ns.getGameListing());
