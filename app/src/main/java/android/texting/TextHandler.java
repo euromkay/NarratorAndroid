@@ -21,7 +21,7 @@ import shared.logic.support.RoleTemplate;
 public class TextHandler extends CommandHandler implements NarratorListener, TextInput {
 
 	private PlayerList texters;
-    public TextHandler(Narrator n, TextInput tc, PlayerList texters){
+    public TextHandler(Narrator n, PlayerList texters){
         super(n);
         n.addListener(this);
         
@@ -297,11 +297,12 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onEndNight(Player p) {
-
+    	System.out.println("hi");
+    	new OGIMessage(p, "You've ended the night");
     }
 
     public void onCancelEndNight(Player p) {
-
+    	new OGIMessage(p, "You've canceled your motion to end the night");
     }
 
     public void onMayorReveal(Player m){
