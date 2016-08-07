@@ -1,3 +1,3 @@
-[submodule "app\\src\\main\\java\\shared"]
-	path = app\\src\\main\\java\\shared
-	url = https://github.com/michaelcmkay/TheNarrator/
+[submodule "TheNarrator"]
+	path = app/src/main/java/shared
+	url = git://github.com/michaelcmkay/TheNarrator.git
