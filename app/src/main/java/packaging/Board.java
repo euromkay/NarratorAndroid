@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.CommunicatorPhone;
 import android.texting.CommunicatorText;
-import android.wifi.CommunicatorInternet;
+
 import shared.logic.Narrator;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorHandler;
@@ -93,9 +93,6 @@ public class Board implements CommunicatorHandler, Parcelable{
 				comm = new CommunicatorText();
 				comm.getFromParcel(in);
 				break;
-			case INTERNET:
-				comm = new CommunicatorInternet(null);
-				break;
 			default:
 				comm = new CommunicatorNull();
 				break;
@@ -116,8 +113,6 @@ public class Board implements CommunicatorHandler, Parcelable{
 			p.write(PHONE);
 		else if(c instanceof CommunicatorText)
 			p.write(TEXT);
-		else if(c instanceof CommunicatorInternet)
-			p.write(INTERNET);
 
 	}
 }

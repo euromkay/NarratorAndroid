@@ -71,8 +71,4 @@ public class MembersAdapter extends BaseAdapter{
 
 
     }
-
-    private int getColor(int id){
-        return c.getResources().getColor((id));
-    }
 }

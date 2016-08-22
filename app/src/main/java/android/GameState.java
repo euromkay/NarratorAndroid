@@ -1,15 +1,16 @@
 package android;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.alerts.PlayerPopUp;
+import android.alerts.TeamEditor;
 import android.app.FragmentManager;
 import android.day.ActivityDay;
+import android.os.Bundle;
 import android.setup.ActivityCreateGame;
 import android.texting.StateObject;
 import android.view.View;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import voss.narrator.R;
 
 public class GameState {
@@ -27,17 +28,18 @@ public class GameState {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		chat = "";
 	}
 
 	public boolean isHost, isDay, isSkipping, showButton;
 	
 	public int skipVoteCount, timer;
-	
-	private boolean isStarted = false;
-	private boolean isOver = false;
+
+	public boolean isStarted = false;
+	public boolean isOver = false;
 	public boolean isAlive = true;
 	public boolean endedNight = false;
-	public String hostName, dayLabel, chat = "";
+	public String hostName, dayLabel, chat;
 	public JSONObject rules, factions, roleInfo, players;
 	public JSONArray graveYard, rolesList;
 
@@ -53,7 +55,13 @@ public class GameState {
 		if(jo.has(StateObject.rules)){
 			rules = jo.getJSONObject(StateObject.rules);
 			factions = jo.getJSONObject(StateObject.factions);
-			((ActivityCreateGame)ns.activity).resetView();
+			if(ns.activity.getClass() == ActivityCreateGame.class)
+				runOnMain(new Runnable(){
+					public void run(){
+						ActivityCreateGame ac = (ActivityCreateGame) ns.activity;
+						ac.resetView();
+					}
+				});
 		}
 		if(jo.has(StateObject.isHost)){
 			isHost = jo.getBoolean(StateObject.isHost);
@@ -62,13 +70,15 @@ public class GameState {
 				visibility = View.VISIBLE;
 			else
 				visibility = View.GONE;
-			ns.activity.findViewById(R.id.create_createTeamButton).setVisibility(visibility);
+			View v = ns.activity.findViewById(R.id.create_createTeamButton);
+			if(v!=null)
+				v.setVisibility(visibility);
 		}
 		if(jo.has(StateObject.roleInfo))
 			roleInfo = jo.getJSONObject(StateObject.roleInfo);
 		
 		if(jo.has(StateObject.graveYard)){
-			graveYard = jo.getJSONArray(StateObject.graveYard);
+			graveYard = JUtils.getJSONArray(jo, StateObject.graveYard);
 			JSONObject jPlayer;
 			for(int i = 0; i < graveYard.length(); i++){
 				jPlayer = graveYard.getJSONObject(i);
@@ -93,7 +103,7 @@ public class GameState {
 		if(jo.has(StateObject.playerLists)){
 			players = jo.getJSONObject(StateObject.playerLists);
 			FragmentManager fm = ns.activity.getFragmentManager();
-			PlayerPopUp pPop = (PlayerPopUp) fm.get(ActivityCreateGame.PLAYER_POP_UP);
+			PlayerPopUp pPop = (PlayerPopUp) fm.getFragment(new Bundle(), ActivityCreateGame.PLAYER_POP_UP);
 			if(pPop != null){
 				pPop.updatePlayerList();
 				pPop.setTitle();
@@ -103,7 +113,7 @@ public class GameState {
 		if(jo.has(StateObject.roles)){
 			rolesList = jo.getJSONArray(StateObject.roles);
 			if(ns.activity.getClass().equals(ActivityCreateGame.class)){
-				((ActivityCreateGame) ns.activity).refreshRolesList();
+				refreshRolesList();
 			}else if(ns.activity.getClass().equals(ActivityDay.class)){
 				
 			}
@@ -114,6 +124,32 @@ public class GameState {
 		if(jo.has(StateObject.timer))
 			timer = jo.getInt(StateObject.timer);
 	}
-    
+
+	private void refreshRolesList(){
+		runOnMain(new Runnable(){
+			public void run(){
+				((ActivityCreateGame) ns.activity).refreshRolesList();
+			}
+		});
+	}
+
+	private void runOnMain(Runnable r){
+		ns.activity.runOnUiThread(r);
+
+	}
+
+	public void refreshChat() {
+		Runnable r = new Runnable(){
+			public void run(){
+				if(ns.activity.getClass() == ActivityCreateGame.class){
+					((ActivityCreateGame) ns.activity).updateChat(); 
+				}else if(ns.activity.getClass() == ActivityDay.class){
+					((ActivityDay) ns.activity).manager.dScreenController.updateChatPanel();
+				}
+			}
+		};
+		runOnMain(r);
+		
+	}
 
 }

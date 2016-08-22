@@ -4,8 +4,6 @@ import android.GUIController;
 import android.NarratorService;
 import android.PhoneBook;
 import android.content.Intent;
-import android.parse.GameListing;
-import android.parse.Server;
 import android.setup.TextAdder;
 import android.texting.TextController;
 import android.texting.TextHandler;
@@ -39,12 +37,9 @@ public class DayManager implements TextInput{
 		dScreenController = new DayScreenController(dScreen, this);
 		dScreenController.init();
 		dScreenController.setNarratorInfoView();
-		ns.local.addListener(dScreenController);
 
-		TextInput th = null;
-		if (isHost())
-			th = this;
-		tHandler = new TextHandler(ns.local, th, TextAdder.getTexters(ns.local.getAllPlayers()));
+
+		tHandler = new TextHandler(ns.local, TextAdder.getTexters(ns.local.getAllPlayers()));
 		
 		phoneBook = new PhoneBook(ns.local);
 
@@ -69,54 +64,20 @@ public class DayManager implements TextInput{
 	
 	public void buttonClick(){
 		synchronized(ns.local){
-			if(!dScreenController.playerSelected() || dScreenController.currentPlayer.isDead())
+			if(!dScreenController.playerSelected() || ns.isDead(currentPlayer))
 				return;
 			if (getNarrator().isDay())
-				dayAction(currentPlayer);
+				ns.doDayAction(currentPlayer);
 			else{
-				if (currentPlayer.endedNight()) {
-					cancelEndNight(currentPlayer);
+				if (ns.endedNight(currentPlayer)) {
+					ns.cancelEndNight(currentPlayer);
 				}else {
-					endNight(currentPlayer);
+					ns.endNight(currentPlayer);
 				}
 			}
 		}
 	}
 
-	public void dayAction(String name) {
-		if(server.isLoggedIn()){
-			
-		}
-		if(isHost()){
-			p.doDayAction();
-			tC.doDayAction(p);
-		}else{
-			tC.doDayAction(p);
-		}
-	}
-
-	public void skipVote(Player owner){
-		if(isHost()){
-			owner.voteSkip();
-		}
-		tC.skipVote(owner);
-	}
-
-	public void vote(Player owner, Player target) {
-		if(owner == target)
-			return;
-		if(isHost()){
-			owner.vote(target);
-		}
-		tC.vote(owner, target);
-	}
-
-	public void unvote(Player owner){
-		if(isHost()){
-			owner.unvote();
-		}
-		tC.unvote(owner);
-	}
 	public void target(Player owner, Player target, String ability_s){
 		int ability = owner.parseAbility(ability_s);
 		if(owner.getRoleName().equals(Framer.ROLE_NAME)){
@@ -139,43 +100,18 @@ public class DayManager implements TextInput{
 	}
 
 
-	public void talk(Player p, String message) {
+	public void talk(String message) {
 		synchronized(ns.local){
-			if(p.isDead() || p.isBlackmailed() || !p.getTeam().knowsTeam())
-				return;
-			String key = Constants.REGULAR_CHAT;
-			if(ns.local.isNight())
-				key = p.getTeam().getName();
-				
-			p.say(message, key);
-			tC.say(p, message, key);
+			ns.talk(currentPlayer, message);
 		}
-	}
-
-	
-
-	public void cancelEndNight(Player p) {
-		if(isHost()){
-			p.cancelEndNight();
-		}
-		tC.cancelEndNight(p);
-	}
-
-	
-
-	public void endNight(Player p){
-		if(isHost()){
-			p.endNight();
-		}
-		tC.endNight(p);
 	}
 
 	
 
 	//from gui input
 	//garuntee that someone is selected
-	protected void command(Player target){
-		if (!dScreenController.playerSelected() || (getNarrator().isNight() && getCurrentPlayer().endedNight()) || dScreenController.currentPlayer.isDead()) {
+	protected void command(String target){
+		if (!dScreenController.playerSelected() || (getNarrator().isNight() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;
 		}
@@ -192,23 +128,19 @@ public class DayManager implements TextInput{
 		synchronized(ns.local){
 		Narrator n = getNarrator();
 		if(n.isDay()){
-			boolean unvote = target.getVoters().contains(currentPlayer);
+			boolean unvote = ns.isVoting(currentPlayer, target);
 			//if owner voted for target already, gotta be an unvote
 			if(unvote)
-				unvote(currentPlayer);
+				ns.unvote(currentPlayer);
 			else{
-				if(target == n.Skipper)
-					skipVote(currentPlayer);
+				if(target.equals("Skip Day"))
+					ns.skipVote(currentPlayer);
 				else
-					vote(currentPlayer, target);
+					ns.vote(currentPlayer, target);
 			}
 		}else {
 			String ability_s = dScreenController.dScreen.getSelectedAbility();
-			int ability = currentPlayer.parseAbility(ability_s);
-			if(ability == -1){
-				System.out.println("bad line is \t"+ability_s);
-			}
-			target(currentPlayer, target, ability_s);
+			ns.target(currentPlayer, target, ability_s);
 		}
 		}
 	}
@@ -245,7 +177,7 @@ public class DayManager implements TextInput{
 	
 
 
-	public Player getCurrentPlayer(){
+	public String getCurrentPlayer(){
 		return currentPlayer;
 	}
 
@@ -255,16 +187,13 @@ public class DayManager implements TextInput{
 	public boolean isHost() {
 		if(dScreenController.dScreen.server.IsLoggedIn())
 			return false;
-		if(dScreenController.dScreen.networkCapable())
-			return ns.socketHost != null;
 		return true;
 	}
 	
 	public void text(Player p, String s, boolean sync){
 		s = p.getName() + Constants.NAME_SPLIT + s;
 		if(isHost()){
-			if(ns.socketHost != null)
-				ns.socketHost.write(s);
+
 		}else{
 			if(dScreenController.dScreen.server.IsLoggedIn()) {
 				s = "," + s;
@@ -275,7 +204,7 @@ public class DayManager implements TextInput{
 				double day = ns.local.getDayNumber();
 				if(ns.local.isNight())
 					day += 0.5;
-				Server.PushCommand(ns.getGameListing(), s, day);
+				//Server.PushCommand(ns.getGameListing(), s, day);
 			}else{
 				//ns.socketClient.send(s);
 			}
@@ -283,11 +212,11 @@ public class DayManager implements TextInput{
 	}
 
 	public void parseCommand(Intent i){
-		if(!i.hasExtra(GameListing.ID))
-			return;
+		//if(!i.hasExtra(GameListing.ID))
+		//	return;
 		//check if someone else is pinging this
-		if(!i.getStringExtra(GameListing.ID).equals(ns.getGameListing().getID()))
-			return;
+		//if(!i.getStringExtra(GameListing.ID).equals(ns.getGameListing().getID()))
+		//	return;
 
 		String message = i.getStringExtra("stuff");
 		String[] command = message.split(",");
@@ -295,7 +224,7 @@ public class DayManager implements TextInput{
 		String sender = command[0];
 		message = message.substring(sender.length() + 1);//1 length for comma
 		if(sender.equals(" ") || !sender.equals(dScreenController.dScreen.server.GetCurrentUserName())){//everyone should do it.
-			ns.onRead(message, null);//nulll for chat manager, unused in this function, also its synch protected.
+			//ns.onRead(message, null);//nulll for chat manager, unused in this function, also its synch protected.
 		}
 	}
 }

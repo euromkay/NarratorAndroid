@@ -5,9 +5,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
-import com.parse.Parse;
-import com.parse.ParseCrashReporting;
-
 import shared.logic.support.Constants;
 
 public class ApplicationNarratorPreferences extends Application {
@@ -27,10 +24,6 @@ public class ApplicationNarratorPreferences extends Application {
 		
 		
 		edit.commit();
-
-		Parse.enableLocalDatastore(this);
-		ParseCrashReporting.enable(this);
-		Parse.initialize(this, "JrqL953o31jfhzzkW6gYQoHrQudrHBu9DLoxFbxZ", "rm5gHJVygUlvs2yJveV3Xh6ywXdvSiwiEpr7ssmH");
 	}
 
 	

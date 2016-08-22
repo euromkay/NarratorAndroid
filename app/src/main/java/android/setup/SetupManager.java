@@ -2,16 +2,14 @@ package android.setup;
 
 import java.util.ArrayList;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.JSONException;
+import json.JSONObject;
 
 import android.CommunicatorPhone;
 import android.NarratorService;
-import android.SuccessListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.day.ActivityDay;
-import android.parse.ParseConstants;
 import android.parse.Server;
 import android.util.Log;
 import shared.ai.Computer;
@@ -21,7 +19,6 @@ import shared.logic.exceptions.IllegalGameSettingsException;
 import shared.logic.exceptions.IllegalRoleCombinationException;
 import shared.logic.support.CommandHandler;
 import shared.logic.support.Communicator;
-import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
@@ -54,9 +51,9 @@ public class SetupManager {
         this.rand = new Random();
 
         intentFilter = new IntentFilter();
-        if(server.IsLoggedIn())
-            intentFilter.addAction(ParseConstants.PARSE_FILTER);
-        else
+        if(server.IsLoggedIn()) {
+            //intentFilter.addAction(ParseConstants.PARSE_FILTER);
+        }else
             intentFilter.addAction("SMS_RECEIVED_ACTION");
 
 
@@ -96,11 +93,7 @@ public class SetupManager {
     	rand.setSeed(l);
     }
 
-    protected void onRuleChange(){
-        if(server.IsLoggedIn()){
-            Server.UpdateRules(ns.getGameListing(), ns.local.getRules());
-        }
-    }
+
 
     @SuppressWarnings("unused")
 	private void log(String s){
@@ -292,14 +285,7 @@ public class SetupManager {
         if(!server.IsLoggedIn())
             return;
 
-        Player p = ns.local.getPlayerByName(server.GetCurrentUserName());
-        p.say(message, Constants.REGULAR_CHAT);
-
-        message = server.GetCurrentUserName() + "," + server.GetCurrentUserName() + Constants.NAME_SPLIT + CommandHandler.SAY + " " + null + " " + message;
-        Server.PushCommand(ns.getGameListing(), message, 0);
-
-        screen.updateChat();
-
+        ns.talk(server.GetCurrentUserName(), message);
     }
 
     public void setRules(JSONObject ruleToBeChanged){
@@ -312,7 +298,7 @@ public class SetupManager {
         JSONObject oj = new JSONObject(i.getStringExtra("stuff"));
 
 
-        switch(oj.getString("command")){
+        /*switch(oj.getString("command")){
             case ParseConstants.ADD_PLAYER:
                 addPlayer(oj.getString("name"), new CommunicatorNull());
                 return;
@@ -348,8 +334,8 @@ public class SetupManager {
                     return;
                 message = message.substring(command[0].length() + 1);//1 length for comma
                 ns.onRead(message, null);//adds it to my narrator
-                screen.updateChat();*/
-        }
+                screen.updateChat();
+        }*/
     }
     public void ruleChange(String id, boolean val) {
     	ns.ruleChange(id, val);

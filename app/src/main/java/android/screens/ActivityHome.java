@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
+import android.JUtils;
 import android.NActivity;
 import android.SuccessListener;
-import android.alerts.GameBookPopUp;
 import android.alerts.IpPrompt;
 import android.alerts.IpPrompt.IpPromptListener;
 import android.alerts.LoginAlert;
@@ -28,20 +28,22 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.parse.GameListing;
 import android.parse.Server;
 import android.setup.ActivityCreateGame;
 import android.support.v4.content.ContextCompat;
 import android.texting.CommunicatorText;
 import android.texting.PhoneNumber;
 import android.texting.ReceiverText;
+import android.texting.StateObject;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.wifi.SocketClient;
+
+import json.JSONObject;
+
 import shared.logic.Narrator;
 import shared.logic.Player;
 import voss.narrator.R;
@@ -84,7 +86,18 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			});
 		}catch(PackageManager.NameNotFoundException e){}*/
 		
-		connectNarrator(null);
+		connectNarrator(new NarratorConnectListener() {
+			public void onConnect() {
+				if(server.IsLoggedIn())
+					ns.connectWebSocket(new NarratorConnectListener(){
+						public void onConnect(){
+							JSONObject jo = new JSONObject();
+							JUtils.put(jo, StateObject.message, StateObject.requestGameState);
+							ns.sendMessage(jo);
+						}
+					});
+			}
+		});
 	}
 
 	private void displayUpdate(){
@@ -129,7 +142,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	private boolean isLoggedIn(){
-		return server != null && server.IsLoggedIn();
+		if(server == null)
+			server = new Server();
+		return server.IsLoggedIn();
 	}
 
 	public static int buildNumber(){
@@ -174,12 +189,12 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_currentGames:
 				if(isLoggedIn()){
-					displayGames(GameBookPopUp.RESUME);
+					//displayGames(GameBookPopUp.RESUME);
 				}else{
 					if(ns.local.getAllPlayers().isEmpty())
 						onClick(findViewById(R.id.home_host));
 					else
-						start(null);
+						start();
 				}
 				break;
 
@@ -203,11 +218,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		}
 	}
 
-	public void displayGames(int mode){
-		GameBookPopUp gb = new GameBookPopUp();
-		gb.setMode(mode);
-		gb.show(getFragmentManager(), "gamebook");
-	}
+
 
 	public boolean isInternetAvailable() {
 		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -251,8 +262,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		if (isHost){
 			np.dismiss();
 			ns.addPlayer(name, new CommunicatorPhone());
-			if(networkCapable())
-				ns.startHost(this, name);
 
 			if(Build.VERSION.SDK_INT >= 18 && hasPhoneInvite()) {
 				PhoneBookPopUp pList = new PhoneBookPopUp();
@@ -260,13 +269,13 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				pList.show(getFragmentManager(), "phoneBookPopup");
 				toast("Clicking people and pressing invite will send them texts.");
 			}else{
-				start(null);
+				start();
 			}
 		}else{
 			ns.submitName(name, new SuccessListener(){
 				public void onSuccess() {
 					np.dismiss();
-					start(null);
+					start();
 				}
 
 				public void onFailure(String m) {
@@ -302,13 +311,13 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			if (b){
 				toast("wrong code, try again");
 			}else{
-				ns.startClient(ActivityHome.this, ip.getIP(), new SocketClient.ClientListener(){
+				/*ns.startClient(ActivityHome.this, ip.getIP(), new SocketClient.ClientListener(){
 					public void onHostConnect() {
 						ip.dismiss();
 						showNamePrompt("Join");
 					}
 					
-				});
+				});*/
 			}
 		}
 	}
@@ -338,7 +347,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				ns.addPlayer(name, cp);
 			}
 			popup.dismiss();
-			start(null);
+			start();
 		}
 	}
 
@@ -361,9 +370,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 	public static final String ISHOST = "ishost_activityhome";
 	public static final String MYNAME = "myname_activityhoome";
-	public void start(GameListing gl){
-		if(isLoggedIn() && gl != null)
-			ns.setGameListing(gl);
+	public void start(){
 		Class<?> activ;
 		if(ns.getNarrator().isStarted())
 			activ = ActivityDay.class;

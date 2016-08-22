@@ -3,8 +3,8 @@ package android.texting;
 import shared.ai.Controller;
 import shared.logic.Player;
 import shared.logic.exceptions.UnsupportedMethodException;
-import shared.logic.support.Constants;
 import shared.roles.Arsonist;
+import shared.roles.Assassin;
 import shared.roles.Mayor;
 
 
@@ -81,6 +81,14 @@ public class TextController extends Controller {
 		}
 		else if(p.is(Arsonist.class)){
 			texter.text(p, Arsonist.BURN, SYNC);
+			return;
+		}
+		throw new UnsupportedMethodException();
+	}
+	
+	public void doDayAction(Player p, Player target){
+		if(p.is(Assassin.class)){
+			texter.text(p, Assassin.ASSASSINATE + " " + target.getName(), SYNC);
 			return;
 		}
 		throw new UnsupportedMethodException();

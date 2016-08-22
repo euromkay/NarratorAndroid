@@ -1,16 +1,15 @@
 package android.day;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 import android.GUIController;
 import android.JUtils;
 import android.NActivity;
-import android.SuccessListener;
 import android.alerts.ExitGameAlert;
 import android.alerts.ExitGameAlert.ExitGameListener;
 import android.app.DialogFragment;
@@ -21,9 +20,6 @@ import android.content.IntentFilter;
 import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.parse.GameListing;
-import android.parse.ParseConstants;
-import android.parse.Server;
 import android.screens.ListingAdapter;
 import android.screens.MembersAdapter;
 import android.screens.SimpleGestureFilter;
@@ -37,6 +33,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.texting.PhoneNumber;
+import android.texting.StateObject;
 import android.texting.TextHandler;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -112,7 +109,7 @@ implements
 
 		iF = new IntentFilter();
 		iF.addAction("SMS_RECEIVED_ACTION");
-		iF.addAction(ParseConstants.PARSE_FILTER);
+		//iF.addAction(ParseConstants.PARSE_FILTER);
 	}
 	
 	protected void onResume(){
@@ -222,25 +219,8 @@ implements
 
 		connectNarrator(new NarratorConnectListener() {
 			public void onConnect() {
-				if(!getIntent().hasExtra(GameListing.ID)){
-					connectManager();
-					return;
-				}
-				String key = getIntent().getStringExtra(GameListing.ID);
-				if(ns.getGameListing() != null && key.equals(ns.getGameListing().getID())) {
-					log("this");
-					finish();
-					return;
-				}
-
-
-				Server.ResumeGame(getIntent().getStringExtra(GameListing.ID), ns, new SuccessListener() {
-					public void onSuccess() {
-						connectManager();
-					}
-					public void onFailure(String message) {log(message);}
-					});
-				}
+				connectManager();
+			}
 
 		});
 		
@@ -282,7 +262,7 @@ implements
 
 		onClick(infoButton);
 
-		if(!manager.getNarrator().isInProgress()) {
+		if(!ns.isInProgress()) {
 			endGame();
 			return;
 		}
@@ -388,7 +368,7 @@ implements
 		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers().sortByDeath(), this));
 	}
 
-	protected void uncheck(Player p){
+	protected void uncheck(String p){
 		if (p != null)
 			actionLV.setItemChecked(actionList.indexOf(p), false);
 
@@ -413,14 +393,14 @@ implements
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
 		try {
-			Player selected = actionList.get(position);
+			String selected = actionList.get(position);
 			if(manager.getCurrentPlayer() == null) {
 				if(onePersonActive()){
 					onBackPressed();
 				}else
 					return;
 			}
-			log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
+			//log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
 
 			manager.command(selected);
 		}catch (IndexOutOfBoundsException|NullPointerException e){
@@ -467,18 +447,29 @@ implements
 
 
 	
-	public PlayerList actionList;
-	protected void setActionList(PlayerList playerList, boolean day){
+	public ArrayList<String> actionList;
+	protected void setActionList(JSONArray playerList, boolean day){
+		ArrayList<String> targetables = new ArrayList<>();
+		ArrayList<String> newActionList = new ArrayList<>();
+		JSONObject jPlayer;
+		for(int i = 0; i < playerList.length(); i++){
+			jPlayer = JUtils.getJSONObject(playerList, i);
+			String name = JUtils.getString(jPlayer, StateObject.playerName);
+			if(day) {
+				String voteCount_s = Integer.toString(JUtils.getInt(jPlayer, StateObject.playerVote));
+				targetables.add(voteCount_s + " - " + name);
+			}else
+				targetables.add(name);
+			newActionList.add(name);
+		}
+		if(day){
+			targetables.add("Skip Day - " + ns.getSkipVotes());
+			newActionList.add("Skip Day");
+		}
 		synchronized(manager){
-			actionList = playerList;
+			actionList = newActionList;
 		}
-		List<String> targetables = new ArrayList<>();
-		for(Player aP: playerList){
-			if(day)
-				targetables.add(aP.getVoteCount() + " - " + aP.getName());
-			else
-				targetables.add(aP.getName());
-		}
+
 		
 		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.vote_item, targetables);
 		adapter.setDropDownViewResource(R.layout.create_roles_right_item);
@@ -591,9 +582,9 @@ implements
 			}
 		} else if(manager.getCurrentPlayer() == null) {
 			onBackPressed();
-			manager.talk(manager.getCurrentPlayer(), message);
-		}else if(manager.getCurrentPlayer().isAlive()) {
-			manager.talk(manager.getCurrentPlayer(), message);
+			manager.talk(message);
+		}else if(!manager.ns.isDead(manager.getCurrentPlayer())) {
+			manager.talk(message);
 		}
 		chatET.setText("");
 	}
@@ -622,13 +613,14 @@ implements
 
 		//showView(rightTV);
 		if (manager.dScreenController != null && manager.dScreenController.playerSelected()){
-			if (manager.getCurrentPlayer().hasDayAction() && manager.getNarrator().isDay())
+			if (ns.hasDayAction(manager.getCurrentPlayer()) && manager.getNarrator().isDay())
 				showView(button);
 			else
 				hideView(button);
 
-			Team t = manager.getCurrentPlayer().getTeam();
-			if(t.getMembers().getLivePlayers().size() > 1 && t.knowsTeam()){
+			JSONObject roleInfo = manager.ns.getRoleInfo(manager.getCurrentPlayer());
+			boolean shouldShowTeam = roleInfo.has(StateObject.roleTeam);
+			if(shouldShowTeam){
 				showView(alliesTV);
 				showView(alliesLV);
 				hideView(rolesTV);
@@ -712,20 +704,28 @@ implements
 			hideView(framerSpinner);
 			return;
 		}
-		if (manager.getCurrentPlayer().is(Framer.class) && manager.getCurrentPlayer().isAlive() && isFrameActionSelected()) {
+		String currentPlayer = manager.getCurrentPlayer();
+		hideView(framerSpinner);
+		if(ns.isDead(currentPlayer))
+			return;
+		JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
+		boolean isFramer = JUtils.getString(roleInfo, StateObject.roleBaseName).equals(Framer.ROLE_NAME);
+
+		if (isFramer && isFrameActionSelected()) {
 			showView(framerSpinner);
-			if(!wideMode())
+			if (!wideMode())
 				((RelativeLayout.LayoutParams) actionLV.getLayoutParams()).addRule(RelativeLayout.BELOW, framerSpinner.getId());
-		}else
-			hideView(framerSpinner);
+		}
+
 	}
 
 	public void showButton() {
+		String currentPlayer = manager.getCurrentPlayer();
 		if (wideMode()) {
-			if(manager.getCurrentPlayer() != null && manager.getCurrentPlayer().isAlive()){
+			if(manager.getCurrentPlayer() != null && !manager.ns.isDead(currentPlayer)){
 				if(ns.local.isNight())
 					showView(button);
-				else if(manager.getCurrentPlayer().hasDayAction())
+				else if(manager.ns.hasDayAction(currentPlayer))
 					showView(button);
 				else
 					hideView(button);
@@ -733,7 +733,7 @@ implements
 				hideView(button);
 			}
 		}else{
-			if(manager.getCurrentPlayer() != null && manager.getCurrentPlayer().isDead())
+			if(manager.getCurrentPlayer() != null && manager.ns.isDead(currentPlayer))
 				hideView(button);
 			else if(messagesButton == panel){
 				hideView(button);
@@ -743,7 +743,7 @@ implements
 				else
 					showView(button);
 			}else{ //panel == infoButton
-				if(manager.getCurrentPlayer() == null || ns.local.isNight() || !manager.getCurrentPlayer().hasDayAction())
+				if(manager.getCurrentPlayer() == null || ns.local.isNight() || !manager.ns.hasDayAction(currentPlayer))
 					hideView(button);
 				else
 					showView(button);
@@ -752,10 +752,7 @@ implements
 	}
 
 	private boolean isFrameActionSelected(){
-		String command = commandTV.getText().toString();
-		int abilityID = manager.getCurrentPlayer().parseAbility(command);
-		int frameAbilityID = Framer.MAIN_ABILITY;
-		return abilityID == frameAbilityID;
+		return commandTV.getText().toString().equals(Framer.FRAME);
 	}
 
 	public void hideInfoPanel(){
@@ -844,7 +841,7 @@ implements
 		happenings.append("\n");
 		happenings.append(manager.getNarrator().getEventManager().getEvents(Message.PRIVATE).access(Message.PRIVATE, true));
 
-		for (Player p: manager.getNarrator().getAllPlayers().sortByRole()){
+		for (int i = 0; i < manager.getNarrator().getPlayerCount(); i++){
 			happenings.append("\n");
 			happenings.append(new Header(manager.getNarrator().getDayNumber(), manager.getNarrator().isDay()));
 		}
@@ -874,10 +871,7 @@ implements
 		stopTexting();
 
 		if(server.IsLoggedIn()) {
-			if (server.GetCurrentUserName().equals(ns.getGameListing().getHostName())) {
-				Server.SetGameInactive(ns.getGameListing());
-			}
-			Server.Unchannel(ns.getGameListing());
+
 		}
 	}
 	private void stopTexting(){
@@ -895,9 +889,9 @@ implements
 		commandTV.setTextColor(color);
 	}
 
-	public void updateRoleInfo(Player r){
-		roleTV.setText(r.getRoleName());
-		roleInfoTV.setText(r.getRoleInfo());
+	public void updateRoleInfo(JSONObject role){
+		roleTV.setText(JUtils.getString(role, StateObject.roleName));
+		roleInfoTV.setText(JUtils.getString(role, StateObject.roleName));
 	}
 
 
@@ -910,8 +904,8 @@ implements
 		}else{
 			showView(roleTV);
 			showView(roleInfoTV);
-			Team t = manager.getCurrentPlayer().getTeam();
-			if(t.knowsTeam() && t.getMembers().getLivePlayers().size() > 1){
+			JSONObject roleInfo = manager.ns.getRoleInfo(manager.getCurrentPlayer());
+			if(roleInfo.has(StateObject.roleTeam)){
 				showView(alliesLV);
 				if(wideMode()) {
 					hideView(alliesTV);
@@ -929,7 +923,10 @@ implements
 
 
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		manager.command(manager.getCurrentPlayer().getTargets(Framer.MAIN_ABILITY).getLast());
+		ArrayList<String> checkedPlayers = getCheckedPlayers();
+		if(checkedPlayers.isEmpty())
+			return;
+		manager.command(checkedPlayers.get(0));
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {
@@ -982,9 +979,9 @@ implements
 		manager.setNextAbility(direction);
 	}
 
-	public PlayerList getCheckedPlayers() {
+	public ArrayList<String> getCheckedPlayers() {
 		SparseBooleanArray checkedPos = actionLV.getCheckedItemPositions();
-		PlayerList ret = new PlayerList();
+		ArrayList<String> ret = new ArrayList<>();
 		for(int i = 0; i < actionList.size(); i++){
 			if(checkedPos.get(i))
 				ret.add(actionList.get(i));

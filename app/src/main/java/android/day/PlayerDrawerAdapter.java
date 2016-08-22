@@ -1,7 +1,7 @@
 package android.day;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import json.JSONArray;
+import json.JSONException;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;

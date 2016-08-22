@@ -4,6 +4,7 @@ import android.NarratorService;
 import android.SuccessListener;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.setup.ActivityCreateGame;
@@ -100,6 +101,11 @@ public class TeamBuilder extends DialogFragment implements OnClickListener, Text
 	}
 	
     public void onAttach(Activity a){
+        super.onAttach(a);
+        this.ns = ((ActivityCreateGame) a).ns;
+    }
+    
+    public void onAttach(Context a){
         super.onAttach(a);
         this.ns = ((ActivityCreateGame) a).ns;
     }

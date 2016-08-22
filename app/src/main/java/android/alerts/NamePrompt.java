@@ -4,16 +4,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.screens.ActivityHome;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-
 import voss.narrator.R;
-import android.screens.ActivityHome;
 
 
 public class NamePrompt extends DialogFragment{
@@ -77,6 +77,17 @@ public class NamePrompt extends DialogFragment{
 
     public void onAttach(Activity a){
         super.onAttach(a);
+        try {
+            // Instantiate the NoticeDialogListener so we can send events to the host
+            mListener = (NamePromptListener) a;
+        } catch (ClassCastException e) {
+            // The activity doesn't implement the interface, throw exception
+            throw new ClassCastException(a.toString()
+                    + " must implement AddPlayerListenerListener");
+        }
+    }
+    public void onAttach(Context a){
+    	super.onAttach(a);
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (NamePromptListener) a;

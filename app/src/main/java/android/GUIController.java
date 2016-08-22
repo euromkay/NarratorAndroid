@@ -1,5 +1,7 @@
 package android;
 
+import java.util.ArrayList;
+
 import android.day.ActivityDay;
 import android.screens.SimpleGestureFilter;
 import android.texting.TextController;
@@ -9,7 +11,6 @@ import android.view.View;
 import shared.ai.Controller;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.PlayerList;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
 import shared.roles.Framer;
@@ -42,7 +43,7 @@ public class GUIController extends Controller implements TextInput{
         actionPanelClick();
         
         try{
-        	clickPlayer(target);
+        	clickPlayer(target.getName()  );
         }catch(PlayerTargetingException e){
         	if(slave.getNarrator().isDay()){
         		throw e;
@@ -65,7 +66,7 @@ public class GUIController extends Controller implements TextInput{
     	}
     	selectSlave(slave);
         swipeAbilityPanel(ability);
-        clickPlayer(choice);
+        clickPlayer(choice.getName());
     }
 
     public void setNightTarget(Player slave, Player choice, String ability, String teamName){
@@ -75,7 +76,7 @@ public class GUIController extends Controller implements TextInput{
         setNightTarget(slave,choice,ability);
     }
 
-    private void clickPlayer(Player p){
+    private void clickPlayer(String p){
         int position = dScreen.actionList.indexOf(p);
         if (position == -1){
             throw new PlayerTargetingException(p + " not found\n" );
@@ -129,7 +130,7 @@ public class GUIController extends Controller implements TextInput{
     }
 
     public static void selectScreen(ActivityDay dScreen, String slf){
-        if(dScreen.manager.getCurrentPlayer().equals(slf))
+        if(slf.equals(dScreen.manager.getCurrentPlayer()))
             return;
 
         View b = dScreen.findViewById(R.id.day_playerDrawerButton);
@@ -205,7 +206,7 @@ public class GUIController extends Controller implements TextInput{
 			logger.unvote(slave);
 		selectSlave(slave);
         actionPanelClick();
-        PlayerList pList = dScreen.getCheckedPlayers();
+        ArrayList<String> pList = dScreen.getCheckedPlayers();
         clickPlayer(pList.get(0));
 	}
 	
@@ -213,11 +214,17 @@ public class GUIController extends Controller implements TextInput{
 		logger.cancelNightTarget(slave, target, ability);
 		selectSlave(slave);
         swipeAbilityPanel(ability);
-        PlayerList pList = dScreen.getCheckedPlayers();
+        ArrayList<String> pList = dScreen.getCheckedPlayers();
         clickPlayer(pList.get(0));
 	}
 
 	public void text(Player p, String message, boolean sync) {
 		Log.i(p.toString(), message);
+	}
+	
+	public void doDayAction(Player slave, Player target){
+		logger.doDayAction(slave, target);
+		selectSlave(slave);
+		swipeAbilityPanel(target.getDayAbility().get(0));
 	}
 }

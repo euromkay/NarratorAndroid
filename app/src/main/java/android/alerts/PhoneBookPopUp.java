@@ -271,6 +271,18 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
                     + " must implement PhoneBookListener");
         }
     }
+    
+    public void onAttach(Context a){
+        super.onAttach(a);
+        try {
+            // Instantiate the NoticeDialogListener so we can send events to the host
+            mListener = (AddPhoneListener) a;
+        } catch (ClassCastException e) {
+            // The activity doesn't implement the interface, throw exception
+            throw new ClassCastException(a.toString()
+                    + " must implement PhoneBookListener");
+        }
+    }
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);

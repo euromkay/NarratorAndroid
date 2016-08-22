@@ -4,9 +4,9 @@ package android.texting;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 import shared.logic.Member;
 import shared.logic.Narrator;
@@ -93,6 +93,7 @@ public abstract class StateObject {
 		JSONObject roleInfo = new JSONObject();
 		roleInfo.put(StateObject.roleColor, p.getTeam().getColor());
 		roleInfo.put(StateObject.roleName, p.getRoleName());
+		roleInfo.put(StateObject.roleBaseName, p.getRole().getClass().getSimpleName());
 		roleInfo.put(StateObject.roleDescription, p.getRoleInfo());
 		
 		ArrayList<Team> knownTeams = shouldShowTeam(p);
@@ -308,8 +309,9 @@ public abstract class StateObject {
 			if(n.isStarted() && pi.getVoters() != null){
 				jo.put(StateObject.playerVote, pi.getVoters().size());
 			}
-			arr.put(jo);
 			jo.put("isComputer", pi.isComputer());
+			jo.put(StateObject.endedNight, pi.endedNight());
+			arr.put(jo);
 		}
 			
 		
@@ -331,7 +333,7 @@ public abstract class StateObject {
 		JSONObject playerLists = new JSONObject();
 		playerLists.put(StateObject.type, new JSONArray());
 		
-		if(n.isStarted()){
+		if(n.isStarted() && p != null){
 			if(n.isDay){
 				PlayerList votes;
 				if(n.isInProgress())
@@ -376,14 +378,28 @@ public abstract class StateObject {
 			playerLists.put("Lobby", names);
 			playerLists.getJSONArray(StateObject.type).put("Lobby");
 		}
-		
+
+		if(n.isInProgress()){
+			PlayerList infoList = new PlayerList();
+			for (Player pi : n.getLivePlayers()) {
+				if (n.isDay()) {
+					if (pi.getVoteTarget() == null)
+						infoList.add(pi);
+				} else {
+					if (!pi.endedNight())
+						infoList.add(pi);
+	
+				}
+			}
+			playerLists.put("info", getJPlayerArray(infoList));
+		}
 		
 		state.getJSONArray(StateObject.type).put(StateObject.playerLists);
 		state.put(StateObject.playerLists, playerLists);
 	}
 
 	public abstract JSONObject getObject() throws JSONException;
-	public abstract void write(Player p, JSONObject jo) throws JSONException;
+	public abstract void write(Player p, JSONObject jo);
 	
 	public JSONObject send(Player p){
 		try{
@@ -410,7 +426,7 @@ public abstract class StateObject {
 			write(p, obj);
 			return obj;
 		}catch(JSONException e){
-			
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -446,6 +462,7 @@ public abstract class StateObject {
 	public static final String roleInfo = "roleInfo";
 	public static final String roleColor = "roleColor";
 	public static final String roleName = "roleName";
+	public static final String roleBaseName = "roleBaseName";
 	public static final String roleTeam = "roleTeam";
 	public static final String roleDescription = "roleDescription";
 	public static final String roleKnowsTeam = "roleKnowsTeam";
@@ -463,6 +480,7 @@ public abstract class StateObject {
 	public static final String showButton = "showButton";
 
 	public static final String endedNight = "endedNight";
+	public static final String endNight = "endNight";
 	
 	public static final String graveYard = "graveYard";
 	
@@ -475,7 +493,7 @@ public abstract class StateObject {
 	public static final String timer = "timer";
 	
 	public static final String rules = "rules";
-	public static final String ruleChanges = "ruleChanges";
+	public static final String ruleChange = "ruleChange";
 	public static final String ruleID = "ruleID";
 
 	public static final String playerName = "playerName";
@@ -488,4 +506,14 @@ public abstract class StateObject {
 
 	public static final String factions = "factions";
 	public static final String factionNames = "factionNames";
+	
+
+	public static final String deleteTeam = "deleteTeam";
+	public static final String removeTeamAlly = "removeTeamAlly";
+	public static final String removeTeamEnemy = "removeTeamEnemy";
+	public static final String enemy = "enemy";
+	public static final String ally = "ally";
+	public static final String addTeamRole = "addTeamRole";
+	public static final String removeTeamRole = "removeTeamRole";
+	public static final String simpleName = "simpleName";
 }

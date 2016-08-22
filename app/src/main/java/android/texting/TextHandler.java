@@ -16,9 +16,12 @@ import shared.logic.exceptions.VotingException;
 import shared.logic.listeners.NarratorListener;
 import shared.logic.support.CommandHandler;
 import shared.logic.support.RoleTemplate;
+import shared.roles.Arsonist;
+import shared.roles.Assassin;
+import shared.roles.Mayor;
 
 
-public class TextHandler extends CommandHandler implements NarratorListener, TextInput {
+public class TextHandler extends CommandHandler implements NarratorListener {
 
 	private PlayerList texters;
     public TextHandler(Narrator n, PlayerList texters){
@@ -47,6 +50,7 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             if(t.knowsTeam() && t.getMembers().getLivePlayers().size() > 1){
                 message += " Your teammates are " +t.getMembers().sortByName().toString() + ".";
             }
+            message += " " + texter.getRoleInfo();
             new OGIMessage(texter, message);
         }
         if(n.isDay())
@@ -72,11 +76,15 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     public static final String ROLE_INFO = "roles list";
     public static final String LIVE_PEOPLE = "get players";
     public static final String TEAM_INFO = "get team";
-    public static final String NIGHT_HELP = "night help";
+    public static final String NIGHT_HELP = "help night";
+    public static final String NIGHT_HELP2 = "night help";
     public static final String DAY_HELP = "help day";
+    public static final String DAY_HELP2 = "day help";
 
 
     public void text(Player owner, String message, boolean sync){
+    	while(message.substring(message.length() - 1).equals(" "))
+    		message = message.substring(0, message.length() - 1);
         switch(message.toLowerCase()){
             case HELP:
                 sendHelpPrompt(owner);
@@ -90,9 +98,11 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
             case TEAM_INFO:
                 sendTeamInfo(owner);
                 return;
+            case NIGHT_HELP2:
             case NIGHT_HELP:
                 sendNightTextPrompt(owner);
                 return;
+            case DAY_HELP2:
             case DAY_HELP:
                 sendDayTextPrompt(owner);
                 return;
@@ -200,26 +210,29 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     private void sendNightPrompt(Player p){
         String message = SQuote(END_NIGHT)  + " so night can end.";
         if (p.getAbilities().length == 0){
-        	new OGIMessage(p, "It is now  time. Type " + message );
+        	new OGIMessage(p, "Type " + message );
         }else{
-        	new OGIMessage(p, "It is now nighttime. Submit your night action.  When you're done, type " + message);
+        	new OGIMessage(p, "Submit your night action.  When you're done, type " + message);
         }
     }
 
     public void onEndGame(){
-    	new OGIMessage(texters, n.getWinMessage().access(Message.PUBLIC, false));
+    	broadcast(n.getWinMessage().access(Message.PUBLIC, false));
     }
 
     private void sendHelpPrompt(){
-    	new OGIMessage(texters, "To see a list of possible commands, text " + SQuote(HELP) + "");
+    	broadcast("To see a list of possible commands, text " + SQuote(HELP) + "");
     }
 
     
 
     public void sendNightTextPrompt(Player texter){
+    	new OGIMessage(texter, texter.getRoleInfo());
     	new OGIMessage(texter, texter.getNightText());
+    	new OGIMessage(texter, "If you want to cancel your night actions, type " + SQuote("cancel") + ".");
         texter.sendTeamTextPrompt();
-        new OGIMessage(texter, "To talk to your allies : -  " + SQuote(SAY + " message") + "");
+        if(texter.getTeam().knowsTeam() && texter.getTeam().size() > 1)
+        	new OGIMessage(texter, "To talk to your allies : -  " + SQuote(SAY + " message") + "");
         new OGIMessage(texter, "After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.");
     }
 
@@ -229,52 +242,64 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
         message += ".\nTo end the day so that no one is lynched : - " + SQuote(SKIP_VOTE) + "";
 
     	new OGIMessage(texter, message);
+    	
+    	if(!texter.hasDayAction())
+    		return;
+    	if(texter.is(Arsonist.class)){
+    		new OGIMessage(texter, "To burn everyone you doused right now, text " + SQuote(Arsonist.BURN_LOWERCASE));
+    	}
+    	else if(texter.is(Mayor.class)){
+    		new OGIMessage(texter, "To reveal as mayor, text " + SQuote(Mayor.REVEAL_LOWERCASE));
+    	}
+    	else if(texter.is(Assassin.class))
+    		new OGIMessage(texter, "To assassinate someone, text " + SQuote(Assassin.ASSASSINATE_LOWERCASE + " name"));
     }
 
     public void onModKill(Player p){
-    	new OGIMessage(texters, p + " suicided!");
+    	broadcast(p + " suicided!");
     }
 
     public void onDayStart(PlayerList dead){
         if(dead != null){
             if(dead.isEmpty())
-            	new OGIMessage(texters, "No one died!");
+            	broadcast("No one died!");
             else{
                 for(Player deadPerson: dead){
-                	new OGIMessage(texters, deadPerson.getDescription() + " was found " +deadPerson.getDeathType().toString() + "");
+                	broadcast(deadPerson.getDescription() + " was found " + deadPerson.getDeathType().toString() + ".");
                 }
             }
         }
 
+        broadcast("It is now daytime. Please vote.  Once someone has enough votes, the day will end.");
+        
         for(Player p: texters){
-            sendDayPrompt(p);
+            if(p.isBlackmailed())
+            	new OGIMessage(p,"You're blackmailed. You can't talk and can only vote to skip the day.");
         }
 
     }
-
-    private void sendDayPrompt(Player p){
-        String message = "It is now daytime.  ";
-        if(p.isBlackmailed())
-            message += "You're blackmailed. You can't talk and can only vote to skip the day.";
-        else
-            message += "Please vote.  Once someone has enough votes, the day will end.";
-        new OGIMessage(p, message);
+    
+    public void broadcast(String s){
+    	new OGIMessage(texters, s);
     }
 
     public void onNightStart(PlayerList dead){
         if(dead != null) {
             if (dead.isEmpty() || dead.get(0) == n.Skipper){
-            	if (n.Skipper.getVoters().isEmpty())
-            		new OGIMessage(texters, "The day ended due to inactivity.");
+            	if (n.getLiveSize() == 2){
+            		broadcast("Voting became impossible so night started!");
+            	} else if (n.Skipper.getVoters().isEmpty())
+            		broadcast("The day ended due to inactivity.");
             	else
-            		new OGIMessage(texters, n.Skipper.getVoters().getStringName() + " opted to skip lynching today.");
+            		broadcast(n.Skipper.getVoters().getStringName() + " opted to skip lynching today.");
             }
             else {
                 for (Player deadPerson : dead) {
-                	new OGIMessage(texters, deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + "");
+                	broadcast(deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + "");
                 }
             }
         }
+        broadcast("It is now nighttime.");
         for(Player p: n.getLivePlayers()){
             sendNightPrompt(p);
         }
@@ -297,7 +322,6 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onEndNight(Player p) {
-    	System.out.println("hi");
     	new OGIMessage(p, "You've ended the night");
     }
 
@@ -306,7 +330,11 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onMayorReveal(Player m){
-        new OGIMessage(texters, m.getName() + " has revealed as the mayor!");
+    	broadcast(m.getName() + " has revealed as the mayor!");
+    }
+    
+    public void onAssassination(Player assassin, Player victim){
+    	broadcast(assassin.getName() + " assassinated " + victim.getDescription());
     }
 
     public void onMessageReceive(Player receiver, Message s){
@@ -314,15 +342,15 @@ public class TextHandler extends CommandHandler implements NarratorListener, Tex
     }
 
     public void onVote(Player p, Player q, int toLynch, Message e){
-        texters.sendMessage(e);
+    	broadcast(e.access(Message.PUBLIC, false));
     }
 
     public void onUnvote(Player p, Player q, int toLynch, Message e){
-        texters.sendMessage(e);
+    	broadcast(e.access(Message.PUBLIC, false));
     }
 
     public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, Message e) {
-        texters.sendMessage(e);
+    	broadcast(e.access(Message.PUBLIC, false));
     }
 
     

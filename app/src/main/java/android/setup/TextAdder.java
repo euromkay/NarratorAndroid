@@ -1,6 +1,6 @@
 package android.setup;
 
-import org.json.JSONException;
+import json.JSONException;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

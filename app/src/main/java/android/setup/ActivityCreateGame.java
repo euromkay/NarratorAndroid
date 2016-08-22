@@ -2,22 +2,19 @@ package android.setup;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 import android.NActivity;
-import android.SuccessListener;
 import android.alerts.PlayerPopUp;
 import android.alerts.TeamBuilder;
 import android.alerts.TeamEditor;
 import android.content.Context;
 import android.os.Bundle;
-import android.parse.Server;
 import android.screens.ListingAdapter;
 import android.text.Html;
 import android.texting.StateObject;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,7 +31,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import shared.logic.Narrator;
-import shared.logic.support.RoleTemplate;
 import voss.narrator.R;
 
 
@@ -85,14 +81,27 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private Object managerLock = new Object();
 	private void setup(Bundle b){
 		SetFont(R.id.create_info_label, this, false);
+		
 		chatButton = (Button) findViewById(R.id.create_toChat);
+		chatButton = (Button) findViewById(R.id.create_toChat);
+		SetFont(R.id.create_chatButton, this, false);
+		
 		chatET = (EditText) findViewById(R.id.create_chatET);
 		chatTV = (TextView) findViewById(R.id.create_chatTV);
 		findViewById(R.id.roles_show_Players).setOnClickListener(this);
+		
 		findViewById(R.id.create_createTeamButton).setOnClickListener(this);
+		SetFont(R.id.create_createTeamButton, this, false);
+		
 		findViewById(R.id.create_deleteTeamButton).setOnClickListener(this);
+		SetFont(R.id.create_deleteTeamButton, this, false);
+		
 		findViewById(R.id.create_editAlliesButton).setOnClickListener(this);
+		SetFont(R.id.create_editAlliesButton, this, false);
+		
 		findViewById(R.id.create_editMembersButton).setOnClickListener(this);
+		SetFont(R.id.create_editMembersButton, this, false);
+		
 		chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -133,13 +142,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 			
 
-			chatButton = (Button) findViewById(R.id.create_toChat);
-			if(Server.IsLoggedIn()) {
-				chatButton.setOnClickListener(this);
-				SetFont(R.id.create_toChat, this, false);
-			}else
-				chatButton.setVisibility(View.GONE);
-			SetFont(R.id.create_chatButton, this, false);
+			
 		}*/
 	}
 	public void onConnect(SetupManager sm) throws JSONException{
@@ -161,6 +164,12 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		}else
 			startGameButton.setVisibility(View.GONE);
 
+		if(server.IsLoggedIn()) {
+			chatButton.setOnClickListener(this);
+			SetFont(R.id.create_toChat, this, false);
+		}else
+			chatButton.setVisibility(View.GONE);
+		
 		rolesLV.setOnItemClickListener(this);
 		
 		setHostCode();
@@ -266,19 +275,25 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
     		if(activeFaction != null){
     			String factionName = activeFaction.getString("name");
     			JSONObject oldFaction = activeFaction;
-    			activeFaction = allFactions.getJSONObject(factionName);
+    			if(allFactions.has(factionName)){
+    				activeFaction = allFactions.getJSONObject(factionName);
     		
-    			if(oldFaction == activeRule)
-    				activeRule = activeFaction;
-    			else{
-    				activeRule = activeFaction.getJSONArray("members").getJSONObject(lastClicked);
+	    			if(oldFaction == activeRule)
+	    				activeRule = activeFaction;
+	    			else{
+	    				activeRule = activeFaction.getJSONArray("members").getJSONObject(lastClicked);
+	    			}
+    			}else{
+    				activeFaction = activeRule = null;
     			}
     		}
     		
     		refreshAvailableFactions();
     		refreshAvailableRolesList();
     		refreshDescription();
-    		//need to handle activeRules
+
+			if(tEditor != null)
+				tEditor.refresh();
     		
     	}catch(JSONException e){
     		e.printStackTrace();
@@ -408,7 +423,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		manager.talk(message);
 	}
 
-	protected void updateChat(){
+	public void updateChat(){
 		if(!server.IsLoggedIn())
 			return;
 
@@ -418,13 +433,15 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		pushChatDown();
 	}
 
-	private boolean chatVisible(){
+	public boolean chatVisible(){
+		if(activeFaction == null)
+			return chatET.getVisibility() != View.GONE;
 		return rolesLV.getVisibility() == View.GONE;
 	}
 
 	private void switchChat(){
 		int mode1, mode2;
-		if(chatVisible()){
+		if(chatVisible()){ //it's not going to be visible anymore
 			mode1 = View.VISIBLE;
 			mode2 = View.GONE;
 			chatButton.setText("View Chat");
@@ -441,15 +458,20 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		findViewById(R.id.create_chatHolder).setVisibility(mode2);
 		findViewById(R.id.create_chatButton).setVisibility(mode2);
 
-
+		if(!chatVisible() && activeFaction == null){
+			rolesLV.setVisibility(View.GONE);
+			findViewById(R.id.create_info_wrapper).setVisibility(View.GONE);
+		}
 
 	}
 
+	public static final String EDIT_TEAM_PROMPT = "editTeam";
 	public static final int REGULAR = 0;
 	public static final int EDITING_ALLIES = 1;
 	public static final int EDITING_ROLES = 2;
 	public int mode = REGULAR;
 
+	public TeamEditor tEditor;
 
 	public void onClick(View v) {
 		switch(v.getId()) {
@@ -479,12 +501,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				
 			case R.id.create_editAlliesButton:
 				mode = EDITING_ALLIES;
-				new TeamEditor().show(getFragmentManager(), "editTeam");
+				tEditor = new TeamEditor();
+				tEditor.show(getFragmentManager(), EDIT_TEAM_PROMPT);
 				return;
 				
 			case R.id.create_editMembersButton:
 				mode = EDITING_ROLES;
-				new TeamEditor().show(getFragmentManager(), "editTeam");
+				tEditor = new TeamEditor();
+				tEditor.show(getFragmentManager(), EDIT_TEAM_PROMPT);
 				return;
 			
             case R.id.roles_startGame:

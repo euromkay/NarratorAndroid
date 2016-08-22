@@ -1,13 +1,10 @@
 package android.alerts;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.CommunicatorPhone;
 import android.NActivity;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -25,7 +22,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.wifi.CommunicatorInternet;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.support.Communicator;
@@ -83,7 +82,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     }
 
     public void setTitle(){
-        getDialog().setTitle("Players in Game - " + mListener.getNarrator().getPlayerCount());
+        getDialog().setTitle("Players in Game - " + players.length());
     }
 
     public void onItemClick(AdapterView<?> unusedA, View clickedItem, int position, long unusedL){
@@ -98,8 +97,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 			e.printStackTrace();
 		}
 
-        if(clicked.getCommunicator().getClass() == CommunicatorInternet.class)
-            return;
+
         if(clicked.getCommunicator().getClass() == CommunicatorNull.class){
             if(clicked.isComputer())
                 activity.getManager().removePlayer(clicked.getName(), false);//gotta be a host delete
@@ -165,9 +163,10 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     }
     
     private void updatePlayerData(){
-    	JSONObject playerObject = activity.ns.getPlayers(); 
+    	JSONObject playerObject = activity.ns.getPlayers(null);
         try {
-			players = playerObject.getJSONArray("Lobby");
+        	if(playerObject.has("Lobby"))
+        		players = playerObject.getJSONArray("Lobby");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -214,6 +213,20 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             throw new ClassCastException(a.toString() + " must implement AddPlayerListenerListener");
         }
     }
+
+    public void onAttach(Context c){
+        super.onAttach(c);
+        this.activity = (ActivityCreateGame) c;
+        activity.getManager().addListener(this);
+        try {
+            mListener = (AddPlayerListener) c;
+            mListener.onPopUpCreate(this);
+            updatePlayerData();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(c.toString() + " must implement AddPlayerListenerListener");
+        }
+    }
+
 
     public void onDismiss(final DialogInterface arg0) {
         mListener.onPopUpDismiss();
@@ -278,15 +291,15 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             try{
 	            JSONObject player = data.getJSONObject(position);
 	            String name = player.getString(StateObject.playerName);
-	            int color;
+	            String color;
 	            if (player.getBoolean("isComputer")){
-	                color = getColor(R.color.redBlood);
+	                color = "#AF111C";
 	            }else{
-	                color = getColor(R.color.white);
+	                color = "#FFFFFF";
 	            }
 	            result.setText(name);
 	            //result.setTypeface(font);
-	            result.setTextColor(color);
+                NActivity.setTextColor(result, color);
             }catch(JSONException e){
             	e.printStackTrace();
             }
@@ -294,10 +307,6 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             return result;
 
 
-        }
-
-        private int getColor(int id){
-            return NActivity.ParseColor(c, id);
         }
 
 		public int size(){

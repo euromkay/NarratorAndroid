@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import voss.narrator.R;
-import android.setup.ActivityCreateGame;
 
 public class ListingAdapter extends BaseAdapter{
 

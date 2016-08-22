@@ -4,14 +4,11 @@ package android.alerts;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.NarratorService;
 import android.SuccessListener;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.screens.ListingAdapter;
@@ -22,6 +19,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import voss.narrator.R;
 
 public class TeamEditor extends DialogFragment implements View.OnClickListener, AdapterView.OnItemClickListener, SuccessListener {
@@ -72,6 +72,10 @@ public class TeamEditor extends DialogFragment implements View.OnClickListener, 
     public void onSuccess(){
         setListViews();
     }
+    
+    public void refresh(){
+    	setListViews();
+    }
 
     public void onFailure(String message){
         ac.toast(message);
@@ -79,7 +83,6 @@ public class TeamEditor extends DialogFragment implements View.OnClickListener, 
 
     private HashMap<String, String> translator;
     private void setListViews(){
-        ac.resetView();
     	translator = new HashMap<String, String>();
         try {
             JSONObject obj;
@@ -164,12 +167,20 @@ public class TeamEditor extends DialogFragment implements View.OnClickListener, 
     public void onDismiss(DialogInterface dialogInterface){
         super.onDismiss(dialogInterface);
         ac.mode = ActivityCreateGame.REGULAR;
+        ac.tEditor = null;
     }
 
     private NarratorService ns;
     private ActivityCreateGame ac;
     private boolean editingAllies;
     public void onAttach(Activity a){
+        super.onAttach(a);
+        ac = (ActivityCreateGame) a;
+        editingAllies = ((ActivityCreateGame) a).mode == ActivityCreateGame.EDITING_ALLIES;
+        this.ns = ((ActivityCreateGame) a).ns;
+    }
+    
+    public void onAttach(Context a){
         super.onAttach(a);
         ac = (ActivityCreateGame) a;
         editingAllies = ((ActivityCreateGame) a).mode == ActivityCreateGame.EDITING_ALLIES;

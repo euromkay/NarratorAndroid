@@ -85,4 +85,5 @@ public abstract class NActivity extends FragmentActivity{
 	public static void setTextColor(TextView v, String color){
 		v.setTextColor(Color.parseColor(color));
 	}
+	
 }

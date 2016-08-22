@@ -3,9 +3,9 @@ package android.setup;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 import android.text.Editable;
 import android.text.TextWatcher;

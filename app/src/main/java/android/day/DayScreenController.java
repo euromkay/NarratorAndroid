@@ -2,34 +2,106 @@ package android.day;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-
 import android.CommunicatorPhone;
+import android.JUtils;
 import android.screens.SimpleGestureFilter;
+import android.texting.StateObject;
+import json.JSONArray;
+import json.JSONObject;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.RolesList;
-import shared.logic.Team;
 import shared.logic.listeners.NarratorListener;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
 import shared.roles.Arsonist;
 import shared.roles.Mayor;
-import shared.roles.Role;
 
-public class DayScreenController implements NarratorListener{
+public class DayScreenController{
 
-	Player currentPlayer;
+	String currentPlayer;
 	public ActivityDay dScreen;
 	private DayManager manager;
 	public DayScreenController(ActivityDay dScreen, DayManager manager){
 		this.dScreen = dScreen;
 		this.manager = manager;
 
-
+		if(!dScreen.server.IsLoggedIn()){
+			manager.getNarrator().addListener(new NarratorLocalListener(this));
+		}
 		//setNarratorInfoView();
+	}
+
+	public static class NarratorLocalListener implements NarratorListener{
+
+		public DayScreenController dController;
+		public NarratorLocalListener(DayScreenController dController){
+			this.dController = dController;
+		}
+		public void onGameStart(){
+			dController.onGameStart();
+		}
+		public void onNightStart(PlayerList lynched){
+			dController.onNightStart(lynched);
+		}
+		public void onDayStart(PlayerList newDead){
+			dController.onDayStart(newDead);
+		}
+
+		public void onEndGame(){
+			dController.onEndGame();
+		}
+		
+		public void onAssassination(Player assassin, Player victim){
+			dController.onAssassination(assassin.getName(), victim.getName());
+		}
+
+
+		public void onMayorReveal(Player mayor){
+			dController.onMayorReveal(mayor);
+		}
+
+		public void onArsonDayBurn(Player arson, PlayerList burned){
+			dController.onArsonDayBurn(arson.getName(), burned.getNamesToStringList());
+
+		}
+
+
+		public void onVote(Player voter, Player target, int voteCount, Message e){
+			dController.onVote(voter, target, voteCount, e);
+		}
+		public void onUnvote(Player voter, Player prev, int voteCountToLynch, Message e){
+			dController.onUnvote(voter, prev, voteCountToLynch, e);
+		}
+		public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch, Message e){
+			dController.onChangeVote(voter, target, prevTarget, toLynch, e);
+		}
+
+
+
+		public void onNightTarget(Player owner, Player target){
+			dController.onNightTarget();
+		}
+		public void onNightTargetRemove(Player owner, Player prev){
+			dController.onNightTargetRemove(owner.getName(), prev.getName());
+		}
+
+		public void onEndNight(Player p){
+			dController.onEndNight(p.getName());
+		}
+		public void onCancelEndNight(Player p){
+			dController.onCancelEndNight(p.getName());
+		}
+
+		public void onMessageReceive(Player receiver, Message e){
+			dController.onMessageReceive(receiver, e);
+		}
+
+		public void onModKill(Player bad){
+			dController.onModKill(bad);
+		}
 	}
 
 	public void init(){
@@ -55,7 +127,7 @@ public class DayScreenController implements NarratorListener{
 	public void onGameStart(){}
 
 	public void onNightStart(PlayerList lynched) {
-		deadCurrentPlayerCheck(lynched);//if the current player died or was lynched
+		deadCurrentPlayerCheck(lynched.getNamesToStringList());//if the current player died or was lynched
 
 		setDayLabel();
 		dScreen.updateMembers();
@@ -68,7 +140,7 @@ public class DayScreenController implements NarratorListener{
 
 
 	public void onDayStart(PlayerList newDead) {
-		deadCurrentPlayerCheck(newDead);
+		deadCurrentPlayerCheck(newDead.getNamesToStringList());
 
 		setDayLabel();
 		setVotesToLynch();//starts off at 0
@@ -90,16 +162,16 @@ public class DayScreenController implements NarratorListener{
 
 	public void onMayorReveal(Player mayor) {
 		dScreen.say(mayor.getName() + " has revealed.");
-		if (currentPlayer == mayor)
+		if (currentPlayer.equals(mayor.getName() ))
 			dScreen.hideDayButton();
 		updateChatPanel();
 
 	}
 
 
-	public void onArsonDayBurn(Player arson, PlayerList burned) {
+	public void onArsonDayBurn(String arson, ArrayList<String> burned) {
 		setupPlayerDrawer();
-		if (currentPlayer == arson)
+		if (currentPlayer.equals(arson))
 			dScreen.hideDayButton();
 
 		if (burned.contains(currentPlayer)){
@@ -130,41 +202,35 @@ public class DayScreenController implements NarratorListener{
 	private PlayerList getTargets(int ability){
 		return null;
 	}
-	public void onNightTarget(Player owner, Player target) {
+	public void onNightTarget() {
 		dScreen.check(getTargets(-1));
 
-
-		Team t = owner.getTeam();
-		if(t.hasMember(currentPlayer))
-			updateChatPanel();
+		updateChatPanel();
 	}
 
-	public void onNightTargetRemove(Player owner, Player prev) {
-		if (owner == currentPlayer) {
+	public void onNightTargetRemove(String owner, String prev) {
+		if (owner.equals(currentPlayer)){
 			dScreen.uncheck(prev);
 		}
 		if (!playerSelected())
 			dScreen.uncheck(owner);
 
-		Team t = owner.getTeam();
-		if(t.hasMember(currentPlayer))
-			updateChatPanel();
+		updateChatPanel();
 
 	}
 
-	public void onEndNight(Player p) {
-		if(playerSelected() && !currentPlayer.endedNight())
-			return;
+	public void onEndNight(String p) {
 		updateActionPanel();
-		setCancelSkipNightText();
+		if(p.equals(currentPlayer))
+			setCancelSkipNightText();
 
 	}
 
-	public void onCancelEndNight(Player p) {
+	public void onCancelEndNight(String canceler) {
 		//if someone isn't selected, update the action panel,
 		//if person that just canceled the end night, they need their action panel updated
 		//if current doesn't have their night canceled, also refresh action panel
-		if(playerSelected() && p != currentPlayer && !currentPlayer.endedNight())
+		if(playerSelected() && !canceler.equals(currentPlayer) && !manager.ns.endedNight(currentPlayer))
 			return;
 		updateActionPanel();
 		setSkipNightText();
@@ -202,7 +268,7 @@ public class DayScreenController implements NarratorListener{
 	}
 
 
-	private void deadCurrentPlayerCheck(PlayerList possibleDeadList){
+	private void deadCurrentPlayerCheck(ArrayList<String> possibleDeadList){
 		if(possibleDeadList.contains(currentPlayer)) {
 			manager.setCurrentPlayer(null);
 			setNarratorInfoView();
@@ -221,22 +287,24 @@ public class DayScreenController implements NarratorListener{
 
 	private void setupPlayerDrawer() {
 		Narrator n = getNarrator();
-		PlayerList list;
+		JSONArray jArray = new JSONArray();
 		if(dScreen.server.IsLoggedIn()){
-			list = new PlayerList(n.getPlayerByName(dScreen.server.GetCurrentUserName()));
-		}else if(manager.isHost()) {
-			list = n.getLivePlayers();
+			jArray.put(dScreen.server.GetCurrentUserName());
 		}else{
-			list = new PlayerList();
-			for(Player p: n.getLivePlayers()){
-				if(p.getCommunicator().getClass() == CommunicatorPhone.class){
-					list.add(p);
+			PlayerList list;
+			if(manager.isHost()) {
+				list = n.getLivePlayers();
+			}else{
+				list = new PlayerList();
+				for(Player p: n.getLivePlayers()){
+					if(p.getCommunicator().getClass() == CommunicatorPhone.class){
+						list.add(p);
+					}
 				}
 			}
-		}
-		JSONArray jArray = new JSONArray();
-		for(Player p: list){
-			jArray.put(p.getName());
+			for(Player p: list){
+				jArray.put(p.getName());
+			}
 		}
 		dScreen.setupPlayerDrawer(jArray);
 	}
@@ -246,8 +314,8 @@ public class DayScreenController implements NarratorListener{
 
 		String color;
 		if (playerSelected()) {
-			dScreen.setPlayerLabel(currentPlayer.getName());
-			color = currentPlayer.getColor();
+			dScreen.setPlayerLabel(currentPlayer);
+			color = manager.ns.getColor(currentPlayer);
 		}else {
 			dScreen.setPlayerLabel(PlayerMenuHeader);
 			color = "#49C500";//NActivity.ParseColor(dScreen, R.color.trimmings);
@@ -260,90 +328,72 @@ public class DayScreenController implements NarratorListener{
 		if(dScreen.panel != null)//restore panel
 			dScreen.onClick(dScreen.panel);
 	}
+	
+	public void onAssassination(String assassin, String killed){
+		ArrayList<String> dead = new ArrayList<>();
+		dead.add(killed);
+		onArsonDayBurn(assassin, dead);
+	}
 
 	protected void updateActionPanel() {
-		Narrator n = getNarrator();
 		dScreen.setActionButton();
-		if (playerSelected() && currentPlayer.isAlive() &&  (isDay() || !currentPlayer.endedNight())) {
-			if (isDay()) {
-				PlayerList allowedVoteTargets;
-				if (currentPlayer.isBlackmailed()){
-					allowedVoteTargets = new PlayerList(n.Skipper);
-				}
-				else{
-					allowedVoteTargets = n.getLivePlayers().remove(currentPlayer).add(n.Skipper);
-				}
-				dScreen.setActionList(allowedVoteTargets, Narrator.DAY_START);
-				dScreen.check(getTargets(Role.VOTE));
-				setVotesToLynch();
-			} else { //isNight
-				PlayerList allowedTargets = new PlayerList();
-				String[] allAbilities = currentPlayer.getAbilities();
-
-				if (allAbilities.length != 0) {
-					String ability = allAbilities[abilityIndex%allAbilities.length];
-
-					int abilityID = currentPlayer.parseAbility(ability);
-
-					for (Player p : n.getAllPlayers()) {
-						if (currentPlayer.isAcceptableTarget(p, abilityID))
-							allowedTargets.add(p);
-					}
-					dScreen.setActionList(allowedTargets, isDay());
-					dScreen.check(currentPlayer.getTargets(abilityID));
-
-					dScreen.setCommand(ability);
-				} else {
-					dScreen.setCommand("End the night and wait for morning");
-					dScreen.setActionList(new PlayerList(), isDay());
-				}
-
-				setButtonText();
-
+		JSONObject playerListObject = manager.ns.getPlayers(currentPlayer);
+		if (playerSelected() && !manager.ns.isDead(currentPlayer)){
+			JSONArray types = JUtils.getJSONArray(playerListObject, StateObject.type);
+			if(types.length() == 0) {
+				dScreen.setCommand("End the night and wait for morning");
+				dScreen.setActionList(new JSONArray(), isDay());
+			}else {
+				String key = JUtils.getString(types,abilityIndex % types.length());
+				JSONArray playerList = JUtils.getJSONArray(playerListObject, key);
+				dScreen.setActionList(playerList, manager.ns.isDay());
+				dScreen.setCommand(key);
 			}
-
+			if(manager.ns.isDay())
+				setVotesToLynch();
+			else
+				setButtonText();
 		} else {
 			//dScreen.clearTargetList();
-			PlayerList list = new PlayerList();
-			for (Player p : n.getLivePlayers()) {
-				if (isDay()) {
-					if (p.getVoteTarget() == null)
-						list.add(p);
-				} else {
-					if (!p.endedNight())
-						list.add(p);
+			if(playerListObject.has("info")){
+				JSONArray list = JUtils.getJSONArray(playerListObject, "info");
 
-				}
+				dScreen.setActionList(list, isDay());
 			}
-			dScreen.setActionList(list, isDay());
 			if (isDay())
 				dScreen.setCommand("People who haven't voted:");
 			else
-				dScreen.setCommand("People who haven't ended the night:");
+				dScreen.setCommand(HAVENT_ENDED_NIGHT_TEXT);
 
 		}
 		dScreen.showFrameSpinner();
 	}
+	
+	public static final String HAVENT_ENDED_NIGHT_TEXT = "People who haven't ended the night:";
 
 	protected void updateInfoPanel(){
 		if (playerSelected()) {
 			setAllies();
-			dScreen.updateRoleInfo(currentPlayer);
+			dScreen.updateRoleInfo(manager.ns.getRoleInfo(currentPlayer));
 			setButtonText();
 		}
 		dScreen.showAllies();
 	}
 	private void setAllies(){
-
-		String color = currentPlayer.getTeam().getColor();
+		JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
+		String color = JUtils.getString(roleInfo, StateObject.roleColor);
 		ArrayList<String> names = new ArrayList<>();
 		ArrayList<String> colors = new ArrayList<>();
-		if (currentPlayer.getTeam().knowsTeam()) {
-			for (Player teamMember : currentPlayer.getTeam().getMembers()) {
-				if (teamMember.isAlive()) {
-					names.add(teamMember.toString());
-					colors.add(color);
-				}
+		if (roleInfo.has(StateObject.roleTeam)) {
+			JSONArray allyList = JUtils.getJSONArray(roleInfo, StateObject.roleTeam);
+			for (int i = 0; i < allyList.length(); i++) {
+				JSONObject jAlly = JUtils.getJSONObject(allyList, i);
+				String allyName = JUtils.getString(jAlly, StateObject.teamAllyName);
+				String allyRole = JUtils.getString(jAlly, StateObject.teamAllyRole);
+				names.add(allyName + "[" + allyRole + "]");
+
+				String allyColor = JUtils.getString(jAlly, StateObject.teamAllyColor);
+				colors.add(allyColor);
 			}
 		}
 		dScreen.setListView(dScreen.alliesLV, names, colors, 5);
@@ -362,33 +412,29 @@ public class DayScreenController implements NarratorListener{
 		dScreen.setListView(dScreen.rolesLV, names, colors);
 	}
 
-	private void updateChatPanel(){
-		String text;
-		if (!manager.getNarrator().isInProgress()){
-			text = manager.getNarrator().getEventManager().getEvents(Message.PRIVATE).access(Message.PRIVATE, true);
-		}else if (!playerSelected())
-			text = manager.getNarrator().getEventManager().getEvents(Message.PUBLIC).access(Message.PUBLIC, true);
-		else{
-			text = currentPlayer.getEvents().access(currentPlayer, true);
-		}
-		dScreen.updateChatPanel(text);
+	public void updateChatPanel(){
+		dScreen.updateChatPanel(manager.ns.getEvents(currentPlayer));
 	}
 	
 	public void setButtonText(){
-		if (!playerSelected()) {
+		if (!playerSelected() || manager.ns.isDead(currentPlayer)) {
 			return;
 		}
+		if(!manager.ns.showButton(currentPlayer)){
+			return;
+		}
+
 		if (isDay()){
-			if (!currentPlayer.hasDayAction()) {
+			if (!manager.ns.hasDayAction(currentPlayer))
 				return;
-			}else if (currentPlayer.is(Mayor.class))
+			JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
+			String baseRoleName = JUtils.getString(roleInfo, StateObject.roleBaseName);
+			if (baseRoleName.equals(Mayor.ROLE_NAME))
 				dScreen.setButtonText("Reveal as Mayor (+" + getNarrator().getRules().getInt(Rules.MAYOR_VOTE_POWER) + " votes)");
-			else if (currentPlayer.is(Arsonist.class))
+			else if (baseRoleName.equals(Arsonist.ROLE_NAME))
 				dScreen.setButtonText("Burn all doused targets");
 		}else{
-			if (currentPlayer.isDead())
-				dScreen.setButtonText("");
-			else if (currentPlayer.endedNight())
+			if (manager.ns.endedNight(currentPlayer))
 				setCancelSkipNightText();
 			else
 				setSkipNightText();
@@ -410,12 +456,16 @@ public class DayScreenController implements NarratorListener{
 	
 	private int abilityIndex = 0;
 	protected void setNextAbility(int direction){
-		if (isDay() || !playerSelected() || currentPlayer.getAbilities().length < 1 || currentPlayer.isDead())
+		if (isDay() || !playerSelected() || manager.ns.isDead(currentPlayer))
+			return;
+		JSONObject playerInfo = manager.ns.getPlayers(currentPlayer);
+		JSONArray abilityTypes = JUtils.getJSONArray(playerInfo, StateObject.type);
+		if(abilityTypes.length() == 0)
 			return;
 		if (direction == SimpleGestureFilter.SWIPE_LEFT) {
 			abilityIndex--;
 			if (abilityIndex < 1){
-				abilityIndex += currentPlayer.getAbilities().length;
+				abilityIndex += abilityTypes.length();
 			}
 		}else
 			abilityIndex++;
