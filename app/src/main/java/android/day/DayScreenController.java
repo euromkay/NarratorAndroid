@@ -6,18 +6,17 @@ import android.CommunicatorPhone;
 import android.JUtils;
 import android.screens.SimpleGestureFilter;
 import android.texting.StateObject;
+import android.widget.TextView;
 import json.JSONArray;
 import json.JSONObject;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
-import shared.logic.RolesList;
 import shared.logic.listeners.NarratorListener;
-import shared.logic.support.RoleTemplate;
-import shared.logic.support.rules.Rules;
 import shared.roles.Arsonist;
 import shared.roles.Mayor;
+import voss.narrator.R;
 
 public class DayScreenController{
 
@@ -29,7 +28,7 @@ public class DayScreenController{
 		this.manager = manager;
 
 		if(!dScreen.server.IsLoggedIn()){
-			manager.getNarrator().addListener(new NarratorLocalListener(this));
+			manager.ns.local.addListener(new NarratorLocalListener(this));
 		}
 		//setNarratorInfoView();
 	}
@@ -115,13 +114,9 @@ public class DayScreenController{
 		setRoles();
 	}
 
-	public Narrator getNarrator(){
-		return manager.getNarrator();
-	}
 
-
-	private static final String SKIP_NIGHT_TEXT = "End Night";
-	private static final String CANCEL_SKIP_NIGHT_TEXT = "Cancel End Night";
+	public static final String SKIP_NIGHT_TEXT = "End Night";
+	public static final String CANCEL_SKIP_NIGHT_TEXT = "Cancel End Night";
 	public static final String PlayerMenuHeader = "General Info";
 
 	public void onGameStart(){}
@@ -156,7 +151,7 @@ public class DayScreenController{
 
 	public void onEndGame() {
 		//TODO SPEECH LISTENER
-		dScreen.say(getNarrator().getWinMessage().access(Message.PUBLIC, false));
+		//dScreen.say(getNarrator().getWinMessage().access(Message.PUBLIC, false));
 		dScreen.endGame();
 	}
 
@@ -281,16 +276,18 @@ public class DayScreenController{
 	}
 
 	public void setDayLabel(){
-		Narrator n = getNarrator();
-		dScreen.setDayLabel(isDay(), n.getDayNumber());
+		if(dScreen.server.IsLoggedIn())
+			((TextView) dScreen.findViewById(R.id.day_title)).setText(manager.ns.gameState.dayLabel);
+		else
+			dScreen.setDayLabel(manager.ns.isDay(), this.manager.ns.local.getDayNumber());
 	}
 
 	private void setupPlayerDrawer() {
-		Narrator n = getNarrator();
 		JSONArray jArray = new JSONArray();
 		if(dScreen.server.IsLoggedIn()){
 			jArray.put(dScreen.server.GetCurrentUserName());
 		}else{
+			Narrator n = manager.ns.local;
 			PlayerList list;
 			if(manager.isHost()) {
 				list = n.getLivePlayers();
@@ -335,7 +332,7 @@ public class DayScreenController{
 		onArsonDayBurn(assassin, dead);
 	}
 
-	protected void updateActionPanel() {
+	public void updateActionPanel() {
 		dScreen.setActionButton();
 		JSONObject playerListObject = manager.ns.getPlayers(currentPlayer);
 		if (playerSelected() && !manager.ns.isDead(currentPlayer)){
@@ -381,7 +378,6 @@ public class DayScreenController{
 	}
 	private void setAllies(){
 		JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
-		String color = JUtils.getString(roleInfo, StateObject.roleColor);
 		ArrayList<String> names = new ArrayList<>();
 		ArrayList<String> colors = new ArrayList<>();
 		if (roleInfo.has(StateObject.roleTeam)) {
@@ -400,12 +396,15 @@ public class DayScreenController{
 
 	}
 	private void setRoles(){
-		RolesList roles = getNarrator().getAllRoles();
+		JSONArray jRoles = manager.ns.getRoles();
+		//RolesList roles = getNarrator().getAllRoles();
 		ArrayList<String> names = new ArrayList<>();
 		ArrayList<String> colors = new ArrayList<>();
-		for (RoleTemplate r: roles){
-			names.add(r.getName());
-			colors.add(r.getColor());
+		JSONObject jRole;
+		for (int i = 0; i < jRoles.length(); i++){
+			jRole = JUtils.getJSONObject(jRoles, i);
+			names.add(JUtils.getString(jRole, StateObject.roleType));
+			colors.add(JUtils.getString(jRole, StateObject.color));
 		}
 
 
@@ -430,7 +429,7 @@ public class DayScreenController{
 			JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
 			String baseRoleName = JUtils.getString(roleInfo, StateObject.roleBaseName);
 			if (baseRoleName.equals(Mayor.ROLE_NAME))
-				dScreen.setButtonText("Reveal as Mayor (+" + getNarrator().getRules().getInt(Rules.MAYOR_VOTE_POWER) + " votes)");
+				dScreen.setButtonText("Reveal as Mayor (+" + manager.ns.getMayorVotePower() + " votes)");
 			else if (baseRoleName.equals(Arsonist.ROLE_NAME))
 				dScreen.setButtonText("Burn all doused targets");
 		}else{
@@ -442,7 +441,7 @@ public class DayScreenController{
 	}
 	
 	public void setVotesToLynch() {
-		dScreen.setVotesToLynch(getNarrator().getMinLynchVote());
+		dScreen.setVotesToLynch(manager.ns.getMinLynchVote());
 	}
 	
 	public void setCancelSkipNightText(){
@@ -476,6 +475,6 @@ public class DayScreenController{
 	
 	
 	private boolean isDay(){
-		return getNarrator().isDay();
+		return manager.ns.isDay();
 	}
 }

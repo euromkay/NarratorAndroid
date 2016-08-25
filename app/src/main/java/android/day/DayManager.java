@@ -5,27 +5,20 @@ import android.NarratorService;
 import android.PhoneBook;
 import android.content.Intent;
 import android.setup.TextAdder;
-import android.texting.TextController;
 import android.texting.TextHandler;
-import android.texting.TextInput;
 import shared.ai.Brain;
-import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
-import shared.logic.Team;
-import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.templates.TestController;
-import shared.roles.Framer;
 
-public class DayManager implements TextInput{
+public class DayManager{
 
 	
 	private String currentPlayer;
 
 	
 	public DayScreenController dScreenController;
-	private TextController tC;
 	public NarratorService ns;
 	public PhoneBook phoneBook;
 	protected TextHandler tHandler;
@@ -42,8 +35,6 @@ public class DayManager implements TextInput{
 		tHandler = new TextHandler(ns.local, TextAdder.getTexters(ns.local.getAllPlayers()));
 		
 		phoneBook = new PhoneBook(ns.local);
-
-		tC = new TextController(this);
 
 		b = new Brain(new PlayerList(), new Random());
 
@@ -66,38 +57,20 @@ public class DayManager implements TextInput{
 		synchronized(ns.local){
 			if(!dScreenController.playerSelected() || ns.isDead(currentPlayer))
 				return;
-			if (getNarrator().isDay())
+			if (ns.isDay())
 				ns.doDayAction(currentPlayer);
 			else{
 				if (ns.endedNight(currentPlayer)) {
 					ns.cancelEndNight(currentPlayer);
+					dScreenController.setSkipNightText();
 				}else {
 					ns.endNight(currentPlayer);
+					dScreenController.setCancelSkipNightText();
 				}
 			}
 		}
 	}
 
-	public void target(Player owner, Player target, String ability_s){
-		int ability = owner.parseAbility(ability_s);
-		if(owner.getRoleName().equals(Framer.ROLE_NAME)){
-			Team t = dScreenController.dScreen.getSpinnerSelectedTeam();
-			owner.setTarget(target, ability, t.getColor());
-			
-			tC.setNightTarget(owner, target, ability_s, t.getName());
-		}else{
-			owner.setTarget(target, ability);
-			
-			tC.setNightTarget(owner, target, ability_s);
-		}
-
-	}
-
-	public void untarget(Player owner, Player target, String ability_s) {
-		owner.cancelTarget(target, owner.parseAbility(ability_s));
-		
-		tC.cancelNightTarget(owner, target, ability_s);
-	}
 
 
 	public void talk(String message) {
@@ -111,7 +84,7 @@ public class DayManager implements TextInput{
 	//from gui input
 	//garuntee that someone is selected
 	protected void command(String target){
-		if (!dScreenController.playerSelected() || (getNarrator().isNight() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
+		if (!dScreenController.playerSelected() || (!ns.isDay() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;
 		}
@@ -126,14 +99,13 @@ public class DayManager implements TextInput{
 		}
 		
 		synchronized(ns.local){
-		Narrator n = getNarrator();
-		if(n.isDay()){
+		if(ns.isDay()){
 			boolean unvote = ns.isVoting(currentPlayer, target);
 			//if owner voted for target already, gotta be an unvote
 			if(unvote)
 				ns.unvote(currentPlayer);
 			else{
-				if(target.equals("Skip Day"))
+				if(target.equalsIgnoreCase("Skip Day"))
 					ns.skipVote(currentPlayer);
 				else
 					ns.vote(currentPlayer, target);
@@ -157,12 +129,6 @@ public class DayManager implements TextInput{
 	}
 
 
-
-	
-	
-	public Narrator getNarrator(){
-		return ns.local;
-	}
 
 	public void nextSimulation(){
 		if(ns.isInProgress()){
@@ -190,26 +156,7 @@ public class DayManager implements TextInput{
 		return true;
 	}
 	
-	public void text(Player p, String s, boolean sync){
-		s = p.getName() + Constants.NAME_SPLIT + s;
-		if(isHost()){
-
-		}else{
-			if(dScreenController.dScreen.server.IsLoggedIn()) {
-				s = "," + s;
-				if(!sync)
-					s = dScreenController.dScreen.server.GetCurrentUserName() + s;
-				else
-					s = " " + s;
-				double day = ns.local.getDayNumber();
-				if(ns.local.isNight())
-					day += 0.5;
-				//Server.PushCommand(ns.getGameListing(), s, day);
-			}else{
-				//ns.socketClient.send(s);
-			}
-		}
-	}
+	
 
 	public void parseCommand(Intent i){
 		//if(!i.hasExtra(GameListing.ID))

@@ -13,9 +13,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import android.JUtils;
 import android.SuccessListener;
 import android.screens.ActivityHome;
 import android.support.annotation.NonNull;
+import android.texting.StateObject;
 
 
 @SuppressWarnings("unused")
@@ -177,6 +179,9 @@ public class Server {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+        jo = new JSONObject();
+        JUtils.put(jo, StateObject.message, StateObject.requestGameState);
+        aHome.ns.sendMessage(jo);
 	}
 
 	public static void HostPublic(ActivityHome aHome) {

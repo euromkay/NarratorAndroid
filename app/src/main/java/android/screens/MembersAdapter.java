@@ -1,34 +1,37 @@
 package android.screens;
 
+import android.JUtils;
 import android.NActivity;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.texting.StateObject;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import shared.logic.Player;
-import shared.logic.PlayerList;
+import json.JSONArray;
+import json.JSONObject;
 import voss.narrator.R;
 
 public class MembersAdapter extends BaseAdapter{
 
-    private PlayerList data;
+    private JSONArray data;
     private NActivity c;
     private Typeface font;
 
-    public MembersAdapter(PlayerList data, NActivity c){
+    public MembersAdapter(JSONArray data, NActivity c){
         this.data = data;
         this.c = c;
         font = Typeface.createFromAsset(c.getAssets(), "JosefinSans-Regular.ttf");
     }
 
     public int getCount() {
-        return data.size();
+        return data.length();
     }
 
     public String getItem(int position) {
-        return data.get(position).getName();
+        JSONObject jPlayer = JUtils.getJSONObject(data, position);
+        return JUtils.getString(jPlayer, StateObject.playerName);
     }
 
     public long getItemId(int position) {
@@ -44,24 +47,11 @@ public class MembersAdapter extends BaseAdapter{
             result = (TextView) convertView;
         }
 
-        Player p = data.get(position);
+        JSONObject jPlayer = JUtils.getJSONObject(data, position);
 
-        String color;
-        String name;
-        if (p.isAlive()) {
-            color = "#000000";
-            name = p.getName();
-        }
-        else {
-            if (p.isCleaned()) {
-                name = p.getName() + " - ????";
-                color = "#49C500";//getColor(R.color.trimmings);
-            }
-            else {
-                name = p.getDescription();
-                color = p.getTeam().getColor();
-            }
-        }
+
+        String color = JUtils.getString(jPlayer, StateObject.playerColor);
+        String name = JUtils.getString(jPlayer, StateObject.playerDescription);
 
         result.setText(name);
         result.setTypeface(font);

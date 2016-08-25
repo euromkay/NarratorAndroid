@@ -86,18 +86,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			});
 		}catch(PackageManager.NameNotFoundException e){}*/
 		
-		connectNarrator(new NarratorConnectListener() {
-			public void onConnect() {
-				if(server.IsLoggedIn())
-					ns.connectWebSocket(new NarratorConnectListener(){
-						public void onConnect(){
-							JSONObject jo = new JSONObject();
-							JUtils.put(jo, StateObject.message, StateObject.requestGameState);
-							ns.sendMessage(jo);
-						}
-					});
-			}
-		});
+
 	}
 
 	private void displayUpdate(){
@@ -178,10 +167,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			case R.id.home_join:
 				if(isLoggedIn()) {
 					Server.JoinPublic(this);
-					//displayGames(GameBookPopUp.JOIN);
 				}else if(networkCapable()){
 					showIpPrompt();
-					//showNamePrompt("Join");
 				}else{
 					toast("Your device isn't capable of local hosting.");
 				}
@@ -372,14 +359,13 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	public static final String MYNAME = "myname_activityhoome";
 	public void start(){
 		Class<?> activ;
-		if(ns.getNarrator().isStarted())
+		if(ns.isStarted())
 			activ = ActivityDay.class;
 		else {
             activ = ActivityCreateGame.class;
         }
 		Intent i = new Intent(this, activ);
 		startActivity(i);
-		//finish();
 	}
 	
 	public void onBackPressed(){
@@ -390,6 +376,19 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	/** register the BroadcastReceiver with the intent values to be matched */
 	public void onResume() {
 		super.onResume();
+		connectNarrator(new NarratorConnectListener() {
+			public void onConnect() {
+				if (server.IsLoggedIn())
+					ns.connectWebSocket(new NarratorConnectListener() {
+						public void onConnect() {
+							JSONObject jo = new JSONObject();
+							JUtils.put(jo, StateObject.message, StateObject.requestGameState);
+							ns.sendMessage(jo);
+						}
+					});
+			}
+		});
+
 	}
 
 	public void onPause() {

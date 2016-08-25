@@ -2,9 +2,6 @@ package android.setup;
 
 import java.util.ArrayList;
 
-import json.JSONException;
-import json.JSONObject;
-
 import android.CommunicatorPhone;
 import android.NarratorService;
 import android.content.Intent;
@@ -12,12 +9,13 @@ import android.content.IntentFilter;
 import android.day.ActivityDay;
 import android.parse.Server;
 import android.util.Log;
+import json.JSONException;
+import json.JSONObject;
 import shared.ai.Computer;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.exceptions.IllegalGameSettingsException;
 import shared.logic.exceptions.IllegalRoleCombinationException;
-import shared.logic.support.CommandHandler;
 import shared.logic.support.Communicator;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
@@ -295,7 +293,7 @@ public class SetupManager {
 
     public void updateNarrator(Intent i) throws JSONException{
 
-        JSONObject oj = new JSONObject(i.getStringExtra("stuff"));
+        //JSONObject oj = new JSONObject(i.getStringExtra("stuff"));
 
 
         /*switch(oj.getString("command")){

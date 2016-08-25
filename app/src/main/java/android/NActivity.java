@@ -5,10 +5,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.day.ActivityDay;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.IBinder;
+import android.setup.ActivityCreateGame;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
@@ -27,6 +29,8 @@ public abstract class NActivity extends FragmentActivity{
     		server.Start();
 		Intent i = new Intent(this, NarratorService.class);
 		startService(i);
+		if(ns != null)
+			ns.activity = this;
 		if(sC == null) {
 			sC = new ServiceConnection() {
 				public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -34,6 +38,12 @@ public abstract class NActivity extends FragmentActivity{
 					ns = b.getService();
 					ns.server = server;
 					ns.activity = NActivity.this;
+					synchronized(ns){
+						if(ns.activity.getClass().equals(ActivityDay.class))
+							ns.pendingDay = false;
+						else if(ns.activity.getClass().equals(ActivityCreateGame.class))
+							ns.pendingCreate = false;
+					}
 					if (ncl != null)
 						ncl.onConnect();
 
@@ -47,11 +57,15 @@ public abstract class NActivity extends FragmentActivity{
 		}
 	}
     public void unbindNarrator(){
-		if(ns!=null)
 		try {
 			unbindService(sC);
-			sC = null;
-		}catch(IllegalArgumentException|NullPointerException e){}
+		} catch (IllegalArgumentException | NullPointerException e) {}
+		sC = null;
+		if(ns!=null) {
+			if(ns.activity == this)
+				ns.activity = null;
+		}
+
     }
     
     public boolean networkCapable(){

@@ -3,11 +3,8 @@ package android.day;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
-
 import android.GUIController;
+import android.GameState;
 import android.JUtils;
 import android.NActivity;
 import android.alerts.ExitGameAlert;
@@ -58,16 +55,15 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import shared.event.Header;
-import shared.event.Message;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import shared.event.OGIMessage;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
-import shared.logic.Team;
 import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PlayerTargetingException;
-import shared.logic.support.Constants;
 import shared.roles.Framer;
 import voss.narrator.R;
 
@@ -124,10 +120,11 @@ implements
 			//b.putParcelable(Narrator.KEY, Board.GetParcel(manager.getNarrator()));
 	//}
 	public void onBackPressed(){
-		if (!manager.getNarrator().isInProgress()){
+		if (!ns.isInProgress()){
 			stopTexting();
 			speaker.stop();
 			speaker.shutdown();
+			ns.gameState = new GameState(ns);
 			finish();
 		}
 		if (drawerOut){
@@ -202,7 +199,7 @@ implements
 		alliesTV       = (TextView) findViewById(R.id.day_alliesLabel);
 		alliesLV       = (ListView) findViewById(R.id.day_alliesList);
 
-		button         = findButton(R.id.day_button);
+		button         = findButton(R.id.day_button); //action button for mayor, arson, and end night
 		messagesButton = findButton(R.id.day_messagesButton);
 		infoButton     = findButton(R.id.day_infoButton);
 		actionButton   = findButton(R.id.day_actionButton);
@@ -281,9 +278,6 @@ implements
 	private boolean onePersonActive(){
 		return playersInDrawer.length() == 1;
 	}
-	public Narrator getNarrator(){
-		return manager.getNarrator();
-	}
 	private Button findButton(int id){
 		return (Button) findViewById(id);
 	}
@@ -304,11 +298,14 @@ implements
 		frameOptions = new ArrayList<>();
 		ArrayList<String> teamColors = new ArrayList<>();
 
-		for (Team t: manager.getNarrator().getAllTeams()){
-			if(t.getColor().equals(Constants.A_SKIP))
-				continue;
-			teamColors.add(t.getColor());
-			frameOptions.add(t.getName());
+		JSONArray activeTeams = ns.getActiveTeams();
+		if(activeTeams == null)
+				return;
+		JSONObject teamObject;
+		for (int i = 0; i < activeTeams.length(); i++){
+			teamObject = JUtils.getJSONObject(activeTeams, i);
+			teamColors.add(JUtils.getString(teamObject, StateObject.color));
+			frameOptions.add(JUtils.getString(teamObject, StateObject.teamName));
 		}
 
 		ListingAdapter adapter = new ListingAdapter(frameOptions, this);
@@ -323,16 +320,7 @@ implements
 		Log.d("ActivityDay", i);
 	}
 
-	public Team getSpinnerSelectedTeam(){
-		String name = (String) framerSpinner.getSelectedItem();
-		for (Team t: manager.getNarrator().getAllTeams()){
-			if (t.getName().equals(name)) {
-				return t;
-			}
-		}
-
-		throw new NullPointerException(name + " wasn't found");
-	}
+	
 	protected void setButtonText(String s){
 		if(button == null || s == null)
 			throw new NullPointerException("This is null??");
@@ -365,7 +353,8 @@ implements
 	}
 
 	protected void updateMembers() {
-		membersLV.setAdapter(new MembersAdapter(manager.getNarrator().getAllPlayers().sortByDeath(), this));
+		JSONArray allPlayers = JUtils.getJSONArray(ns.getPlayers(manager.getCurrentPlayer()), "info");
+		membersLV.setAdapter(new MembersAdapter(allPlayers, this));
 	}
 
 	protected void uncheck(String p){
@@ -591,7 +580,14 @@ implements
 
 	public void updateChatPanel(String text){
 		setChatPanelText(text);
-		pushChatDown();
+
+		ScrollView chatHolder = (ScrollView) findViewById(R.id.day_chatHolder);
+		View cView = chatHolder.getChildAt(chatHolder.getChildCount() - 1);
+		int diff = (cView.getBottom()-(chatHolder.getHeight()+chatHolder.getScrollY()));
+		boolean isAtBottom = diff <= 0;
+
+		if(isAtBottom)
+			pushChatDown();
 	}
 
 	private boolean progress = true;
@@ -605,6 +601,13 @@ implements
 		hideView(chatLV);
 		hideView(chatButton);
 		hideView(chatET);
+		hideKeyboard();
+	}
+	
+	private void hideKeyboard(){
+		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+		if(getCurrentFocus() != null)
+			imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 	}
 
 	public void showInfoPanel(){
@@ -613,12 +616,12 @@ implements
 
 		//showView(rightTV);
 		if (manager.dScreenController != null && manager.dScreenController.playerSelected()){
-			if (ns.hasDayAction(manager.getCurrentPlayer()) && manager.getNarrator().isDay())
+			if (ns.hasDayAction(manager.getCurrentPlayer()) && ns.isDay())
 				showView(button);
 			else
 				hideView(button);
 
-			JSONObject roleInfo = manager.ns.getRoleInfo(manager.getCurrentPlayer());
+			JSONObject roleInfo = ns.getRoleInfo(manager.getCurrentPlayer());
 			boolean shouldShowTeam = roleInfo.has(StateObject.roleTeam);
 			if(shouldShowTeam){
 				showView(alliesTV);
@@ -676,7 +679,7 @@ implements
 	}
 
 	public void setActionButton(){
-		if(manager.getNarrator().isDay()){
+		if(manager.ns.isDay()){
 			actionButton.setText("Voting");
 		}else{
 			actionButton.setText("Actions");
@@ -700,7 +703,7 @@ implements
 	}
 
 	public void showFrameSpinner(){
-		if (!manager.dScreenController.playerSelected() || ns.local.isDay()) {
+		if (!manager.dScreenController.playerSelected() || ns.isDay()) {
 			hideView(framerSpinner);
 			return;
 		}
@@ -721,29 +724,26 @@ implements
 
 	public void showButton() {
 		String currentPlayer = manager.getCurrentPlayer();
-		if (wideMode()) {
-			if(manager.getCurrentPlayer() != null && !manager.ns.isDead(currentPlayer)){
-				if(ns.local.isNight())
-					showView(button);
-				else if(manager.ns.hasDayAction(currentPlayer))
-					showView(button);
-				else
-					hideView(button);
-			}else{
+		if(currentPlayer == null || manager.ns.isDead(currentPlayer)){
+			hideView(button);
+		}else if (wideMode()) {
+			if(ns.isNight())
+				showView(button);
+			else if(manager.ns.hasDayAction(currentPlayer))
+				showView(button);
+			else
 				hideView(button);
-			}
+			
 		}else{
-			if(manager.getCurrentPlayer() != null && manager.ns.isDead(currentPlayer))
-				hideView(button);
-			else if(messagesButton == panel){
+			if(messagesButton == panel){
 				hideView(button);
 			}else if(panel == actionButton){
-				if(manager.getCurrentPlayer() == null || ns.local.isDay())
+				if(manager.getCurrentPlayer() == null || ns.isDay())
 					hideView(button);
 				else
 					showView(button);
 			}else{ //panel == infoButton
-				if(manager.getCurrentPlayer() == null || ns.local.isNight() || !manager.ns.hasDayAction(currentPlayer))
+				if(ns.isNight() || !manager.ns.hasDayAction(currentPlayer))
 					hideView(button);
 				else
 					showView(button);
@@ -785,13 +785,7 @@ implements
 				chatLV.fullScroll(View.FOCUS_DOWN);
 			}
 		});
-		chatET.post(new Runnable() {
-			public void run() {
-				chatET.requestFocusFromTouch();
-				InputMethodManager lManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				lManager.showSoftInput(chatET, 0);
-			}
-		});
+		
 	}
 
 	public void setPlayerLabel(String name) {
@@ -837,17 +831,8 @@ implements
 		hideView(roleTV);
 
 		showView(chatLV);
-		StringBuilder happenings = new StringBuilder(manager.getNarrator().getWinMessage().access(Message.PRIVATE, true));
-		happenings.append("\n");
-		happenings.append(manager.getNarrator().getEventManager().getEvents(Message.PRIVATE).access(Message.PRIVATE, true));
 
-		for (int i = 0; i < manager.getNarrator().getPlayerCount(); i++){
-			happenings.append("\n");
-			happenings.append(new Header(manager.getNarrator().getDayNumber(), manager.getNarrator().isDay()));
-		}
-
-
-		setChatPanelText(happenings.toString());
+		setChatPanelText(ns.getChat());
 		progress = false;
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
@@ -869,10 +854,6 @@ implements
 		speaker.stop();
 		speaker.shutdown();
 		stopTexting();
-
-		if(server.IsLoggedIn()) {
-
-		}
 	}
 	private void stopTexting(){
 		try{
@@ -891,7 +872,7 @@ implements
 
 	public void updateRoleInfo(JSONObject role){
 		roleTV.setText(JUtils.getString(role, StateObject.roleName));
-		roleInfoTV.setText(JUtils.getString(role, StateObject.roleName));
+		roleInfoTV.setText(JUtils.getString(role, StateObject.roleDescription));
 	}
 
 
@@ -953,7 +934,7 @@ implements
 	public void onDrawerSlide(View v, float f){}
 	public void onDrawerStateChanged(int i){}
 	public void onDoubleTap() {
-		if (!drawerOut && manager.getNarrator().isInProgress()) {
+		if (!drawerOut && ns.isInProgress()) {
 			synchronized(manager.ns.local){
 				manager.nextSimulation();
 			}
@@ -966,7 +947,6 @@ implements
 
 
 	public boolean dispatchTouchEvent(@NonNull MotionEvent me){
-		// Call onTouchEvent of SimpleGestureFilter class
 		detector.onTouchEvent(me);
 		return super.dispatchTouchEvent(me);
 	}

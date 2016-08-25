@@ -9,7 +9,6 @@ import android.texting.TextInput;
 import android.util.Log;
 import android.view.View;
 import shared.ai.Controller;
-import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
@@ -175,10 +174,6 @@ public class GUIController extends Controller implements TextInput{
         int id = dScreen.frameOptions.indexOf(team);
         dScreen.framerSpinner.setSelection(id);
     }
-
-	public Narrator getNarrator() {
-		return dScreen.manager.getNarrator();
-	}
 
 	public void log(String string) {
 		dScreen.log(string);

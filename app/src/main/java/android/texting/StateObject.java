@@ -30,8 +30,10 @@ public abstract class StateObject {
 	public static final String DAYLABEL = "DayLabel";
 	public static final String GRAVEYARD = "Graveyard";
 	public static final String ROLEINFO = "RoleInfo";
+	public static final String ACTIVETEAMS = "ActiveTeams";
 	
 	public static final String message = "message";
+	
 	
 	
 	private Narrator n;
@@ -138,6 +140,21 @@ public abstract class StateObject {
 		
 		state.getJSONArray(StateObject.type).put(StateObject.graveYard);
 		state.put(StateObject.graveYard, graveYard);
+	}
+	
+	private void addJActiveTeams(JSONObject state) throws JSONException{
+		JSONArray activeTeams = new JSONArray();
+		
+		JSONObject teamObject;
+		for(Team t: n.getAllTeams()){
+			teamObject = new JSONObject();
+			teamObject.put(StateObject.color, t.getColor());
+			teamObject.put(StateObject.teamName, t.getName());
+			activeTeams.put(teamObject);
+		}
+		
+		state.getJSONArray(StateObject.type).put(StateObject.activeTeams);
+		state.put(StateObject.activeTeams, activeTeams);
 	}
 	
 	private void addJRules(JSONObject state) throws JSONException{
@@ -293,6 +310,22 @@ public abstract class StateObject {
 		state.put(StateObject.factions, jFactions);
 	}
 	
+	private String getDescription(Player p){
+        if (p.isAlive()) 
+            return p.getName();        
+        if (p.isCleaned()) 
+            return p.getName() + " - ????";
+        else 
+            return p.getDescription();
+	}
+	
+	private String getColor(Player p){
+		if(p.isDead() && !p.isCleaned())
+			return p.getColor();
+		
+		return "#000000";
+	}
+	
 	private JSONArray getJPlayerArray(PlayerList input, PlayerList selected) throws JSONException{
 		JSONArray arr = new JSONArray();
 		if(input.isEmpty())
@@ -306,6 +339,8 @@ public abstract class StateObject {
 			jo.put(StateObject.playerIndex, allPlayers.indexOf(pi) + 1);
 			jo.put(StateObject.playerSelected, selected.contains(pi));
 			jo.put(StateObject.playerActive, isActive(pi));
+			jo.put(StateObject.playerDescription, getDescription(pi));
+			jo.put(StateObject.playerColor, getColor(pi));
 			if(n.isStarted() && pi.getVoters() != null){
 				jo.put(StateObject.playerVote, pi.getVoters().size());
 			}
@@ -417,6 +452,8 @@ public abstract class StateObject {
 					addJGraveYard(obj);
 				else if(state.equals(ROLEINFO))
 					addJRoleInfo(p, obj);
+				else if(state.equals(ACTIVETEAMS))
+					addJActiveTeams(obj);
 				
 			}
 			for(String key: extraKeys.keySet()){
@@ -437,9 +474,9 @@ public abstract class StateObject {
 		}
 	}
 
-	public void addKey(String key, Object val) {
+	public StateObject addKey(String key, Object val) {
 		extraKeys.put(key, val);
-		
+		return this;
 	}
 	
 	
@@ -459,6 +496,8 @@ public abstract class StateObject {
 	public static final String roleType = "roleType";
 	public static final String color = "color";
 
+	public static final String activeTeams ="activeTeams";
+	
 	public static final String roleInfo = "roleInfo";
 	public static final String roleColor = "roleColor";
 	public static final String roleName = "roleName";
@@ -503,10 +542,13 @@ public abstract class StateObject {
 	public static final String playerSelected = "playerSelected";
 	public static final String isSkipping = "isSkipping";
 	public static final String playerActive = "playerActive";
+	public static final String playerColor = "playerColor";
+	public static final String playerDescription = "playerDescription";
 
 	public static final String factions = "factions";
 	public static final String factionNames = "factionNames";
 	
+	public static final String leaveGame = "leaveGame";
 
 	public static final String deleteTeam = "deleteTeam";
 	public static final String removeTeamAlly = "removeTeamAlly";

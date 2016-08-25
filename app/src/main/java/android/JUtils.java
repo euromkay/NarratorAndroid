@@ -58,4 +58,13 @@ public class JUtils{
 			e.printStackTrace();
 		}
 	}
+
+	public static boolean getBoolean(JSONObject jo, String key){
+		try {
+			return jo.getBoolean(key);
+		}catch(JSONException e){
+			e.printStackTrace();
+		}
+		return false;
+	}
 }

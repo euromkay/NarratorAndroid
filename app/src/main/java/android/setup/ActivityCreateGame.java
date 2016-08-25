@@ -514,8 +514,19 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
             case R.id.roles_startGame:
 				if (server.IsLoggedIn()){
 					JSONObject jo = new JSONObject();
-					ns.put(jo, StateObject.message, StateObject.startGame);
+					if(ns.isHost()){
+						ns.put(jo, StateObject.message, StateObject.startGame);
+					}else{
+						ns.put(jo, StateObject.message, StateObject.leaveGame);
+					}
 					ns.sendMessage(jo);
+					
+					if(!ns.isHost()){
+						if(manager != null)
+							manager.stopTexting();
+						unbindNarrator();
+						finish();
+					}
 				}else if (manager.isHost())
 					manager.startGame(manager.getNarrator().getSeed());
 				break;
@@ -529,12 +540,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 
 	public void pushChatDown() {
+		boolean hasFocus = chatET.hasFocus();
 		final ScrollView chatLV = (ScrollView) findViewById(R.id.create_chatHolder);
 		chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
 			}
 		});
+		if(hasFocus)
 		chatET.post(new Runnable() {
 			public void run() {
 				chatET.requestFocusFromTouch();
@@ -551,8 +564,10 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
     }
 
     public static final String PLAYER_POP_UP = "playerlist";
+    public PlayerPopUp pPop = null;
 	private void showPlayerList(){
-		new PlayerPopUp().show(getFragmentManager(), PLAYER_POP_UP);
+		pPop = new PlayerPopUp();
+		pPop.show(getFragmentManager(), PLAYER_POP_UP);
 	}
 	
 	public void openCreateTeamDialog(){
@@ -560,7 +575,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	public void onPopUpDismiss(){
-		
+		pPop = null;
 	}
 
 	public void onPopUpCreate(PlayerPopUp p){
