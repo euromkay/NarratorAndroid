@@ -41,6 +41,7 @@
         android:name="android.ApplicationNarratorPreferences"
         android:allowBackup="true"
         android:icon="@drawable/home"
+
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity

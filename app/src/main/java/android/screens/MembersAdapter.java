@@ -55,7 +55,7 @@ public class MembersAdapter extends BaseAdapter{
 
         result.setText(name);
         result.setTypeface(font);
-        result.setTextColor(Color.parseColor(color));
+        NActivity.setTextColor(result, color);
 
         return result;
 

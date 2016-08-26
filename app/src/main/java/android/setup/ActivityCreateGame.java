@@ -136,14 +136,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 			}
 			
 		}
-		/*if(manager == null){
 
-
-
-			
-
-			
-		}*/
 	}
 	public void onConnect(SetupManager sm) throws JSONException{
 		manager = sm;
