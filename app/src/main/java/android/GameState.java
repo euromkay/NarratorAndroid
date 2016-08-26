@@ -127,7 +127,7 @@ public class GameState {
 		
 		if(jo.has(StateObject.playerLists)){
 			players = jo.getJSONObject(StateObject.playerLists);
-			if(ns.activityCreateGameActive()){
+			if(isActivityCreate()){
 				final PlayerPopUp pPop = ((ActivityCreateGame) ns.activity).pPop;
 				if(pPop != null){
 					runOnMain(new Runnable(){
@@ -137,8 +137,7 @@ public class GameState {
 						}
 					});
 				}
-			}
-			else if(isActivityDay()){
+			}else if(isActivityDay()){
 				runOnMain(new Runnable(){
 					public void run(){
 						getActivityDay().manager.dScreenController.updateActionPanel();

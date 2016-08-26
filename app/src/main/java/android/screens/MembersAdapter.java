@@ -2,7 +2,6 @@ package android.screens;
 
 import android.JUtils;
 import android.NActivity;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.texting.StateObject;
 import android.view.View;

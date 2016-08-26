@@ -89,9 +89,10 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 	}
 
+	/*
 	private void displayUpdate(){
 		findViewById(R.id.home_update).setVisibility(View.VISIBLE);
-	}
+	}*/
 	
 	public Narrator getNarrator(){
 		return ns.getNarrator();
@@ -349,14 +350,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		return prefs.getString(HOST_NAME, null);
 	}
 
-	public void toast(String s){
-		Toast.makeText(getBaseContext(), s, Toast.LENGTH_LONG).show();
-	}
-
-
-
-	public static final String ISHOST = "ishost_activityhome";
-	public static final String MYNAME = "myname_activityhoome";
 	public void start(){
 		Class<?> activ;
 		if(ns.isStarted())

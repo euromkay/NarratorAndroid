@@ -323,7 +323,7 @@ public abstract class StateObject {
 		if(p.isDead() && !p.isCleaned())
 			return p.getColor();
 		
-		return "#000000";
+		return "#FFFFFF";
 	}
 	
 	private JSONArray getJPlayerArray(PlayerList input, PlayerList selected) throws JSONException{

@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
 import android.app.Activity;
@@ -621,7 +622,11 @@ public class NarratorService extends Service{
 		
 	public void sendMessage(JSONObject jo){
 		put(jo, "name", server.GetCurrentUserName());
-		mWebSocketClient.send(jo.toString());
+		try {
+			mWebSocketClient.send(jo.toString());
+		}catch(WebsocketNotConnectedException e){
+			activity.toast("Connecting to server! Try again in a moment.");
+		}
 	}
 	
 	public static int WAIT_TIME = 10000;

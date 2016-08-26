@@ -83,7 +83,7 @@ implements
 
 	private IntentFilter iF;
 	private TextToSpeech speaker;
-	protected ListView rolesLV, membersLV, actionLV, alliesLV;
+	public ListView rolesLV, membersLV, actionLV, alliesLV;
 	public TextView membersTV, rolesTV, roleTV, roleInfoTV, alliesTV, commandTV, chatTV, playerLabelTV;
 	public Spinner framerSpinner;
 	private ScrollView chatLV;
@@ -440,8 +440,10 @@ implements
 	protected void setActionList(JSONArray playerList, boolean day){
 		ArrayList<String> targetables = new ArrayList<>();
 		ArrayList<String> newActionList = new ArrayList<>();
+		ArrayList<Integer> checkedPositions = new ArrayList<>();
 		JSONObject jPlayer;
-		for(int i = 0; i < playerList.length(); i++){
+		int i;
+		for(i = 0; i < playerList.length(); i++){
 			jPlayer = JUtils.getJSONObject(playerList, i);
 			String name = JUtils.getString(jPlayer, StateObject.playerName);
 			if(day) {
@@ -450,10 +452,16 @@ implements
 			}else
 				targetables.add(name);
 			newActionList.add(name);
+			if(JUtils.getBoolean(jPlayer, StateObject.playerSelected))
+				checkedPositions.add(i);
 		}
 		if(day){
 			targetables.add("Skip Day - " + ns.getSkipVotes());
 			newActionList.add("Skip Day");
+			if(manager.getCurrentPlayer() != null)
+				if(ns.isVoting(manager.getCurrentPlayer(), "Skip Day")){
+					checkedPositions.add(i);
+			}
 		}
 		synchronized(manager){
 			actionList = newActionList;
@@ -466,6 +474,10 @@ implements
 		actionLV.setAdapter(adapter);
 		actionLV.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
+		for(int checkedItem: checkedPositions){
+			actionLV.setItemChecked(checkedItem, true);
+		}
+		
 		actionLV.setOnItemClickListener(this);
 	}
 
@@ -551,10 +563,6 @@ implements
 			messagesButton.setTextColor(blackColor);
 		if(id != R.id.day_infoButton)
 			infoButton.setTextColor(blackColor);
-	}
-
-	public void toast(String s){
-		Toast.makeText(this, s, Toast.LENGTH_LONG).show();
 	}
 
 	public void sendMessage(){
@@ -654,10 +662,6 @@ implements
 	}
 
 	public void onPlayerClick(String name){
-		if (name == null || name.equals(DayScreenController.PlayerMenuHeader))
-			name = "Main Screen selected.";
-		
-		log(name + " taking the helm.");
 		manager.setCurrentPlayer(name);
 	}
 
@@ -971,9 +975,12 @@ implements
 	}
 
 	public void onDestroy(){
-		this.unbindNarrator();
+		unbindNarrator();
 		speaker.stop();
 		speaker.shutdown();
+		try {
+			unregisterReceiver(intentReceiver);
+		}catch(IllegalArgumentException e){}
 		super.onDestroy();
 	}
 }

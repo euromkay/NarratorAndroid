@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
 
 import android.parse.Server;
+import android.widget.Toast;
 
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
@@ -99,5 +100,10 @@ public abstract class NActivity extends FragmentActivity{
 	public static void setTextColor(TextView v, String color){
 		v.setTextColor(Color.parseColor(color));
 	}
-	
+
+	public Toast toast(String message){
+		Toast t = Toast.makeText(this, message, Toast.LENGTH_LONG);
+		t.show();
+		return t;
+	}
 }

@@ -254,7 +254,8 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         private JSONArray data;
         private NActivity c;
-        private Typeface font;
+        @SuppressWarnings("unused")
+		private Typeface font;
 
         public ListAdapter(JSONArray data, NActivity c){
             this.data = data;

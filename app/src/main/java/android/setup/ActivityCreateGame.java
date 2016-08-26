@@ -550,11 +550,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		});
 	}
 
-    public Toast toast(String message){
-        Toast t = Toast.makeText(this, message, Toast.LENGTH_LONG);
-		t.show();
-		return t;
-    }
+
 
     public static final String PLAYER_POP_UP = "playerlist";
     public PlayerPopUp pPop = null;
