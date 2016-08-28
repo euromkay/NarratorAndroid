@@ -33,6 +33,7 @@ public abstract class StateObject {
 	public static final String ACTIVETEAMS = "ActiveTeams";
 	
 	public static final String message = "message";
+	public static final String gameID = "gameID";
 	
 	
 	
@@ -91,7 +92,24 @@ public abstract class StateObject {
 		return teams;			
 	}
 	
+	private void addNullRoleInfo(JSONObject state) throws JSONException{
+		JSONObject roleInfo = new JSONObject();
+		roleInfo.put(StateObject.roleColor, "#FFFFFF");
+		roleInfo.put(StateObject.roleName, "");
+		roleInfo.put(StateObject.roleBaseName, "");
+		roleInfo.put(StateObject.roleDescription, "");
+		
+		roleInfo.put(StateObject.roleKnowsTeam, false);
+		
+		state.getJSONArray(StateObject.type).put(StateObject.roleInfo);
+		state.put(StateObject.roleInfo, roleInfo);
+	}
+	
 	private void addJRoleInfo(Player p, JSONObject state) throws JSONException{
+		if(p == null){
+			addNullRoleInfo(state);
+		}
+		
 		JSONObject roleInfo = new JSONObject();
 		roleInfo.put(StateObject.roleColor, p.getTeam().getColor());
 		roleInfo.put(StateObject.roleName, p.getRoleName());
@@ -460,7 +478,8 @@ public abstract class StateObject {
 				obj.put(key, extraKeys.get(key));
 			}
 			
-			write(p, obj);
+			if(p != null)
+				write(p, obj);
 			return obj;
 		}catch(JSONException e){
 			e.printStackTrace();
@@ -515,6 +534,7 @@ public abstract class StateObject {
 	public static final String gameStart = "gameStart";
 
 	public static final String isDay = "isDay";
+	public static final String isObserver = "isObserver";
 
 	public static final String showButton = "showButton";
 

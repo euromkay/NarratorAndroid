@@ -40,10 +40,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import json.JSONObject;
-
 import shared.logic.Narrator;
 import shared.logic.Player;
 import voss.narrator.R;
@@ -64,6 +64,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 
 
+		String token = FirebaseInstanceId.getInstance().getToken();
 
 		if(isLoggedIn()){
 			TextView tv = (TextView) findViewById(R.id.home_login_signup);

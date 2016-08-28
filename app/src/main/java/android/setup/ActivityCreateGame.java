@@ -2,10 +2,6 @@ package android.setup;
 
 import java.util.ArrayList;
 
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
-
 import android.NActivity;
 import android.alerts.PlayerPopUp;
 import android.alerts.TeamBuilder;
@@ -29,7 +25,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import shared.logic.Narrator;
 import voss.narrator.R;
 
@@ -376,8 +374,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		if(faction == null){
 			rolesLV.setVisibility(View.GONE);
 			return;
-		}else{
-			rolesLV.setVisibility(View.VISIBLE);
 		}
 			
 		JSONArray members = faction.getJSONArray("members");
@@ -398,8 +394,11 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		ada.setColors(colors);
 		ada.setLayoutID(R.layout.create_roles_left_item);
 		rolesLV.setAdapter(ada);
-
-
+		
+		if(chatVisible() && server.IsLoggedIn())
+			rolesLV.setVisibility(View.GONE);
+		else
+			rolesLV.setVisibility(View.VISIBLE);
 	}
 
 	private EditText chatET;

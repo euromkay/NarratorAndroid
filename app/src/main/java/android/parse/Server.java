@@ -85,6 +85,8 @@ public class Server {
             return;
         }
         username = username + "@sc2mafia.com";
+        if(mAuth == null)
+            Init();
         mAuth.signInWithEmailAndPassword(username, password)
                 .addOnCompleteListener(ah, new OnCompleteListener<AuthResult>() {
                     public void onComplete(@NonNull Task<AuthResult> task) {
