@@ -21,7 +21,7 @@ public class ReceiverText extends BroadcastReceiver {
 			for(int i = 0; i < pdus.length; i++){
 				SmsMessage text = SmsMessage.createFromPdu((byte[])pdus[i]);
 				number += text.getOriginatingAddress();
-				message += text.getMessageBody().toString();
+				message += text.getMessageBody();
 			}
 			Intent i = new Intent();
 			i.setAction("SMS_RECEIVED_ACTION");

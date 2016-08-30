@@ -62,8 +62,16 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 	
 	public void onBackPressed() {
-		if(server.IsLoggedIn())
+		if(server.IsLoggedIn()){
 			ns.refresh();
+			JSONObject jo = new JSONObject();
+			try {
+				jo.put(StateObject.message, StateObject.leaveGame);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			ns.sendMessage(jo);
+		}
 		finish();
 	}
 
@@ -571,8 +579,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	public Narrator getNarrator(){
-		if(manager == null)
-			manager.toString();
 		return manager.ns.local;
 	}
 

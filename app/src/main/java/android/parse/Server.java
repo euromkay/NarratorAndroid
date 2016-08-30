@@ -149,7 +149,7 @@ public class Server {
 
 
 
-    public static final void CheckVersion(int version){
+    public static void CheckVersion(int version){
         HashMap<String, Object> params = new HashMap<>();
         params.put("v", version);
         /*ParseCloud.callFunctionInBackground("checkVersion", params, new FunctionCallback<Object>() {

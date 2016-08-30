@@ -24,6 +24,9 @@ import android.texting.StateObject;
 import android.util.Log;
 import android.widget.Toast;
 import android.wifi.NodeListener;
+
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -626,6 +629,10 @@ public class NarratorService extends Service{
 			mWebSocketClient.send(jo.toString());
 		}catch(WebsocketNotConnectedException e){
 			activity.toast("Connecting to server! Try again in a moment.");
+			try {
+				Thread.sleep(3000);
+			}catch(InterruptedException f){}
+			connectWebSocket(null);
 		}
 	}
 	
@@ -648,6 +655,7 @@ public class NarratorService extends Service{
 		    	try {
 					jo.put("server", true);
 					jo.put("message", "greeting");
+					jo.put("token", FirebaseInstanceId.getInstance().getToken());
 					sendMessage(jo);
 				} catch (JSONException e) {
 					e.printStackTrace();

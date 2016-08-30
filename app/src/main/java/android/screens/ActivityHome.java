@@ -41,8 +41,6 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-
 import json.JSONObject;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -64,7 +62,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 
 
-		String token = FirebaseInstanceId.getInstance().getToken();
 
 		if(isLoggedIn()){
 			TextView tv = (TextView) findViewById(R.id.home_login_signup);
@@ -94,7 +91,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	private void displayUpdate(){
 		findViewById(R.id.home_update).setVisibility(View.VISIBLE);
 	}*/
-	
+
 	public Narrator getNarrator(){
 		return ns.getNarrator();
 	}
@@ -148,17 +145,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			case R.id.home_host:
 				if(isLoggedIn()) {
 					Server.HostPublic(this);
-					/*Server.RegisterGame(this, new Server.GameRegister() {
-						public void onSuccess(GameListing gl) {
-							//ns.refresh();
-							ns.addPlayer(Server.GetCurrentUserName(), new CommunicatorPhone());
-							start(gl);
-						}
-
-						public void onFailure(String t) {
-							toast(t);
-						}
-					});*/
 				}else{
 					if(buildNumber() < 16)
 						toast("You will not be able to participate in wireless games.");
@@ -375,9 +361,9 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				if (server.IsLoggedIn())
 					ns.connectWebSocket(new NarratorConnectListener() {
 						public void onConnect() {
-							JSONObject jo = new JSONObject();
-							JUtils.put(jo, StateObject.message, StateObject.requestGameState);
-							ns.sendMessage(jo);
+						JSONObject jo = new JSONObject();
+						JUtils.put(jo, StateObject.message, StateObject.requestGameState);
+						ns.sendMessage(jo);
 						}
 					});
 			}
