@@ -108,6 +108,7 @@ public abstract class StateObject {
 	private void addJRoleInfo(Player p, JSONObject state) throws JSONException{
 		if(p == null){
 			addNullRoleInfo(state);
+			return;
 		}
 		
 		JSONObject roleInfo = new JSONObject();
