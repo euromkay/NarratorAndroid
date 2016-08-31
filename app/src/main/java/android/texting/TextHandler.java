@@ -309,7 +309,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         return "\'" + s + "\'";
     }
 
-    public void onArsonDayBurn(Player arson, PlayerList burned){
+    public void onArsonDayBurn(Player arson, PlayerList burned, Message e){
 
     }
 
@@ -329,11 +329,11 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	new OGIMessage(p, "You've canceled your motion to end the night");
     }
 
-    public void onMayorReveal(Player m){
+    public void onMayorReveal(Player m, Message e){
     	broadcast(m.getName() + " has revealed as the mayor!");
     }
     
-    public void onAssassination(Player assassin, Player victim){
+    public void onAssassination(Player assassin, Player victim, Message e){
     	broadcast(assassin.getName() + " assassinated " + victim.getDescription());
     }
 

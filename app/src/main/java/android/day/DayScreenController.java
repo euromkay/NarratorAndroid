@@ -53,16 +53,16 @@ public class DayScreenController{
 			dController.onEndGame();
 		}
 		
-		public void onAssassination(Player assassin, Player victim){
+		public void onAssassination(Player assassin, Player victim, Message e){
 			dController.onAssassination(assassin.getName(), victim.getName());
 		}
 
 
-		public void onMayorReveal(Player mayor){
+		public void onMayorReveal(Player mayor, Message e){
 			dController.onMayorReveal(mayor);
 		}
 
-		public void onArsonDayBurn(Player arson, PlayerList burned){
+		public void onArsonDayBurn(Player arson, PlayerList burned, Message e){
 			dController.onArsonDayBurn(arson.getName(), burned.getNamesToStringList());
 
 		}
