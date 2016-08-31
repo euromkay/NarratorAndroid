@@ -42,6 +42,7 @@ public class NamePrompt extends DialogFragment{
                     public void onClick(DialogInterface dialog, int id) {
                         EditText et = (EditText) mainView.findViewById(R.id.home_nameET);
                         String name = et.getText().toString();
+                        name = name.replaceAll("\\s", "");
                         if (name.length() == 0)
                             return;
 

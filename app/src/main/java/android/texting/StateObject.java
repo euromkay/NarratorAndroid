@@ -399,17 +399,26 @@ public abstract class StateObject {
 				JSONArray names = getJPlayerArray(votes, p.getVoteTarget());
 				playerLists.put("Vote", names);
 				playerLists.getJSONArray(StateObject.type).put("Vote");
+				if(p.hasDayAction()){
+					PlayerList acceptableTargets;
+					for(String s_ability: p.getDayAbility()){
+						int ability = p.parseAbility(s_ability);
+						acceptableTargets = p.getAcceptableTargets(ability);
+						if(acceptableTargets.size() == 1 && acceptableTargets.getFirst() == p)
+							continue;
+						if(acceptableTargets.isEmpty())
+							continue;
+						names = getJPlayerArray(acceptableTargets, p.getTargets(ability));
+						playerLists.put(s_ability, names);
+						playerLists.getJSONArray(StateObject.type).put(s_ability);
+					}
+				}
 			}else{
 				if(n.isInProgress()){
 					String[] abilities = p.getAbilities();
 					for(String s_ability: abilities){
 						int ability = p.parseAbility(s_ability);
-						PlayerList acceptableTargets = new PlayerList();
-						for(Player potentialTarget: n.getAllPlayers()){
-							if(p.isAcceptableTarget(potentialTarget, ability)){
-								acceptableTargets.add(potentialTarget);
-							}
-						}
+						PlayerList acceptableTargets = p.getAcceptableTargets(ability);
 						if(acceptableTargets.isEmpty())
 							continue;
 	

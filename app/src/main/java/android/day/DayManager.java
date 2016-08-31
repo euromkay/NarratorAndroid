@@ -1,5 +1,7 @@
 package android.day;
 
+import java.util.ArrayList;
+
 import android.GUIController;
 import android.NarratorService;
 import android.PhoneBook;
@@ -11,6 +13,7 @@ import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.support.Random;
 import shared.logic.templates.TestController;
+import shared.roles.Assassin;
 
 public class DayManager{
 
@@ -93,27 +96,37 @@ public class DayManager{
 			//probably just frame being set
 			return;
 		}
-		if(!dScreenController.playerSelected()){
-			dScreenController.dScreen.uncheck(target);
-			return;
-		}
 		
 		synchronized(ns.local){
-		if(ns.isDay()){
-			boolean unvote = ns.isVoting(currentPlayer, target);
-			//if owner voted for target already, gotta be an unvote
-			if(unvote)
-				ns.unvote(currentPlayer);
-			else{
-				if(target.equalsIgnoreCase("Skip Day"))
-					ns.skipVote(currentPlayer);
-				else
-					ns.vote(currentPlayer, target);
+			if(ns.isDay()){
+				String command = dScreenController.dScreen.commandTV.getText().toString(); 
+				if(command.contains(" ")){
+					boolean unvote = ns.isVoting(currentPlayer, target);
+					//if owner voted for target already, gotta be an unvote
+					if(unvote)
+						ns.unvote(currentPlayer);
+					else{
+						if(target.equalsIgnoreCase("Skip Day"))
+							ns.skipVote(currentPlayer);
+						else
+							ns.vote(currentPlayer, target);
+					}
+					return;
+				}else if(command.equalsIgnoreCase(Assassin.ASSASSINATE)){
+					ArrayList<String> actionList = dScreenController.dScreen.actionList;
+					for(int i = 0; i < actionList.size(); i++){
+						if(actionList.get(i).equals(target)){
+							dScreenController.dScreen.actionLV.setItemChecked(i, true);
+						}else{
+							dScreenController.dScreen.actionLV.setItemChecked(i, true);
+						}
+					}
+					return;
+				}
+			}else {
+				String ability_s = dScreenController.dScreen.getSelectedAbility();
+				ns.target(currentPlayer, target, ability_s);
 			}
-		}else {
-			String ability_s = dScreenController.dScreen.getSelectedAbility();
-			ns.target(currentPlayer, target, ability_s);
-		}
 		}
 	}
 	

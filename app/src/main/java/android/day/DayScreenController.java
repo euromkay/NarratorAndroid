@@ -15,6 +15,7 @@ import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.listeners.NarratorListener;
 import shared.roles.Arsonist;
+import shared.roles.Assassin;
 import shared.roles.Mayor;
 import voss.narrator.R;
 
@@ -337,16 +338,17 @@ public class DayScreenController{
 		JSONObject playerListObject = manager.ns.getPlayers(currentPlayer);
 		if (playerSelected() && !manager.ns.isDead(currentPlayer)){
 			JSONArray types = JUtils.getJSONArray(playerListObject, StateObject.type);
+			String key = null;
 			if(types.length() == 0) {
 				dScreen.setCommand("End the night and wait for morning");
 				dScreen.setActionList(new JSONArray(), isDay());
 			}else {
-				String key = JUtils.getString(types,abilityIndex % types.length());
+				key = JUtils.getString(types, abilityIndex % types.length());
 				JSONArray playerList = JUtils.getJSONArray(playerListObject, key);
 				dScreen.setActionList(playerList, manager.ns.isDay());
 				dScreen.setCommand(key);
 			}
-			if(manager.ns.isDay())
+			if(manager.ns.isDay() && key.equals("Vote"))
 				setVotesToLynch();
 			else
 				setButtonText();
@@ -361,8 +363,8 @@ public class DayScreenController{
 				dScreen.setCommand("People who haven't voted:");
 			else
 				dScreen.setCommand(HAVENT_ENDED_NIGHT_TEXT);
-
 		}
+		dScreen.showButton();
 		dScreen.showFrameSpinner();
 	}
 	
@@ -432,6 +434,8 @@ public class DayScreenController{
 				dScreen.setButtonText("Reveal as Mayor (+" + manager.ns.getMayorVotePower() + " votes)");
 			else if (baseRoleName.equals(Arsonist.ROLE_NAME))
 				dScreen.setButtonText("Burn all doused targets");
+			else if (baseRoleName.equals(Assassin.ROLE_NAME))
+				dScreen.setButtonText("Assassinate");
 		}else{
 			if (manager.ns.endedNight(currentPlayer))
 				setCancelSkipNightText();
@@ -455,8 +459,13 @@ public class DayScreenController{
 	
 	private int abilityIndex = 0;
 	protected void setNextAbility(int direction){
-		if (isDay() || !playerSelected() || manager.ns.isDead(currentPlayer))
+		if (!playerSelected() || manager.ns.isDead(currentPlayer))
 			return;
+		JSONObject roleInfo = manager.ns.getRoleInfo(manager.getCurrentPlayer());
+		String roleName = JUtils.getString(roleInfo, StateObject.roleBaseName);
+		if(isDay() && !roleName.equals(Assassin.ROLE_NAME)){
+			return;
+		}
 		JSONObject playerInfo = manager.ns.getPlayers(currentPlayer);
 		JSONArray abilityTypes = JUtils.getJSONArray(playerInfo, StateObject.type);
 		if(abilityTypes.length() == 0)

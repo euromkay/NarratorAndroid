@@ -177,6 +177,9 @@ public class SetupManager {
     }
 
     public synchronized void removePlayer(String name, boolean notifyOnlyScreen){
+    	if(!server.IsLoggedIn()){
+    		ns.local.removePlayer(name);
+    	}
     	for(SetupListener sl: listeners){
 	    	if(notifyOnlyScreen)
 	    		continue;//will only update the screen with a toast, or the playerpopup

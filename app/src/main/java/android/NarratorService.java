@@ -42,6 +42,7 @@ import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
 import shared.roles.Arsonist;
+import shared.roles.Assassin;
 import shared.roles.Mayor;
 
 public class NarratorService extends Service{
@@ -290,10 +291,21 @@ public class NarratorService extends Service{
 	public void doDayAction(String name){
 		if(server.IsLoggedIn()){
 			JSONObject jo = new JSONObject();
-			if(JUtils.getString(gameState.roleInfo, StateObject.roleName).equals(Mayor.ROLE_NAME)){
+			String roleName = JUtils.getString(gameState.roleInfo, StateObject.roleBaseName);
+			if(roleName.equals(Mayor.ROLE_NAME)){
 				put(jo, StateObject.message, Mayor.REVEAL);
-			}else{
+			}else if(roleName.equals(Arsonist.ROLE_NAME)){
 				put(jo, StateObject.message, Arsonist.BURN);
+			}else{
+				ActivityDay ad = (ActivityDay) activity;
+				int checkedPosition = ad.actionLV.getCheckedItemPosition();
+				if(checkedPosition == -1){
+					ad.toast("You must select someone to assasinate them");
+					return;
+				}
+				String target = ad.actionList.get(checkedPosition);
+				put(jo, StateObject.message, Assassin.ASSASSINATE + " " + target);
+				
 			}
 			sendMessage(jo);
 		}else{

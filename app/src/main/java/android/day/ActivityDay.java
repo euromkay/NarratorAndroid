@@ -64,6 +64,7 @@ import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PlayerTargetingException;
+import shared.roles.Assassin;
 import shared.roles.Framer;
 import voss.narrator.R;
 
@@ -742,9 +743,14 @@ implements
 			if(messagesButton == panel){
 				hideView(button);
 			}else if(panel == actionButton){
-				if(manager.getCurrentPlayer() == null || ns.isDay())
+				if(manager.getCurrentPlayer() == null)
 					hideView(button);
-				else
+				else if(ns.isDay()){
+					if(commandTV.getText().toString().equalsIgnoreCase(Assassin.ASSASSINATE))
+						showView(button);
+					else
+						hideView(button);
+				}else
 					showView(button);
 			}else{ //panel == infoButton
 				if(ns.isNight() || !manager.ns.hasDayAction(currentPlayer))
