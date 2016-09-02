@@ -26,7 +26,7 @@ public class GameState {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		chat = "";
+		chat = new StringBuilder();
 	}
 
 	public boolean isHost, isDay, isSkipping, showButton;
@@ -37,10 +37,24 @@ public class GameState {
 	public boolean isOver = false;
 	public boolean isAlive = true;
 	public boolean endedNight = false;
-	public String hostName, dayLabel, chat;
+	public String hostName, dayLabel;
+	private StringBuilder chat;
 	public JSONObject rules, factions, roleInfo, players;
 	public JSONArray graveYard, rolesList, activeTeams;
 
+	public String getChat(){
+		return chat.toString();
+	}
+	
+	public void resetChat(){
+		chat = new StringBuilder();
+	}
+	
+	public void addToChat(String s){
+		chat.append(s);
+		chat.append("\n");
+	}
+	
 	public void parse(JSONObject jo) throws JSONException {
 		if(jo.has(StateObject.gameStart))
 			isStarted = jo.getBoolean(StateObject.gameStart);

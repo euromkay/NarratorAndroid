@@ -382,17 +382,17 @@ implements
 
 	
 	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
+		if(manager.getCurrentPlayer() == null){
+			actionLV.setItemChecked(position, false);
+			if(onePersonActive())
+				onBackPressed();
+			return;
+		}
 		try {
 			String selected = actionList.get(position);
-			if(manager.getCurrentPlayer() == null) {
-				if(onePersonActive()){
-					onBackPressed();
-				}else
-					return;
-			}
 			//log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
 
-			manager.command(selected);
+			manager.command(selected, actionLV.isItemChecked(position));
 		}catch (IndexOutOfBoundsException|NullPointerException e){
 	
 				log("accessing out of bounds again");
@@ -420,13 +420,11 @@ implements
 				synchronized(manager.ns.local){
 					manager.tHandler.text(owner, message, false);
 				}
-			}catch(Exception|Error e){
+			}catch(Exception|Error e) {
 				e.printStackTrace();
-				if(owner != null)
+				if (owner != null)
 					new OGIMessage(owner, e.getMessage());
 			}
-				
-			
 		}
 	};
 	
@@ -917,7 +915,7 @@ implements
 		ArrayList<String> checkedPlayers = getCheckedPlayers();
 		if(checkedPlayers.isEmpty())
 			return;
-		manager.command(checkedPlayers.get(0));
+		manager.command(checkedPlayers.get(0), true);
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {

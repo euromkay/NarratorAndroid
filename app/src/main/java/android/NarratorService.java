@@ -216,11 +216,15 @@ public class NarratorService extends Service{
 			sendMessage(jo);
 		}else {
 			Player p = local.getPlayerByName(name);
-			if (p.isDead() || p.isBlackmailed() || !p.getTeam().knowsTeam())
+			if (p.isDead() || p.isBlackmailed())
 				return;
-			String key = Constants.REGULAR_CHAT;
-			if (local.isNight())
+			String key;
+			if(local.isNight()){
+				if(!p.getTeam().knowsTeam())
+					return;
 				key = p.getTeam().getName();
+			}else
+				key = Constants.REGULAR_CHAT;
 
 			p.say(message, key);
 		}
@@ -275,15 +279,19 @@ public class NarratorService extends Service{
 		}
 	}
 
-	public void target(String owner_s, String target_s, String ability){
+	public void target(String owner_s, String target_s, String ability_s){
 		if(server.IsLoggedIn()){
 			JSONObject jo = new JSONObject();
-			put(jo, StateObject.message, ability + " " + target_s);
+			put(jo, StateObject.message, ability_s + " " + target_s);
 			sendMessage(jo);
 		}else{
 			Player owner = local.getPlayerByName(owner_s);
 			Player target = local.getPlayerByName(target_s);
-			owner.setTarget(target, owner.parseAbility(ability));
+			int ability = owner.parseAbility(ability_s);
+			if(owner.getTargets(ability).contains(target))
+				owner.cancelTarget(target, ability);
+			else
+				owner.setTarget(target, ability);
 		}
 	}
 
@@ -702,8 +710,8 @@ public class NarratorService extends Service{
 		    		}else{
 		    			String message = jo.getString("message");
 		    			if(jo.has("chatReset"))
-		    				gameState.chat = "";
-		    			gameState.chat += (message + "\n");
+		    				gameState.resetChat();
+		    			gameState.addToChat(message);
 		    			
 		    			//only reason gamestate is doing this is because it runOnMain
 		    			gameState.refreshChat(); 
@@ -786,7 +794,7 @@ public class NarratorService extends Service{
 	}
 	public String getChat() {
 		if(server.IsLoggedIn()){
-			return gameState.chat;
+			return gameState.getChat();
 		}else{
 			if(local.isInProgress())
 				return local.getEventManager().getEvents(shared.event.Message.PUBLIC).access(shared.event.Message.PUBLIC, true);
@@ -798,7 +806,7 @@ public class NarratorService extends Service{
 
 	public String getEvents(String currentPlayer){
 		if(server.IsLoggedIn()){
-			return gameState.chat;
+			return gameState.getChat();
 		}else{
 			String text;
 			if (!local.isInProgress()){

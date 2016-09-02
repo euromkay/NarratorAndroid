@@ -86,7 +86,7 @@ public class DayManager{
 
 	//from gui input
 	//garuntee that someone is selected
-	protected void command(String target){
+	protected void command(String target, boolean selected){
 		if (!dScreenController.playerSelected() || (!ns.isDay() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;

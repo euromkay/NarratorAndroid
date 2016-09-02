@@ -60,7 +60,7 @@ public class DayScreenController{
 
 
 		public void onMayorReveal(Player mayor, Message e){
-			dController.onMayorReveal(mayor);
+			dController.onMayorReveal(mayor.getName());
 		}
 
 		public void onArsonDayBurn(Player arson, PlayerList burned, Message e){
@@ -156,9 +156,9 @@ public class DayScreenController{
 		dScreen.endGame();
 	}
 
-	public void onMayorReveal(Player mayor) {
-		dScreen.say(mayor.getName() + " has revealed.");
-		if (currentPlayer.equals(mayor.getName() ))
+	public void onMayorReveal(String mayor) {
+		dScreen.say(mayor + " has revealed.");
+		if (currentPlayer.equals(mayor ))
 			dScreen.hideDayButton();
 		updateChatPanel();
 
@@ -199,8 +199,7 @@ public class DayScreenController{
 		return null;
 	}
 	public void onNightTarget() {
-		dScreen.check(getTargets(-1));
-
+		updateActionPanel(); //overkill
 		updateChatPanel();
 	}
 
