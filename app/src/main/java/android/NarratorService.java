@@ -47,7 +47,7 @@ import shared.roles.Mayor;
 
 public class NarratorService extends Service{
 
-	Server server;
+	public Server server;
 	public Narrator local;//this is the one i keep communicators in
 	public FactionManager fManager;
 	public int onStartCommand(Intent i, int flags, int startId){

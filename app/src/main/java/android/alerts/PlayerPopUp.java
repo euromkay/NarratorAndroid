@@ -2,6 +2,7 @@ package android.alerts;
 
 import android.CommunicatorPhone;
 import android.NActivity;
+import android.NarratorService;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -169,7 +170,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             return;
         }
         if(name.equals("got")){
-        	addGot();
+        	addGot(activity.ns);
         	return;
         }
 
@@ -186,21 +187,23 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         activity.getManager().addPlayer(name, new CommunicatorPhone());
     }
     
-    public void addGot(){
-    	String martell_c = "#FF0001",
-    			lannister_c = "#FFC300",
-    			baratheon_c = "#FF01FF",
-    			stark_c = "#0010FF",
-    			tyrell_c ="#FFD700",
-    			targaryen_c ="#00FF00";
-    	activity.ns.newTeam("Martell", martell_c, null);
-    	activity.ns.newTeam("Lannister", lannister_c, null);
-    	activity.ns.newTeam("Baratheon", baratheon_c, null);
-    	activity.ns.newTeam("Stark", stark_c, null);
-    	activity.ns.newTeam("Tyrell", tyrell_c, null);
-    	activity.ns.newTeam("Targaryen", targaryen_c, null);
+    public static final String martell_c = "#FF0001",
+			lannister_c = "#FE940B",
+			baratheon_c = "#880BFC",
+			stark_c = "#0010FF",
+			tyrell_c ="#FFD701",
+			targaryen_c ="#00FF01";
+    
+    public static void addGot(NarratorService ns){
     	
-    	Narrator narrator = activity.ns.local;
+    	ns.newTeam("Martell", martell_c, null);
+    	ns.newTeam("Lannister", lannister_c, null);
+    	ns.newTeam("Baratheon", baratheon_c, null);
+    	ns.newTeam("Stark", stark_c, null);
+    	ns.newTeam("Tyrell", tyrell_c, null);
+    	ns.newTeam("Targaryen", targaryen_c, null);
+    	
+    	Narrator narrator = ns.local;
 		Team martell = narrator.getTeam(martell_c).setName("Martell").setPriority(3);
 		Team lannister = narrator.getTeam(lannister_c).setName("Lannister").setPriority(3);
 		Team baratheon = narrator.getTeam(baratheon_c).setName("Baratheon").setPriority(3);
@@ -240,35 +243,35 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         String[] all = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c, martell_c};
 		String[] nonNeutrals = {martell_c, lannister_c, targaryen_c, baratheon_c};
 		
-		addRoles(Agent.class.getSimpleName(), mafia);
-        addRoles(Arsonist.ROLE_NAME, martell_c);
-		addRoles(Amnesiac.class.getSimpleName(), targaryen_c);
-		addRoles(Armorsmith.ROLE_NAME, friendlies);
-		addRoles(Assassin.ROLE_NAME, mafia);
-		addRoles(Baker.ROLE_NAME, targaryen_c);
-		addRoles(Blackmailer.class.getSimpleName(), mafia);
-		addRoles(Blocker.class.getSimpleName(), nonMartell);
-		addRoles(Bodyguard.ROLE_NAME, friendlies);
-		addRoles(Citizen.ROLE_NAME, nonMartell);
-		addRoles(Detective.ROLE_NAME, friendlies);
-		addRoles(Doctor.ROLE_NAME, friendlies);
-        addRoles(Driver.ROLE_NAME, all);
-		addRoles(Framer.ROLE_NAME, mafia);
-		addRoles(Gunsmith.ROLE_NAME, nonNeutrals);
-		addRoles(Janitor.ROLE_NAME, mafia);
-		addRoles(MassMurderer.ROLE_NAME, martell_c);
-		addRoles(Mayor.ROLE_NAME, targaryen_c);
-		addRoles(Lookout.ROLE_NAME, friendlies);
-		addRoles(SerialKiller.ROLE_NAME, martell_c);
-		addRoles(Sheriff.ROLE_NAME, friendlies);
-		addRoles(Survivor.class.getSimpleName(), martell_c, targaryen_c);
-		addRoles(Veteran.ROLE_NAME, targaryen_c);
-		addRoles(Witch.ROLE_NAME, martell_c);
+		PlayerPopUp.addRoles(ns, Agent.class.getSimpleName(), mafia);
+		PlayerPopUp.addRoles(ns, Arsonist.ROLE_NAME, martell_c);
+		PlayerPopUp.addRoles(ns, Amnesiac.class.getSimpleName(), targaryen_c);
+		PlayerPopUp.addRoles(ns, Armorsmith.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Assassin.ROLE_NAME, mafia);
+		PlayerPopUp.addRoles(ns, Baker.ROLE_NAME, targaryen_c);
+		PlayerPopUp.addRoles(ns, Blackmailer.class.getSimpleName(), mafia);
+		PlayerPopUp.addRoles(ns, Blocker.class.getSimpleName(), nonMartell);
+		PlayerPopUp.addRoles(ns, Bodyguard.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Citizen.ROLE_NAME, nonMartell);
+		PlayerPopUp.addRoles(ns, Detective.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Doctor.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Driver.ROLE_NAME, all);
+		PlayerPopUp.addRoles(ns, Framer.ROLE_NAME, mafia);
+		PlayerPopUp.addRoles(ns, Gunsmith.ROLE_NAME, nonNeutrals);
+		PlayerPopUp.addRoles(ns, Janitor.ROLE_NAME, mafia);
+		PlayerPopUp.addRoles(ns, MassMurderer.ROLE_NAME, martell_c);
+		PlayerPopUp.addRoles(ns, Mayor.ROLE_NAME, targaryen_c);
+		PlayerPopUp.addRoles(ns, Lookout.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, SerialKiller.ROLE_NAME, martell_c);
+		PlayerPopUp.addRoles(ns, Sheriff.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Survivor.class.getSimpleName(), martell_c, targaryen_c);
+		PlayerPopUp.addRoles(ns, Veteran.ROLE_NAME, targaryen_c);
+		PlayerPopUp.addRoles(ns, Witch.ROLE_NAME, martell_c);
     }
     
-    private void addRoles(String role, String ... factions){
+    private static void addRoles(NarratorService ns, String role, String ... factions){
     	for(String s: factions){
-    		activity.ns.addRole(role, s);
+    		ns.addTeamRole(role, s, null);
     	}
     	
     }
