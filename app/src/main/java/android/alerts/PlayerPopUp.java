@@ -35,6 +35,7 @@ import shared.logic.support.rules.Rules;
 import shared.roles.Agent;
 import shared.roles.Amnesiac;
 import shared.roles.Armorsmith;
+import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Baker;
 import shared.roles.Blackmailer;
@@ -43,6 +44,7 @@ import shared.roles.Bodyguard;
 import shared.roles.Citizen;
 import shared.roles.Detective;
 import shared.roles.Doctor;
+import shared.roles.Driver;
 import shared.roles.Framer;
 import shared.roles.Gunsmith;
 import shared.roles.Janitor;
@@ -235,9 +237,11 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		String[] mafia = {baratheon_c, lannister_c};
 		String[] friendlies = {targaryen_c, tyrell_c, stark_c};
 		String[] nonMartell = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c};
+        String[] all = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c, martell_c};
 		String[] nonNeutrals = {martell_c, lannister_c, targaryen_c, baratheon_c};
 		
 		addRoles(Agent.class.getSimpleName(), mafia);
+        addRoles(Arsonist.ROLE_NAME, martell_c);
 		addRoles(Amnesiac.class.getSimpleName(), targaryen_c);
 		addRoles(Armorsmith.ROLE_NAME, friendlies);
 		addRoles(Assassin.ROLE_NAME, mafia);
@@ -248,6 +252,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		addRoles(Citizen.ROLE_NAME, nonMartell);
 		addRoles(Detective.ROLE_NAME, friendlies);
 		addRoles(Doctor.ROLE_NAME, friendlies);
+        addRoles(Driver.ROLE_NAME, all);
 		addRoles(Framer.ROLE_NAME, mafia);
 		addRoles(Gunsmith.ROLE_NAME, nonNeutrals);
 		addRoles(Janitor.ROLE_NAME, mafia);
@@ -258,7 +263,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		addRoles(Sheriff.ROLE_NAME, friendlies);
 		addRoles(Survivor.class.getSimpleName(), martell_c, targaryen_c);
 		addRoles(Veteran.ROLE_NAME, targaryen_c);
-		addRoles(Witch.ROLE_NAME, targaryen_c);
+		addRoles(Witch.ROLE_NAME, martell_c);
     }
     
     private void addRoles(String role, String ... factions){
