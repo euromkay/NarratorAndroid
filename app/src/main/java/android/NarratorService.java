@@ -518,7 +518,8 @@ public class NarratorService extends Service{
 	public void newTeam(String name, String color, SuccessListener sL) {
 		color = color.toUpperCase();
 		if(server.IsLoggedIn()){
-			sL.onSuccess();//too lazy to figure out a signaling message from the instance object;
+			if(sL != null)
+				sL.onSuccess();//too lazy to figure out a signaling message from the instance object;
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, "addTeam");
 			put(jo, StateObject.color, color);
@@ -530,7 +531,8 @@ public class NarratorService extends Service{
 			if(sManager == null)
 				return;
 			try {
-				sL.onSuccess();
+				if(sL != null)
+					sL.onSuccess();
 				ActivityCreateGame ac = sManager.screen;
 				ac.refreshAvailableFactions();
 				ac.activeFaction = getFactions().getJSONObject(f.getName());

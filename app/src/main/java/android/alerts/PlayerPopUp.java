@@ -27,9 +27,33 @@ import json.JSONException;
 import json.JSONObject;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.Team;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.rules.Rules;
+import shared.roles.Agent;
+import shared.roles.Amnesiac;
+import shared.roles.Armorsmith;
+import shared.roles.Assassin;
+import shared.roles.Baker;
+import shared.roles.Blackmailer;
+import shared.roles.Blocker;
+import shared.roles.Bodyguard;
+import shared.roles.Citizen;
+import shared.roles.Detective;
+import shared.roles.Doctor;
+import shared.roles.Framer;
+import shared.roles.Gunsmith;
+import shared.roles.Janitor;
+import shared.roles.Lookout;
+import shared.roles.MassMurderer;
+import shared.roles.Mayor;
+import shared.roles.SerialKiller;
+import shared.roles.Sheriff;
+import shared.roles.Survivor;
+import shared.roles.Veteran;
+import shared.roles.Witch;
 import voss.narrator.R;
 
 
@@ -142,6 +166,10 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
             updatePlayerList();
             return;
         }
+        if(name.equals("got")){
+        	addGot();
+        	return;
+        }
 
 
         if (checkName(name, et))
@@ -154,7 +182,90 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
 
         activity.getManager().addPlayer(name, new CommunicatorPhone());
+    }
+    
+    public void addGot(){
+    	String martell_c = "#FF0001",
+    			lannister_c = "#FFC300",
+    			baratheon_c = "#FF01FF",
+    			stark_c = "#0010FF",
+    			tyrell_c ="#FFD700",
+    			targaryen_c ="#00FF00";
+    	activity.ns.newTeam("Martell", martell_c, null);
+    	activity.ns.newTeam("Lannister", lannister_c, null);
+    	activity.ns.newTeam("Baratheon", baratheon_c, null);
+    	activity.ns.newTeam("Stark", stark_c, null);
+    	activity.ns.newTeam("Tyrell", tyrell_c, null);
+    	activity.ns.newTeam("Targaryen", targaryen_c, null);
+    	
+    	Narrator narrator = activity.ns.local;
+		Team martell = narrator.getTeam(martell_c).setName("Martell").setPriority(3);
+		Team lannister = narrator.getTeam(lannister_c).setName("Lannister").setPriority(3);
+		Team baratheon = narrator.getTeam(baratheon_c).setName("Baratheon").setPriority(3);
+		Team stark = narrator.getTeam(stark_c).setName("Stark").setPriority(2);
+		Team tyrell = narrator.getTeam(tyrell_c).setName("Tyrell").setPriority(2);
+		Team targaryen = narrator.getTeam(targaryen_c).setName("Targaryen").setPriority(2);
+		
+		lannister.setKill(true);
+		baratheon.setKill(true);
+		
+		martell.setKnowsTeam(true);
+		lannister.setKnowsTeam(true);
+		baratheon.setKnowsTeam(true);
+		
+		stark.addSheriffDetectableTeam(martell);
+		stark.addSheriffDetectableTeam(lannister);
+		stark.addSheriffDetectableTeam(baratheon);
+		
+		tyrell.addSheriffDetectableTeam(martell);
+		tyrell.addSheriffDetectableTeam(baratheon);
+		tyrell.addSheriffDetectableTeam(stark);
+		
+		targaryen.addSheriffDetectableTeam(lannister);
+		targaryen.addSheriffDetectableTeam(baratheon);
+		targaryen.addSheriffDetectableTeam(martell);
+		
+		targaryen.setEnemies(martell, baratheon);
+		baratheon.setEnemies(lannister, tyrell);
+		stark.setEnemies(martell, tyrell);
+		lannister.setEnemies(stark, targaryen);
 
+		narrator.getRules().setBool(Rules.DAY_START, Narrator.DAY_START);
+		
+		String[] mafia = {baratheon_c, lannister_c};
+		String[] friendlies = {targaryen_c, tyrell_c, stark_c};
+		String[] nonMartell = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c};
+		String[] nonNeutrals = {martell_c, lannister_c, targaryen_c, baratheon_c};
+		
+		addRoles(Agent.class.getSimpleName(), mafia);
+		addRoles(Amnesiac.class.getSimpleName(), targaryen_c);
+		addRoles(Armorsmith.ROLE_NAME, friendlies);
+		addRoles(Assassin.ROLE_NAME, mafia);
+		addRoles(Baker.ROLE_NAME, targaryen_c);
+		addRoles(Blackmailer.class.getSimpleName(), mafia);
+		addRoles(Blocker.class.getSimpleName(), nonMartell);
+		addRoles(Bodyguard.ROLE_NAME, friendlies);
+		addRoles(Citizen.ROLE_NAME, nonMartell);
+		addRoles(Detective.ROLE_NAME, friendlies);
+		addRoles(Doctor.ROLE_NAME, friendlies);
+		addRoles(Framer.ROLE_NAME, mafia);
+		addRoles(Gunsmith.ROLE_NAME, nonNeutrals);
+		addRoles(Janitor.ROLE_NAME, mafia);
+		addRoles(MassMurderer.ROLE_NAME, martell_c);
+		addRoles(Mayor.ROLE_NAME, targaryen_c);
+		addRoles(Lookout.ROLE_NAME, friendlies);
+		addRoles(SerialKiller.ROLE_NAME, martell_c);
+		addRoles(Sheriff.ROLE_NAME, friendlies);
+		addRoles(Survivor.class.getSimpleName(), martell_c, targaryen_c);
+		addRoles(Veteran.ROLE_NAME, targaryen_c);
+		addRoles(Witch.ROLE_NAME, targaryen_c);
+    }
+    
+    private void addRoles(String role, String ... factions){
+    	for(String s: factions){
+    		activity.ns.addRole(role, s);
+    	}
+    	
     }
 
     public void updatePlayerList(){

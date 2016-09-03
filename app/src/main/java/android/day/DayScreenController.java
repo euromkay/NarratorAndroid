@@ -195,9 +195,6 @@ public class DayScreenController{
 	}
 
 
-	private PlayerList getTargets(int ability){
-		return null;
-	}
 	public void onNightTarget() {
 		updateActionPanel(); //overkill
 		updateChatPanel();
@@ -218,7 +215,6 @@ public class DayScreenController{
 		updateActionPanel();
 		if(p.equals(currentPlayer))
 			setCancelSkipNightText();
-
 	}
 
 	public void onCancelEndNight(String canceler) {
