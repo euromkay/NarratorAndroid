@@ -2,7 +2,6 @@ package android.day;
 
 import java.util.ArrayList;
 
-import android.GUIController;
 import android.NarratorService;
 import android.PhoneBook;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.texting.TextHandler;
 import shared.ai.Brain;
 import shared.logic.Player;
 import shared.logic.PlayerList;
-import shared.logic.support.Random;
 import shared.logic.templates.TestController;
 import shared.roles.Assassin;
 
@@ -25,7 +23,7 @@ public class DayManager{
 	public NarratorService ns;
 	public PhoneBook phoneBook;
 	protected TextHandler tHandler;
-	private Brain b;
+	public Brain b;
 	public DayManager(NarratorService ns){
 		this.ns = ns;
 	}
@@ -39,18 +37,16 @@ public class DayManager{
 		
 		phoneBook = new PhoneBook(ns.local);
 
-		b = new Brain(new PlayerList(), new Random());
 
+		PlayerList computers = new PlayerList();
 		for(Player p: ns.local.getAllPlayers()){
 			if(p.isComputer()){
-				if(dScreenController.dScreen.server.IsLoggedIn())
-					b.addSlave(p, new GUIController(dScreen));
-				else{
-					b.addSlave(p, new TestController(ns.local));
-				}
+				computers.add(p);
 			}
 		}
 
+		b = new Brain(computers, ns.local.getRandom(), new TestController(ns.local));
+		b.setNarrator(ns.local);
 
 	}
 

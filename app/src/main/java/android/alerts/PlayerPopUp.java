@@ -230,12 +230,15 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		targaryen.addSheriffDetectableTeam(baratheon);
 		targaryen.addSheriffDetectableTeam(martell);
 		
-		targaryen.setEnemies(martell, baratheon);
+		targaryen.setEnemies(martell, baratheon, lannister);
+		stark.setEnemies(martell, tyrell, lannister);
 		baratheon.setEnemies(lannister, tyrell);
-		stark.setEnemies(martell, tyrell);
-		lannister.setEnemies(stark, targaryen);
+		tyrell.setEnemies(martell);
 
 		narrator.getRules().setBool(Rules.DAY_START, Narrator.DAY_START);
+		narrator.getRules().setBool(Rules.ARSON_INVULNERABLE, false);
+		narrator.getRules().setBool(Rules.SK_INVULNERABLE, false);
+		narrator.getRules().setBool(Rules.MM_INVULNERABILITY, false);
 		
 		String[] mafia = {baratheon_c, lannister_c};
 		String[] friendlies = {targaryen_c, tyrell_c, stark_c};
@@ -250,9 +253,9 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		PlayerPopUp.addRoles(ns, Assassin.ROLE_NAME, mafia);
 		PlayerPopUp.addRoles(ns, Baker.ROLE_NAME, targaryen_c);
 		PlayerPopUp.addRoles(ns, Blackmailer.class.getSimpleName(), mafia);
-		PlayerPopUp.addRoles(ns, Blocker.class.getSimpleName(), nonMartell);
+		PlayerPopUp.addRoles(ns, Blocker.class.getSimpleName(), baratheon_c, lannister_c, targaryen_c, martell_c);
 		PlayerPopUp.addRoles(ns, Bodyguard.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Citizen.ROLE_NAME, nonMartell);
+		PlayerPopUp.addRoles(ns, Citizen.ROLE_NAME, targaryen_c);
 		PlayerPopUp.addRoles(ns, Detective.ROLE_NAME, friendlies);
 		PlayerPopUp.addRoles(ns, Doctor.ROLE_NAME, friendlies);
 		PlayerPopUp.addRoles(ns, Driver.ROLE_NAME, all);
