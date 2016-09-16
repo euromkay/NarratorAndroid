@@ -158,7 +158,7 @@ public class DayScreenController{
 
 	public void onMayorReveal(String mayor) {
 		dScreen.say(mayor + " has revealed.");
-		if (currentPlayer.equals(mayor ))
+		if (currentPlayer == null ||currentPlayer.equals(mayor ))
 			dScreen.hideDayButton();
 		updateChatPanel();
 

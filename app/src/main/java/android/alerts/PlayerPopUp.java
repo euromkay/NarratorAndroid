@@ -56,6 +56,7 @@ import shared.roles.SerialKiller;
 import shared.roles.Sheriff;
 import shared.roles.Survivor;
 import shared.roles.Veteran;
+import shared.roles.Vigilante;
 import shared.roles.Witch;
 import voss.narrator.R;
 
@@ -269,6 +270,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		PlayerPopUp.addRoles(ns, Sheriff.ROLE_NAME, friendlies);
 		PlayerPopUp.addRoles(ns, Survivor.class.getSimpleName(), martell_c, targaryen_c);
 		PlayerPopUp.addRoles(ns, Veteran.ROLE_NAME, targaryen_c);
+		PlayerPopUp.addRoles(ns, Vigilante.ROLE_NAME, friendlies);
 		PlayerPopUp.addRoles(ns, Witch.ROLE_NAME, martell_c);
     }
     

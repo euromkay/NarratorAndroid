@@ -23,7 +23,7 @@ import shared.roles.Mayor;
 
 public class TextHandler extends CommandHandler implements NarratorListener {
 
-	private PlayerList texters;
+	public PlayerList texters;
     public TextHandler(Narrator n, PlayerList texters){
         super(n);
         n.addListener(this);
