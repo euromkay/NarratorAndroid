@@ -12,7 +12,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.screens.ListingAdapter;
@@ -219,7 +218,7 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
         // contact as the previous row.
          String lookupKey = "";
         String name = null;
-        String number = null;
+        //String number = null;
         do {
             // BEGIN_INCLUDE(lookup_key)
             String currentLookupKey = cursor.getString(lookupColumnIndex);
@@ -292,23 +291,4 @@ public class PhoneBookPopUp  extends DialogFragment implements OnClickListener, 
     public void setButton(String s){
         ((Button)(mainView.findViewById(R.id.addPlayerConfirm))).setText(s);
     }
-
-
-
-
-    private static final String[] PROJECTION =
-            {
-                    ContactsContract.Contacts._ID,
-                    ContactsContract.Contacts.LOOKUP_KEY,
-                    Build.VERSION.SDK_INT
-                            >= Build.VERSION_CODES.HONEYCOMB ?
-                            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
-                            ContactsContract.Contacts.DISPLAY_NAME
-
-            };
-
-    private static final String SELECTION =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
-                    ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?" :
-                    ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?";
 }

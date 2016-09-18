@@ -52,6 +52,7 @@ import shared.roles.Janitor;
 import shared.roles.Lookout;
 import shared.roles.MassMurderer;
 import shared.roles.Mayor;
+import shared.roles.Poisoner;
 import shared.roles.SerialKiller;
 import shared.roles.Sheriff;
 import shared.roles.Survivor;
@@ -240,10 +241,11 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		narrator.getRules().setBool(Rules.ARSON_INVULNERABLE, false);
 		narrator.getRules().setBool(Rules.SK_INVULNERABLE, false);
 		narrator.getRules().setBool(Rules.MM_INVULNERABILITY, false);
+		narrator.getRules().setBool(Rules.POISONERR_INVUL, false);
 		
 		String[] mafia = {baratheon_c, lannister_c};
 		String[] friendlies = {targaryen_c, tyrell_c, stark_c};
-		String[] nonMartell = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c};
+		//String[] nonMartell = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c};
         String[] all = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c, martell_c};
 		String[] nonNeutrals = {martell_c, lannister_c, targaryen_c, baratheon_c};
 		
@@ -266,6 +268,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 		PlayerPopUp.addRoles(ns, MassMurderer.ROLE_NAME, martell_c);
 		PlayerPopUp.addRoles(ns, Mayor.ROLE_NAME, targaryen_c);
 		PlayerPopUp.addRoles(ns, Lookout.ROLE_NAME, friendlies);
+		PlayerPopUp.addRoles(ns, Poisoner.ROLE_NAME, martell_c);
 		PlayerPopUp.addRoles(ns, SerialKiller.ROLE_NAME, martell_c);
 		PlayerPopUp.addRoles(ns, Sheriff.ROLE_NAME, friendlies);
 		PlayerPopUp.addRoles(ns, Survivor.class.getSimpleName(), martell_c, targaryen_c);

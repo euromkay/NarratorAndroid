@@ -9,6 +9,7 @@ import android.texting.StateObject;
 import android.widget.TextView;
 import json.JSONArray;
 import json.JSONObject;
+import shared.event.EventList;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -43,8 +44,8 @@ public class DayScreenController{
 		public void onGameStart(){
 			dController.onGameStart();
 		}
-		public void onNightStart(PlayerList lynched){
-			dController.onNightStart(lynched);
+		public void onNightStart(PlayerList lynched, PlayerList poisoned, EventList e){
+			dController.onNightStart(lynched, poisoned);
 		}
 		public void onDayStart(PlayerList newDead){
 			dController.onDayStart(newDead);
@@ -122,8 +123,9 @@ public class DayScreenController{
 
 	public void onGameStart(){}
 
-	public void onNightStart(PlayerList lynched) {
+	public void onNightStart(PlayerList lynched, PlayerList poisoned) {
 		deadCurrentPlayerCheck(lynched.getNamesToStringList());//if the current player died or was lynched
+		deadCurrentPlayerCheck(poisoned.getNamesToStringList());
 
 		setDayLabel();
 		dScreen.updateMembers();

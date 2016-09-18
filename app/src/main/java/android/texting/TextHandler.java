@@ -1,6 +1,7 @@
 package android.texting;
 
 
+import shared.event.EventList;
 import shared.event.Message;
 import shared.event.OGIMessage;
 import shared.logic.Narrator;
@@ -15,10 +16,12 @@ import shared.logic.exceptions.UnknownTeamException;
 import shared.logic.exceptions.VotingException;
 import shared.logic.listeners.NarratorListener;
 import shared.logic.support.CommandHandler;
+import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
+import shared.roles.Role;
 
 
 public class TextHandler extends CommandHandler implements NarratorListener {
@@ -56,7 +59,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         if(n.isDay())
             onDayStart(null);
         else
-            onNightStart(null);
+            onNightStart(null, null, null);
         
         sendHelpPrompt();
         
@@ -212,7 +215,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         if (p.getAbilities().length == 0){
         	new OGIMessage(p, "Type " + message );
         }else{
-        	new OGIMessage(p, "Submit your night action.  When you're done, type " + message);
+        	new OGIMessage(p, "Submit your night action(s).  When you're done, type " + message);
         }
     }
 
@@ -229,6 +232,12 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     public void sendNightTextPrompt(Player texter){
     	new OGIMessage(texter, texter.getRoleInfo());
     	new OGIMessage(texter, texter.getNightText());
+    	
+    	if(texter.getRole().getGuns() != 0)
+    		new OGIMessage(texter, "To use your gun, type " + Role.NQuote(Constants.GUN_COMMAND));
+    	if(texter.getRole().getVests() != 0)
+    		new OGIMessage(texter, "To use your vest, type " + Role.NQuote(Constants.VEST_COMMAND));
+    	
     	new OGIMessage(texter, "If you want to cancel your night actions, type " + SQuote("cancel") + ".");
         texter.sendTeamTextPrompt();
         if(texter.getTeam().knowsTeam() && texter.getTeam().size() > 1)
@@ -283,8 +292,12 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	new OGIMessage(texters, s);
     }
 
-    public void onNightStart(PlayerList dead){
-        if(dead != null) {
+    public void onNightStart(PlayerList dead, PlayerList poisoned, EventList eList){
+    	if(eList != null)
+    	for(Message m: eList){
+    		broadcast(m.access(Message.PUBLIC, false));
+    	}
+        /*if(dead != null) {
             if (dead.isEmpty() || dead.get(0) == n.Skipper){
             	if (n.getLiveSize() == 2){
             		broadcast("Voting became impossible so night started!");
@@ -298,7 +311,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
                 	broadcast(deadPerson.getDescription() + " was lynched by " + deadPerson.getVoters().getStringName() + "");
                 }
             }
-        }
+        }*/
         broadcast("It is now nighttime.");
         for(Player p: n.getLivePlayers()){
             sendNightPrompt(p);
