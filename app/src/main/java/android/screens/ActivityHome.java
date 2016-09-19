@@ -2,7 +2,9 @@ package android.screens;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
@@ -16,6 +18,7 @@ import android.alerts.NamePrompt;
 import android.alerts.NamePrompt.NamePromptListener;
 import android.alerts.PhoneBookPopUp;
 import android.alerts.PhoneBookPopUp.AddPhoneListener;
+import android.alerts.RoleCardPopUp;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -42,8 +45,10 @@ import android.view.Window;
 import android.widget.TextView;
 
 import json.JSONObject;
+import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.templates.BasicRoles;
 import voss.narrator.R;
 
 public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
@@ -54,11 +59,11 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		setContentView(R.layout.activity_home);
 
 
+		setText(R.id.home_roleCard);
 		setText(R.id.home_join);
 		setText(R.id.home_host);
 		setText(R.id.home_login_signup);
 		setText(R.id.home_tutorial);
-		setText(R.id.home_currentGames);
 
 
 
@@ -140,7 +145,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	public void onClick(View v) {
-		switch(v.getId()){
+		int id = v.getId();
+		switch(id){
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
@@ -162,15 +168,10 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				}
 				break;
 
-			case R.id.home_currentGames:
-				if(isLoggedIn()){
-					//displayGames(GameBookPopUp.RESUME);
-				}else{
-					if(ns.local.getAllPlayers().isEmpty())
-						onClick(findViewById(R.id.home_host));
-					else
-						start();
-				}
+			case R.id.home_roleCard:
+
+				roleCardPopUp = new RoleCardPopUp();
+				roleCardPopUp.show(getFragmentManager(), "roleCardPopUp");
 				break;
 
 			case R.id.home_tutorial:
@@ -397,5 +398,49 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			ns.onDestroy();
 		}this.unbindNarrator();
 		super.onDestroy();
+	}
+
+	public List<Member> setMembers(){
+		List<Member> list = new ArrayList<>();
+
+		list.add(BasicRoles.Armorsmith());
+		list.add(BasicRoles.Baker());
+		list.add(BasicRoles.Bodyguard());
+		list.add(BasicRoles.BusDriver());
+		list.add(BasicRoles.Citizen());
+		list.add(BasicRoles.Detective());
+		list.add(BasicRoles.Doctor());
+		list.add(BasicRoles.Escort());
+		list.add(BasicRoles.Gunsmith());
+		list.add(BasicRoles.Lookout());
+		list.add(BasicRoles.Mayor());
+		list.add(BasicRoles.Sheriff());
+		list.add(BasicRoles.Veteran());
+		list.add(BasicRoles.Vigilante());
+
+		list.add(BasicRoles.Agent());
+		list.add(BasicRoles.Assassin());
+		list.add(BasicRoles.Blackmailer());
+		list.add(BasicRoles.Framer());
+		list.add(BasicRoles.Godfather());
+		list.add(BasicRoles.Janitor());
+		list.add(BasicRoles.Mafioso());
+
+		list.add(BasicRoles.Amnesiac());
+		list.add(BasicRoles.Executioner());
+		list.add(BasicRoles.Jester());
+		list.add(BasicRoles.Survivor());
+
+		list.add(BasicRoles.Cultist());
+		list.add(BasicRoles.CultLeader());
+
+		list.add(BasicRoles.Witch());
+
+		list.add(BasicRoles.Arsonist());
+		list.add(BasicRoles.MassMurderer());
+		list.add(BasicRoles.Poisoner());
+		list.add(BasicRoles.SerialKiller());
+
+		return list;
 	}
 }

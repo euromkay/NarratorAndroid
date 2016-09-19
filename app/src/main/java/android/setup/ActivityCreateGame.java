@@ -1,6 +1,7 @@
 package android.setup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.NActivity;
 import android.alerts.PlayerPopUp;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import shared.logic.Member;
 import shared.logic.Narrator;
 import voss.narrator.R;
 
@@ -45,6 +47,10 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		setContentView(R.layout.activity_creategame);
 		
 		setup(b);
+	}
+
+	public List<Member> setMembers(){
+		return null;
 	}
 	
 	protected void onSaveInstanceState(Bundle b){

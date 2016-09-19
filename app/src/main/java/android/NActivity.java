@@ -1,5 +1,6 @@
 package android;
 
+import android.alerts.RoleCardPopUp;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,10 @@ import android.widget.TextView;
 
 import android.parse.Server;
 import android.widget.Toast;
+
+import java.util.List;
+
+import shared.logic.Member;
 
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
@@ -106,4 +111,7 @@ public abstract class NActivity extends FragmentActivity{
 		t.show();
 		return t;
 	}
+
+	public RoleCardPopUp roleCardPopUp;
+	public abstract List<Member> setMembers();
 }

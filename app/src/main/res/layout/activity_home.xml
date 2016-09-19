@@ -9,7 +9,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingTop="16dp"
-    tools:context=".ActivityHome" >
+    tools:context="android.screens.ActivityHome" >
 
 
 
@@ -37,7 +37,8 @@
         android:textColor="@color/black"
         android:textSize="10sp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -52,10 +53,10 @@
 
 
     <Button
-        android:id="@+id/home_currentGames"
+        android:id="@+id/home_roleCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Continue"
+        android:text="Role Emporium"
         android:textColor="@color/black"
         android:background="@layout/main_button"
         android:paddingLeft="30dp"
@@ -70,7 +71,7 @@
         android:text="Join"
         android:visibility="invisible"
         android:textSize="10dp"
-        android:layout_above="@+id/home_currentGames"
+        android:layout_above="@id/home_roleCard"
         android:layout_centerHorizontal="true"
         android:id="@+id/button" />
 
@@ -84,8 +85,8 @@
         android:paddingRight="30dp"
         android:textColor="@color/black"
         android:layout_alignTop="@+id/home_host"
-        android:layout_toRightOf="@+id/home_currentGames"
-        android:layout_toEndOf="@+id/home_currentGames" />
+        android:layout_toRightOf="@id/home_roleCard"
+        android:layout_toEndOf="@id/home_roleCard" />
 
 
     <Button

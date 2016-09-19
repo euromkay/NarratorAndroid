@@ -1,6 +1,7 @@
 package android.day;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import android.GUIController;
@@ -59,6 +60,7 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import shared.event.OGIMessage;
+import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -149,7 +151,12 @@ implements
 
 		}
 	}
-	
+
+	public List<Member> setMembers(){
+		List<Member> list = new ArrayList<>();
+
+		return list;
+	}
 	
 	public void setup(Bundle b){
 		if (playerMenu != null)
