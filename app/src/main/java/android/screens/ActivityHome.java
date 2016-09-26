@@ -43,7 +43,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
-
 import json.JSONObject;
 import shared.logic.Member;
 import shared.logic.Narrator;
@@ -66,7 +65,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		setText(R.id.home_tutorial);
 
 
-
+		//FirebaseCrash.report(new Exception("My first Android non-fatal error"));
 
 		if(isLoggedIn()){
 			TextView tv = (TextView) findViewById(R.id.home_login_signup);

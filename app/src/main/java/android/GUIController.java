@@ -60,6 +60,8 @@ public class GUIController extends Controller implements TextInput{
 
     public void setNightTarget(Player slave, Player choice, String ability){
     	choice = Translate(slave.getNarrator(), choice);
+    	if(slave.getActions().isTargeting(choice, slave.parseAbility(ability)))
+    		return;
     	if(TARGET && !ability.toLowerCase().equals(Framer.FRAME.toLowerCase())){
     		logger.setNightTarget(slave, choice, ability);
     	}

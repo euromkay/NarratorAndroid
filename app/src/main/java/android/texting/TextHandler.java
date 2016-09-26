@@ -83,6 +83,8 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     public static final String NIGHT_HELP2 = "night help";
     public static final String DAY_HELP = "help day";
     public static final String DAY_HELP2 = "day help";
+    public static final String VOTE_COUNT = "vote count";
+    public static final String WAITING = "waiting";
 
 
     public void text(Player owner, String message, boolean sync){
@@ -109,6 +111,12 @@ public class TextHandler extends CommandHandler implements NarratorListener {
             case DAY_HELP:
                 sendDayTextPrompt(owner);
                 return;
+            case VOTE_COUNT:
+            	sendVoteCount(owner);
+            	return;
+            case WAITING:
+            	sendWaiting(owner);
+            	return;
             default:
                 try{
                 	synchronized(n){
@@ -149,6 +157,15 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     private void printException(Throwable e){
     	System.err.println(e.getMessage());
+    }
+    
+    public void sendWaiting(Player p){
+    	
+    	
+    	if(n.isNight())
+    		new OGIMessage(p, "Waiting on " + n.getAllPlayers().remove(n.getEndedNightPeople()));
+    	else
+    		new OGIMessage(p, "It's not nighttime");
     }
     
     /*public static Player findName(ArrayList<String> blocks, PhoneBook phonebook){
@@ -230,25 +247,35 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     
 
     public void sendNightTextPrompt(Player texter){
-    	new OGIMessage(texter, texter.getRoleInfo());
-    	new OGIMessage(texter, texter.getNightText());
+    	StringBuilder message = new StringBuilder();
+    	message.append(texter.getRoleInfo() + "\n");
+    	message.append(texter.getNightText() + "\n");
     	
     	if(texter.getRole().getGuns() != 0)
-    		new OGIMessage(texter, "To use your gun, type " + Role.NQuote(Constants.GUN_COMMAND));
+    		message.append("To use your gun, type " + Role.NQuote(Constants.GUN_COMMAND) + "\n");
     	if(texter.getRole().getVests() != 0)
-    		new OGIMessage(texter, "To use your vest, type " + Role.NQuote(Constants.VEST_COMMAND));
+    		message.append("To use your vest, type " + Role.NQuote(Constants.VEST_COMMAND) + "\n");
     	
-    	new OGIMessage(texter, "If you want to cancel your night actions, type " + SQuote("cancel") + ".");
-        texter.sendTeamTextPrompt();
+    	String teamNightPrompt = texter.getTeam().getNightPrompt();
+    	if(teamNightPrompt != null)
+    		message.append(teamNightPrompt + "\n");
+        
         if(texter.getTeam().knowsTeam() && texter.getTeam().size() > 1)
-        	new OGIMessage(texter, "To talk to your allies : -  " + SQuote(SAY + " message") + "");
-        new OGIMessage(texter, "After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.");
+        	message.append("To talk to your allies : -  " + SQuote(SAY + " message") + "\n");
+
+    	message.append("If you want to cancel your night actions, type " + SQuote("cancel") + ".\n");
+        message.append("After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.\n");
+        
+        message.append("To see who hasn't ended the night : - " + SQuote(WAITING) );
+        
+        new OGIMessage(texter, message.toString());
     }
 
     public void sendDayTextPrompt(Player texter){
         String message = "To vote or change your vote : - " + SQuote(VOTE + " name");
         message += ".\nTo unvote: - " + SQuote(UNVOTE);
-        message += ".\nTo end the day so that no one is lynched : - " + SQuote(SKIP_VOTE) + "";
+        message += ".\nTo end the day so that no one is lynched : - " + SQuote(SKIP_VOTE);
+        message += ".\nTo see current vote counts : - " + SQuote(VOTE_COUNT);
 
     	new OGIMessage(texter, message);
     	
@@ -262,6 +289,28 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	}
     	else if(texter.is(Assassin.class))
     		new OGIMessage(texter, "To assassinate someone, text " + SQuote(Assassin.ASSASSINATE_LOWERCASE + " name"));
+    }
+    
+    public void sendVoteCount(Player texter){
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Vote Count\n");
+    	for(Player p: n._players){
+    		if(!p.getVoters().isEmpty()){
+    			sb.append(p.getName());
+    			sb.append(" : \t");
+    			sb.append(p.getVoteCount());
+    			sb.append("\n");
+    		}
+    	}
+    	int skipVoteCount = n.Skipper.getVoteCount();
+    	if(skipVoteCount != 0){
+    		sb.append("Skip Day : \t");
+    		sb.append(skipVoteCount);
+    	}else{
+    		
+    	}
+    	
+    	new OGIMessage(texter, sb.toString());
     }
 
     public void onModKill(Player p){
@@ -313,9 +362,16 @@ public class TextHandler extends CommandHandler implements NarratorListener {
             }
         }*/
         broadcast("It is now nighttime.");
-        for(Player p: n.getLivePlayers()){
+        
+        boolean isFirstNight = n.isFirstNight();
+        
+        for(Player p: texters){
             sendNightPrompt(p);
+            if(isFirstNight)
+            	sendNightTextPrompt(p);
         }
+        
+       
     }
 
     public static String SQuote(String s){
