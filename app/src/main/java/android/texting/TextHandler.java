@@ -12,6 +12,7 @@ import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PhaseException;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.exceptions.UnknownPlayerException;
+import shared.logic.exceptions.UnknownRoleException;
 import shared.logic.exceptions.UnknownTeamException;
 import shared.logic.exceptions.VotingException;
 import shared.logic.listeners.NarratorListener;
@@ -63,6 +64,16 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         
         sendHelpPrompt();
         
+    }
+    
+    public Object[] prefer(Player owner, String s){
+    	Object[] result = super.prefer(owner, s);
+    	if(result[0] == TEAM_PREFER){
+			new OGIMessage(owner, "You preferred to be on " + ((Team) result[1]).getName());
+    	}else{
+			new OGIMessage(owner, "You preferred to be a " + ((RoleTemplate) result[1]).getName());
+    	}
+    	return result;
     }
 
     private void sendHelpPrompt(Player owner){
@@ -135,7 +146,9 @@ public class TextHandler extends CommandHandler implements NarratorListener {
                 }catch(UnknownPlayerException f){
                     new OGIMessage(owner, "Unknown player name. Type "  + SQuote(LIVE_PEOPLE) + " to get a list of players.");
                     printException(f);
-
+                }catch(UnknownRoleException q){
+                	new OGIMessage(owner, "Team/Role not found!");
+                	printException(q);
                 }catch(UnknownTeamException e){
                     new OGIMessage(owner,  "Unknown team name. Type " + NIGHT_HELP + " to get info about what you can do during the night.");
                     printException(e);
