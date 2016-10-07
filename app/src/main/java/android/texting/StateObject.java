@@ -225,6 +225,14 @@ public abstract class StateObject {
 			ruleObject.put("val", t.getAliveToWin());
 			jRules.put(id, ruleObject);
 			
+			id = t.getColor() + "godfather";
+			ruleObject = new JSONObject();
+			ruleObject.put("name", "Godfather Status");
+			ruleObject.put("id", id);
+			ruleObject.put("isNum", false);
+			ruleObject.put("val", t.godfatherStatus);
+			jRules.put(id, ruleObject);
+			
 			id = t.getColor() + "priority";
 			ruleObject = new JSONObject();
 			ruleObject.put("name", "Win priority");
