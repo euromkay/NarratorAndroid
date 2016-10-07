@@ -38,10 +38,11 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
 
         ruleMap = new HashMap<>();
         
-        cBox = new CheckBox[3];
+        cBox = new CheckBox[4];
         cBox[0] = (CheckBox) screen.findViewById(R.id.create_check1);
         cBox[1] = (CheckBox) screen.findViewById(R.id.create_check2);
         cBox[2] = (CheckBox) screen.findViewById(R.id.create_check3);
+        cBox[3] = (CheckBox) screen.findViewById(R.id.create_check4);
 
         for(CheckBox cb: cBox){
             cb.setOnCheckedChangeListener(this);
@@ -227,14 +228,6 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
             cBox[i].setOnCheckedChangeListener(this);
     }
 
-    
-    /*private void setColor(int color){
-        for(CheckBox cb: cBox)
-            cb.setTextColor(color);
-
-        for(TextView tv: tView)
-            tv.setTextColor(color);
-    }*/
 
     private void setBooleanTexts(ArrayList<String> texts){
         for(int i = 0 ; i < texts.size(); i++){

@@ -273,11 +273,24 @@
                 android:visibility="gone"
                 />
 
+            <CheckBox
+                android:id="@+id/create_check4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/create_check3"
+                android:text="sakdfjalsdkfj"
+                android:scaleY="0.8"
+                android:padding="6dp"
+                android:background="@color/category_tint"
+                android:textSize="11sp"
+                android:visibility="gone"
+                />
+
             <TextView
                 android:id="@+id/create_rulesTV1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/create_check3"
+                android:layout_below="@id/create_check4"
                 android:textSize="11sp"
                 android:visibility="gone"
                 android:text="title"/>
