@@ -20,7 +20,7 @@ import shared.logic.support.Communicator;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.logic.support.RoleTemplate;
-import shared.roles.RandomRole;
+import shared.roles.RandomMember;
 
 
 public class SetupManager {
@@ -103,27 +103,27 @@ public class SetupManager {
             String name = role.getName();
             switch (name) {
                 case Constants.TOWN_RANDOM_ROLE_NAME:
-                    return RandomRole.TownRandom();
+                    return RandomMember.TownRandom();
                 case Constants.TOWN_INVESTIGATIVE_ROLE_NAME:
-                    return RandomRole.TownInvestigative();
+                    return RandomMember.TownInvestigative();
                 case Constants.TOWN_PROTECTIVE_ROLE_NAME:
-                    return RandomRole.TownProtective();
+                    return RandomMember.TownProtective();
                 case Constants.TOWN_KILLING_ROLE_NAME:
-                    return RandomRole.TownKilling();
+                    return RandomMember.TownKilling();
                 case Constants.MAFIA_RANDOM_ROLE_NAME:
-                    return RandomRole.MafiaRandom();
+                    return RandomMember.MafiaRandom();
                 case Constants.YAKUZA_RANDOM_ROLE_NAME:
-                    return RandomRole.YakuzaRandom();
+                    return RandomMember.YakuzaRandom();
                 case Constants.NEUTRAL_RANDOM_ROLE_NAME:
-                    return RandomRole.NeutralRandom();
+                    return RandomMember.NeutralRandom();
                 case Constants.ANY_RANDOM_ROLE_NAME:
-                    return RandomRole.AnyRandom();
+                    return RandomMember.AnyRandom();
             }
     	}
     	return role;
     }
 
-    public synchronized void addRole(RandomRole rr){
+    public synchronized void addRole(RandomMember rr){
         if(server.IsLoggedIn()){
 
         }else{
@@ -253,27 +253,27 @@ public class SetupManager {
     }
 
     private void addRandomRole(int count){
-        RandomRole rr;
+        RandomMember rr;
         for (int i = 0; i < count; i++){
             rr = getRandomRole(rand);
         	addRole(rr);
         }
     }
 
-	public static RandomRole getRandomRole(Random rand){
+	public static RandomMember getRandomRole(Random rand){
 		switch (rand.nextInt(8)){
         case 0:
-            return RandomRole.TownRandom();
+            return RandomMember.TownRandom();
         case 1:
-        	return RandomRole.MafiaRandom();
+        	return RandomMember.MafiaRandom();
         case 2:
-        	return RandomRole.NeutralEvilRandom();
+        	return RandomMember.NeutralEvilRandom();
         case 3:
-        	return RandomRole.NeutralRandom();
+        	return RandomMember.NeutralRandom();
         case 4:
-        	return RandomRole.YakuzaRandom();
+        	return RandomMember.YakuzaRandom();
         default:
-        	return RandomRole.AnyRandom();
+        	return RandomMember.AnyRandom();
 		}
 	}
 

@@ -176,32 +176,10 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	
     	
     	if(n.isNight())
-    		new OGIMessage(p, "Waiting on " + n.getAllPlayers().remove(n.getEndedNightPeople()));
+    		new OGIMessage(p, "Waiting on " + n.getLivePlayers().remove(n.getEndedNightPeople()).getStringName());
     	else
     		new OGIMessage(p, "It's not nighttime");
     }
-    
-    /*public static Player findName(ArrayList<String> blocks, PhoneBook phonebook){
-        for(int i = 0; i < blocks.size(); i++){
-            String possName = "";
-            for(int j = 0; j <= i; j++){
-                possName += " " + blocks.get(j);
-            }
-            possName = possName.substring(1);
-            Player p = phonebook.getByName(possName);
-            if(p != null){
-                for(String s: possName.split(" "))
-                    blocks.remove(s);
-                return p;
-            }
-        }
-        return null;
-    }
-    
-    
-    private void invalid(Player target){
-        target.sendMessage( "unknown message.  " + HELP);
-    }*/
 
 
 
