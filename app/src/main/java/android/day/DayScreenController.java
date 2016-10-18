@@ -107,6 +107,10 @@ public class DayScreenController{
 		public void onNightEnding() {
 			
 		}
+
+		public void onAnnouncement(Message nl) {
+			
+		}
 	}
 
 	public void init(){
