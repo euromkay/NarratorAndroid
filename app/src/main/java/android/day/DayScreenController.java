@@ -103,6 +103,10 @@ public class DayScreenController{
 		public void onModKill(Player bad){
 			dController.onModKill(bad);
 		}
+
+		public void onNightEnding() {
+			
+		}
 	}
 
 	public void init(){

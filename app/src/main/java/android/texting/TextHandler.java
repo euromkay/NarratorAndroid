@@ -413,5 +413,11 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	broadcast(e.access(Message.PUBLIC, false));
     }
 
+	@Override
+	public void onNightEnding() {
+		// TODO Auto-generated method stub
+		
+	}
+
     
 }
