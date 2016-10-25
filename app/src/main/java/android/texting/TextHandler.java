@@ -373,11 +373,11 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     }
 
-    public void onNightTarget(Player p, Player t){
+    public void onNightTarget(Player p){
 
     }
 
-    public void onNightTargetRemove(Player p, Player r){
+    public void onNightTargetRemove(Player p, PlayerList r){
 
     }
 

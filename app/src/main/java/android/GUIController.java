@@ -14,9 +14,10 @@ import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
 import shared.roles.Framer;
 import shared.roles.Role;
+import shared.roles.Spy;
 import voss.narrator.R;
 
-public class GUIController extends Controller implements TextInput{
+public class GUIController implements Controller, TextInput{
 
     public ActivityDay dScreen;
     public Random rand;
@@ -34,7 +35,7 @@ public class GUIController extends Controller implements TextInput{
 	public static final boolean TARGET = true;
     
     public Player vote(Player slave, Player target){
-    	target = Translate(slave.getNarrator(), target);
+    	target = Controller.Translate(slave.getNarrator(), target);
     	if(VOTE && target != slave.getSkipper())
     		logger.vote(slave, target);
         
@@ -57,9 +58,36 @@ public class GUIController extends Controller implements TextInput{
         vote(slave, slave.getSkipper());
         return slave.getSkipper();
     }
+    
+    public void frame(Player framer, String team, Player framed){
+    	framed = Controller.Translate(framer.getNarrator(), framed);
+    	selectSlave(framer);
+        swipeAbilityPanel(Framer.FRAME);
+    	setOption(team);
+        clickPlayer(framed);
+    }
+    
+    public void setNightTarget(Player slave){
+    	//TODO
+    }
+    
+    public void setNightTarget(Player slave, Player ... choice){
+    	selectSlave(slave);
+        swipeAbilityPanel(slave.reverseParse(Role.MAIN_ABILITY));
+        for(Player x: choice){
+        	x = Controller.Translate(slave.getNarrator(), x);
+        	clickPlayer(x);
+        }
+    }
 
+    public void spy(Player slave, String teamName){
+    	selectSlave(slave);
+        swipeAbilityPanel(Spy.COMMAND);
+    	setOption(teamName);
+    }
+    
     public void setNightTarget(Player slave, Player choice, String ability){
-    	choice = Translate(slave.getNarrator(), choice);
+    	choice = Controller.Translate(slave.getNarrator(), choice);
     	if(slave.getActions().isTargeting(choice, slave.parseAbility(ability)))
     		return;
     	if(TARGET && !ability.toLowerCase().equals(Framer.FRAME.toLowerCase())){
@@ -73,10 +101,14 @@ public class GUIController extends Controller implements TextInput{
     public void setNightTarget(Player slave, Player choice, String ability, String teamName){
     	if(TARGET)
     		logger.setNightTarget(slave, choice, ability, teamName);
-        setFrame(teamName);
+        setOption(teamName);
         setNightTarget(slave,choice,ability);
     }
 
+    private void clickPlayer(Player p){
+    	clickPlayer(p.getName());
+    }
+    
     private void clickPlayer(String p){
         int position = dScreen.actionList.indexOf(p);
         if (position == -1){
@@ -96,7 +128,7 @@ public class GUIController extends Controller implements TextInput{
         	swipe = SimpleGestureFilter.SWIPE_LEFT;
         
         for (int i = 0; i < Role.MAIN_ABILITY; i++){
-            if (dScreen.commandTV.getText().toString().equals(action))
+            if (dScreen.commandTV.getText().toString().equalsIgnoreCase(action))
                 return true;
             else
                 dScreen.onSwipe(swipe);
@@ -172,7 +204,7 @@ public class GUIController extends Controller implements TextInput{
         dScreen.onClick(dScreen.button);
     }
 
-    public void setFrame(String team){
+    public void setOption(String team){
         int id = dScreen.frameOptions.indexOf(team);
         dScreen.framerSpinner.setSelection(id);
     }

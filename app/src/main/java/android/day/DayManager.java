@@ -82,48 +82,48 @@ public class DayManager{
 
 	//from gui input
 	//garuntee that someone is selected
-	protected void command(String target, boolean selected){
+	protected void command(ArrayList<String> targets, boolean selected){
 		if (!dScreenController.playerSelected() || (!ns.isDay() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;
 		}
 		
-		if (target == null){
+		if (targets == null){
 			//probably just frame being set
 			return;
 		}
 		
-		synchronized(ns.local){
-			if(ns.isDay()){
-				String command = dScreenController.dScreen.commandTV.getText().toString(); 
-				if(command.contains(" ")){
-					boolean unvote = ns.isVoting(currentPlayer, target);
-					//if owner voted for target already, gotta be an unvote
-					if(unvote)
-						ns.unvote(currentPlayer);
-					else{
-						if(target.equalsIgnoreCase("Skip Day"))
-							ns.skipVote(currentPlayer);
-						else
-							ns.vote(currentPlayer, target);
-					}
-					return;
-				}else if(command.equalsIgnoreCase(Assassin.ASSASSINATE)){
-					ArrayList<String> actionList = dScreenController.dScreen.actionList;
-					for(int i = 0; i < actionList.size(); i++){
-						if(actionList.get(i).equals(target)){
-							dScreenController.dScreen.actionLV.setItemChecked(i, true);
-						}else{
-							dScreenController.dScreen.actionLV.setItemChecked(i, true);
-						}
-					}
-					return;
+		if(ns.isDay()){
+			String command = dScreenController.dScreen.commandTV.getText().toString(); 
+			String target = targets.get(0);
+			if(command.contains(" ")){
+				boolean unvote = ns.isVoting(currentPlayer, target);
+				//if owner voted for target already, gotta be an unvote
+				if(unvote)
+					ns.unvote(currentPlayer);
+				else{
+					if(target.equalsIgnoreCase("Skip Day"))
+						ns.skipVote(currentPlayer);
+					else
+						ns.vote(currentPlayer, target);
 				}
-			}else {
-				String ability_s = dScreenController.dScreen.getSelectedAbility();
-				ns.target(currentPlayer, target, ability_s);
+				return;
+			}else if(command.equalsIgnoreCase(Assassin.ASSASSINATE)){
+				ArrayList<String> actionList = dScreenController.dScreen.actionList;
+				for(int i = 0; i < actionList.size(); i++){
+					if(actionList.get(i).equals(target)){
+						dScreenController.dScreen.actionLV.setItemChecked(i, true);
+					}else{
+						dScreenController.dScreen.actionLV.setItemChecked(i, true);
+					}
+				}
+				return;
 			}
+		}else {
+			String ability_s = dScreenController.dScreen.getSelectedAbility();
+			ns.target(currentPlayer, targets, ability_s);
 		}
+		
 	}
 	
 

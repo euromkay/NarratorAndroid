@@ -5,11 +5,14 @@ import shared.logic.Player;
 import shared.logic.exceptions.UnsupportedMethodException;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
+import shared.roles.Framer;
 import shared.roles.Mayor;
+import shared.roles.Role;
+import shared.roles.Veteran;
 
 
 
-public class TextController extends Controller {
+public class TextController implements Controller {
 
     private TextInput texter;
     public TextController(TextInput texter){
@@ -31,13 +34,33 @@ public class TextController extends Controller {
         endNight(slave);
     }
 
+    public void setNightTarget(Player a){
+    	if(a.is(Veteran.class))
+    		texter.text(a, Veteran.ALERT, ASYNC);
+    	else if(a.is(Arsonist.class))
+    		texter.text(a, Arsonist.BURN, ASYNC);
+    }
+    
+    public void setNightTarget(Player a, Player ...b ){
+    	StringBuilder parts = new StringBuilder();
+    	parts.append(a.reverseParse(Role.MAIN_ABILITY));
+    	parts.append(" ");
+    	
+    	for(int i = 1; i <= b.length; i++){
+    		parts.append(b[i].getName());
+    		if(i != b.length)
+    			parts.append(" ");
+    	}
+    	texter.text(a, parts.toString(), ASYNC);
+    }
+    
     public void setNightTarget(Player a, Player b, String action) {
-    	b = Translate(a.getNarrator(), b);
+    	b = Controller.Translate(a.getNarrator(), b);
         texter.text(a, action + " " + b.getName(), ASYNC);
     }
 
     public void setNightTarget(Player a, Player b, String action, String teamName) {
-    	b = Translate(a.getNarrator(), b);
+    	b = Controller.Translate(a.getNarrator(), b);
         texter.text(a, action + " " +  b.getName() + " " + teamName, ASYNC);
     }
     
@@ -49,9 +72,16 @@ public class TextController extends Controller {
 
 	}
 
+	public void frame(Player framer, String option, Player framed){
+		texter.text(framer, Framer.FRAME + " " + option + " " + framed.getName(), ASYNC);
+	}
+	
+	public void spy(Player framer, String team){
+		texter.text(framer, Framer.FRAME + " " + team, ASYNC);
+	}
 
     public Player vote(Player slave, Player target) {
-    	target = Translate(slave.getNarrator(), target);
+    	target = Controller.Translate(slave.getNarrator(), target);
     	if(target == slave.getSkipper())
     		skipVote(slave);
     	else

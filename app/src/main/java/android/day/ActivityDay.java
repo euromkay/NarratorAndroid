@@ -364,10 +364,13 @@ implements
 		JSONArray allPlayers = JUtils.getJSONArray(ns.getPlayers(manager.getCurrentPlayer()), "info");
 		membersLV.setAdapter(new MembersAdapter(allPlayers, this));
 	}
+	protected void uncheck(String name){
+		actionLV.setItemChecked(actionList.indexOf(name), false);
 
-	protected void uncheck(String p){
-		if (p != null)
-			actionLV.setItemChecked(actionList.indexOf(p), false);
+	}
+	protected void uncheck(ArrayList<String> names){
+		for(String name: names)
+			uncheck(name);
 
 	}
 	protected void check(PlayerList selected){
@@ -396,10 +399,12 @@ implements
 			return;
 		}
 		try {
+			ArrayList<String> selectedList = new ArrayList<>();
 			String selected = actionList.get(position);
+			selectedList.add(selected);
 			//log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
 
-			manager.command(selected, actionLV.isItemChecked(position));
+			manager.command(selectedList, actionLV.isItemChecked(position));
 		}catch (IndexOutOfBoundsException|NullPointerException e){
 	
 				log("accessing out of bounds again");
@@ -922,7 +927,7 @@ implements
 		ArrayList<String> checkedPlayers = getCheckedPlayers();
 		if(checkedPlayers.isEmpty())
 			return;
-		manager.command(checkedPlayers.get(0), true);
+		manager.command(checkedPlayers, true);
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {

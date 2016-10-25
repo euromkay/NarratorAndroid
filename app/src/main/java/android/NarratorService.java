@@ -33,6 +33,7 @@ import json.JSONObject;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.PlayerList;
 import shared.logic.Team;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
@@ -279,19 +280,19 @@ public class NarratorService extends Service{
 		}
 	}
 
-	public void target(String owner_s, String target_s, String ability_s){
+	public void target(String owner_s, ArrayList<String> target_s, String ability_s){
 		if(server.IsLoggedIn()){
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, ability_s + " " + target_s);
 			sendMessage(jo);
 		}else{
 			Player owner = local.getPlayerByName(owner_s);
-			Player target = local.getPlayerByName(target_s);
+			PlayerList targets = PlayerList.FromNames(target_s, local);
 			int ability = owner.parseAbility(ability_s);
-			if(owner.getTargets(ability).contains(target))
-				owner.cancelTarget(target, ability);
+			if(owner.getActions().isTargeting(targets, ability))
+				owner.cancelTarget(targets.getFirst(), ability);
 			else
-				owner.setTarget(target, ability);
+				owner.setTarget(ability, null, targets.getArray());
 		}
 	}
 
