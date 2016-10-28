@@ -105,8 +105,12 @@ public class GUIController implements Controller, TextInput{
         setNightTarget(slave,choice,ability);
     }
 
-    private void clickPlayer(Player p){
+    public void clickPlayer(Player p){
     	clickPlayer(p.getName());
+    }
+    
+    public void clickPlayer(Player p, int i){
+    	
     }
     
     private void clickPlayer(String p){
