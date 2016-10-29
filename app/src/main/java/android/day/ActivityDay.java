@@ -482,7 +482,7 @@ implements
 		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.vote_item, targetables);
 		adapter.setDropDownViewResource(R.layout.create_roles_right_item);
 	
-		actionLV.setAdapter(adapter);
+		actionLV.setAdapter(new TargetablesAdapter(manager, targetables, checkedPositions));
 		actionLV.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
 		for(int checkedItem: checkedPositions){
