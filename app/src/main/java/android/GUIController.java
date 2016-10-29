@@ -9,6 +9,7 @@ import android.texting.TextInput;
 import android.util.Log;
 import android.view.View;
 import shared.ai.Controller;
+import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
@@ -35,7 +36,7 @@ public class GUIController implements Controller, TextInput{
 	public static final boolean TARGET = true;
     
     public Player vote(Player slave, Player target){
-    	target = Controller.Translate(slave.getNarrator(), target);
+    	target = Narrator.Translate(slave.getNarrator(), target);
     	if(VOTE && target != slave.getSkipper())
     		logger.vote(slave, target);
         
@@ -60,7 +61,7 @@ public class GUIController implements Controller, TextInput{
     }
     
     public void frame(Player framer, String team, Player framed){
-    	framed = Controller.Translate(framer.getNarrator(), framed);
+    	framed = Narrator.Translate(framer.getNarrator(), framed);
     	selectSlave(framer);
         swipeAbilityPanel(Framer.FRAME);
     	setOption(team);
@@ -75,7 +76,7 @@ public class GUIController implements Controller, TextInput{
     	selectSlave(slave);
         swipeAbilityPanel(slave.reverseParse(Role.MAIN_ABILITY));
         for(Player x: choice){
-        	x = Controller.Translate(slave.getNarrator(), x);
+        	x = Narrator.Translate(slave.getNarrator(), x);
         	clickPlayer(x);
         }
     }
@@ -87,7 +88,7 @@ public class GUIController implements Controller, TextInput{
     }
     
     public void setNightTarget(Player slave, Player choice, String ability){
-    	choice = Controller.Translate(slave.getNarrator(), choice);
+    	choice = Narrator.Translate(slave.getNarrator(), choice);
     	if(slave.getActions().isTargeting(choice, slave.parseAbility(ability)))
     		return;
     	if(TARGET && !ability.toLowerCase().equals(Framer.FRAME.toLowerCase())){

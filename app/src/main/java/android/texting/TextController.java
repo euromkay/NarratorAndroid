@@ -1,6 +1,7 @@
 package android.texting;
 
 import shared.ai.Controller;
+import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.exceptions.UnsupportedMethodException;
 import shared.roles.Arsonist;
@@ -55,12 +56,12 @@ public class TextController implements Controller {
     }
     
     public void setNightTarget(Player a, Player b, String action) {
-    	b = Controller.Translate(a.getNarrator(), b);
+    	b = Narrator.Translate(a.getNarrator(), b);
         texter.text(a, action + " " + b.getName(), ASYNC);
     }
 
     public void setNightTarget(Player a, Player b, String action, String teamName) {
-    	b = Controller.Translate(a.getNarrator(), b);
+    	b = Narrator.Translate(a.getNarrator(), b);
         texter.text(a, action + " " +  b.getName() + " " + teamName, ASYNC);
     }
     
@@ -81,7 +82,7 @@ public class TextController implements Controller {
 	}
 
     public Player vote(Player slave, Player target) {
-    	target = Controller.Translate(slave.getNarrator(), target);
+    	target = Narrator.Translate(slave.getNarrator(), target);
     	if(target == slave.getSkipper())
     		skipVote(slave);
     	else
