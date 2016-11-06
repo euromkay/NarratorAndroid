@@ -82,7 +82,13 @@ public class DayManager{
 
 	//from gui input
 	//garuntee that someone is selected
-	protected void command(ArrayList<String> targets, boolean selected){
+	protected void command(String ... target){
+		ArrayList<String> targets = new ArrayList<>();
+		for(String s: target)
+			targets.add(s);
+		command(targets);
+	}
+	protected void command(ArrayList<String> targets){
 		if (!dScreenController.playerSelected() || (!ns.isDay() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;
@@ -156,7 +162,9 @@ public class DayManager{
 		return currentPlayer;
 	}
 
-	
+	public String getCommand(){
+		return dScreenController.dScreen.commandTV.getText().toString();
+	}
 
 
 	public boolean isHost() {

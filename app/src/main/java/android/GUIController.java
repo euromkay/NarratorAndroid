@@ -8,6 +8,7 @@ import android.texting.TextController;
 import android.texting.TextInput;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import shared.ai.Controller;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -111,7 +112,12 @@ public class GUIController implements Controller, TextInput{
     }
     
     public void clickPlayer(Player p, int i){
+    	CheckBox cb = dScreen.targetablesAdapter.getCheckbox(p.getName(), i);
     	
+    	if(cb.getVisibility() != View.VISIBLE)
+    		throw new NullPointerException("Button not found!");
+    	cb.setChecked(!cb.isChecked());
+    	dScreen.targetablesAdapter.onCheckedChanged(cb, cb.isChecked());
     }
     
     private void clickPlayer(String p){
@@ -119,8 +125,7 @@ public class GUIController implements Controller, TextInput{
         if (position == -1){
             throw new PlayerTargetingException(p + " not found\n" );
         }
-        
-        dScreen.onItemClick(null, null, position, 0);
+        dScreen.targetablesAdapter.onItemClick(null, null, position, 0);
     }
 
     public boolean swipeAbilityPanel(String action){
@@ -240,7 +245,7 @@ public class GUIController implements Controller, TextInput{
 			logger.unvote(slave);
 		selectSlave(slave);
         actionPanelClick();
-        ArrayList<String> pList = dScreen.getCheckedPlayers();
+        ArrayList<String> pList = dScreen.getCheckedPlayers(0);
         clickPlayer(pList.get(0));
 	}
 	
@@ -248,7 +253,7 @@ public class GUIController implements Controller, TextInput{
 		logger.cancelNightTarget(slave, target, ability);
 		selectSlave(slave);
         swipeAbilityPanel(ability);
-        ArrayList<String> pList = dScreen.getCheckedPlayers();
+        ArrayList<String> pList = dScreen.getCheckedPlayers(0);
         clickPlayer(pList.get(0));
 	}
 

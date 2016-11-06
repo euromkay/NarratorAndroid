@@ -454,8 +454,8 @@ public abstract class StateObject {
 			PlayerList infoList = new PlayerList();
 			for (Player pi : n.getLivePlayers()) {
 				if (n.isDay()) {
-					if (pi.getVoteTarget() == null)
-						infoList.add(pi);
+					//if (pi.getVoteTarget() == null)
+					infoList.add(pi);
 				} else {
 					if (!pi.endedNight())
 						infoList.add(pi);

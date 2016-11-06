@@ -350,8 +350,8 @@ public class DayScreenController{
 			}else {
 				key = JUtils.getString(types, abilityIndex % types.length());
 				JSONArray playerList = JUtils.getJSONArray(playerListObject, key);
-				dScreen.setActionList(playerList, manager.ns.isDay());
 				dScreen.setCommand(key);
+				dScreen.setActionList(playerList, manager.ns.isDay());
 			}
 			if(manager.ns.isDay() && key.equals("Vote"))
 				setVotesToLynch();

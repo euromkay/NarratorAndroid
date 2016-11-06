@@ -9,6 +9,8 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
@@ -24,9 +26,6 @@ import android.texting.StateObject;
 import android.util.Log;
 import android.widget.Toast;
 import android.wifi.NodeListener;
-
-import com.google.firebase.iid.FirebaseInstanceId;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -35,6 +34,7 @@ import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.Team;
+import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.Constants;
@@ -921,6 +921,24 @@ public class NarratorService extends Service{
 			so.addState(StateObject.ACTIVETEAMS);
 			JSONObject jo = so.send((Player) null);
 			return JUtils.getJSONArray(jo, StateObject.activeTeams);
+		}
+	}
+	public String getVoteCount(String name) {
+		if(server.IsLoggedIn()){
+			JSONArray playerList = JUtils.getJSONArray(gameState.players, "info");
+			
+			String nameToCheck;
+			JSONObject playerObject;
+			for(int i = 0 ; i < playerList.length(); i++){
+				playerObject = JUtils.getJSONObject(playerList, i);
+				nameToCheck = JUtils.getString(playerObject, StateObject.playerName);
+				if(nameToCheck.equals(name)){
+					return Integer.toString(JUtils.getInt(playerObject, StateObject.playerVote));
+				}
+			}
+			throw new PlayerTargetingException();
+		}else{
+			return Integer.toString(local.getPlayerByName(name).getVoteCount());
 		}
 	}
 	

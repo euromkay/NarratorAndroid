@@ -34,7 +34,6 @@ import android.texting.PhoneNumber;
 import android.texting.StateObject;
 import android.texting.TextHandler;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -45,10 +44,9 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -68,6 +66,7 @@ import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.roles.Assassin;
 import shared.roles.Framer;
+import shared.roles.Witch;
 import voss.narrator.R;
 
 
@@ -76,7 +75,6 @@ implements
 	ExitGameListener, 
 	OnClickListener, 
 	OnInitListener, 
-	OnItemClickListener, 
 	OnItemSelectedListener, 
 	OnPlayerClickListener, 
 	DrawerListener, 
@@ -283,7 +281,7 @@ implements
 			}
 		}
 	}
-	private boolean onePersonActive(){
+	boolean onePersonActive(){
 		return playersInDrawer.length() == 1;
 	}
 	private Button findButton(int id){
@@ -391,27 +389,7 @@ implements
 	}
 
 	
-	public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
-		if(manager.getCurrentPlayer() == null){
-			actionLV.setItemChecked(position, false);
-			if(onePersonActive())
-				onBackPressed();
-			return;
-		}
-		try {
-			ArrayList<String> selectedList = new ArrayList<>();
-			String selected = actionList.get(position);
-			selectedList.add(selected);
-			//log(manager.getCurrentPlayer().getDescription() + " chose (" + commandTV.getText().toString() + ") for " + selected.getDescription());
-
-			manager.command(selectedList, actionLV.isItemChecked(position));
-		}catch (IndexOutOfBoundsException|NullPointerException e){
 	
-				log("accessing out of bounds again");
-				e.printStackTrace();
-		}
-		
-	}
 	
 	public BroadcastReceiver intentReceiver = new BroadcastReceiver(){
 		public void onReceive(Context context, Intent intent){
@@ -446,10 +424,9 @@ implements
 	
 
 
-	
+	public TargetablesAdapter targetablesAdapter;
 	public ArrayList<String> actionList;
 	protected void setActionList(JSONArray playerList, boolean day){
-		ArrayList<String> targetables = new ArrayList<>();
 		ArrayList<String> newActionList = new ArrayList<>();
 		ArrayList<Integer> checkedPositions = new ArrayList<>();
 		JSONObject jPlayer;
@@ -457,39 +434,46 @@ implements
 		for(i = 0; i < playerList.length(); i++){
 			jPlayer = JUtils.getJSONObject(playerList, i);
 			String name = JUtils.getString(jPlayer, StateObject.playerName);
-			if(day) {
-				String voteCount_s = Integer.toString(JUtils.getInt(jPlayer, StateObject.playerVote));
-				targetables.add(voteCount_s + " - " + name);
-			}else
-				targetables.add(name);
 			newActionList.add(name);
 			if(JUtils.getBoolean(jPlayer, StateObject.playerSelected))
 				checkedPositions.add(i);
 		}
 		if(day){
-			targetables.add("Skip Day - " + ns.getSkipVotes());
 			newActionList.add("Skip Day");
 			if(manager.getCurrentPlayer() != null)
 				if(ns.isVoting(manager.getCurrentPlayer(), "Skip Day")){
 					checkedPositions.add(i);
 			}
 		}
+		
+		
 		synchronized(manager){
-			actionList = newActionList;
+			if(actionList == null || !actionList.equals(newActionList)){
+				targetablesAdapter = new TargetablesAdapter(manager, newActionList);
+				actionList = newActionList;
+			}
 		}
+		actionLV.setAdapter(targetablesAdapter);
+		
+		targetablesAdapter.setColumn(checkedPositions, 0);
+		targetablesAdapter.setColumn(new ArrayList<Integer>(), 1);
 
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.vote_item, targetables);
-		adapter.setDropDownViewResource(R.layout.create_roles_right_item);
+		targetablesAdapter.showColumn(0);
+		if(manager.getCommand().equals(Witch.Control)){
+			targetablesAdapter.showColumn(1);
+			targetablesAdapter.getCheckbox(manager.getCurrentPlayer(), 0).setVisibility(View.INVISIBLE);
+			if(checkedPositions.size() == 1)
+				targetablesAdapter.setColumn(checkedPositions, 1);
+		}else{
+			targetablesAdapter.hideColumn(1);
+		}
+		targetablesAdapter.hideColumn(2);
 	
-		actionLV.setAdapter(new TargetablesAdapter(manager, targetables, checkedPositions));
 		actionLV.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
-		for(int checkedItem: checkedPositions){
-			actionLV.setItemChecked(checkedItem, true);
-		}
 		
-		actionLV.setOnItemClickListener(this);
+		actionLV.setOnItemClickListener(targetablesAdapter);
 	}
 
 
@@ -924,10 +908,10 @@ implements
 
 
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		ArrayList<String> checkedPlayers = getCheckedPlayers();
+		ArrayList<String> checkedPlayers = getCheckedPlayers(0);
 		if(checkedPlayers.isEmpty())
 			return;
-		manager.command(checkedPlayers, true);
+		manager.command(checkedPlayers);
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {
@@ -979,13 +963,13 @@ implements
 		manager.setNextAbility(direction);
 	}
 
-	public ArrayList<String> getCheckedPlayers() {
-		SparseBooleanArray checkedPos = actionLV.getCheckedItemPositions();
+	public ArrayList<String> getCheckedPlayers(int column) {
 		ArrayList<String> ret = new ArrayList<>();
-		for(int i = 0; i < actionList.size(); i++){
-			if(checkedPos.get(i))
-				ret.add(actionList.get(i));
-				
+		CheckBox cb;
+		for(String name: targetablesAdapter.targetables){
+			cb = targetablesAdapter.getCheckbox(name, column);
+			if(cb.isChecked())
+				ret.add(name);
 		}
 		return ret;
 	}
