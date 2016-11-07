@@ -1,6 +1,7 @@
 package android.day;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import android.NarratorService;
 import android.PhoneBook;
@@ -12,6 +13,7 @@ import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.templates.TestController;
 import shared.roles.Assassin;
+import shared.roles.Driver;
 
 public class DayManager{
 
@@ -99,6 +101,11 @@ public class DayManager{
 			return;
 		}
 		
+		if(getCommand().equals(Driver.COMMAND)){
+			Collections.sort(targets);
+		}
+			
+		
 		if(ns.isDay()){
 			String command = dScreenController.dScreen.commandTV.getText().toString(); 
 			String target = targets.get(0);
@@ -138,6 +145,7 @@ public class DayManager{
 	protected void setCurrentPlayer(String name){
 		currentPlayer = name;
 		dScreenController.currentPlayer = name;
+		dScreenController.dScreen.targetablesAdapter = null;
 	}
 	protected void setNextAbility(int direction){
 		dScreenController.setNextAbility(direction);

@@ -21,6 +21,8 @@ import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
+import shared.roles.Role;
+import shared.roles.Witch;
 
 public abstract class StateObject {
 
@@ -353,18 +355,28 @@ public abstract class StateObject {
 		return "#FFFFFF";
 	}
 	
-	private JSONArray getJPlayerArray(PlayerList input, PlayerList selected) throws JSONException{
+	private JSONArray getJPlayerArray(PlayerList input, PlayerList[] selected, String type) throws JSONException{
 		JSONArray arr = new JSONArray();
 		if(input.isEmpty())
 			return arr;
 		PlayerList allPlayers = n.getAllPlayers();
 		
 		JSONObject jo;
+		JSONArray jArray;
 		for(Player pi: input){
 			jo = new JSONObject();
 			jo.put(StateObject.playerName, pi.getName());
 			jo.put(StateObject.playerIndex, allPlayers.indexOf(pi) + 1);
-			jo.put(StateObject.playerSelected, selected.contains(pi));
+
+			jArray = new JSONArray();
+			for(int i = 0; i < selected.length; i++){
+				PlayerList select = selected[i];
+				if(pi.in(select)){
+					jArray.put(i);
+				}
+			}
+			jo.put(StateObject.playerSelectedColumn, jArray);
+			
 			jo.put(StateObject.playerActive, isActive(pi));
 			jo.put(StateObject.playerDescription, getDescription(pi));
 			jo.put(StateObject.playerColor, getColor(pi));
@@ -382,14 +394,14 @@ public abstract class StateObject {
 	}
 	public abstract boolean isActive(Player p);
 	
-	private JSONArray getJPlayerArray(PlayerList input) throws JSONException{
-		return getJPlayerArray(input, new PlayerList());
+	private JSONArray getJPlayerArray(PlayerList input, String type) throws JSONException{
+		return getJPlayerArray(input, new PlayerList[]{new PlayerList()}, type);
 	}
-	private JSONArray getJPlayerArray(PlayerList input, Player p) throws JSONException{
+	private JSONArray getJPlayerArray(PlayerList input, Player p, String type) throws JSONException{
 		PlayerList list = new PlayerList();
 		if(p != null)
 			list.add(p);
-		return getJPlayerArray(input, list);
+		return getJPlayerArray(input, new PlayerList[]{list}, type);
 	}
 	private void addJPlayerLists(JSONObject state, Player p) throws JSONException{
 		JSONObject playerLists = new JSONObject();
@@ -404,7 +416,7 @@ public abstract class StateObject {
 					votes = n.getAllPlayers().remove(p);
 				if(p.isDead())
 					votes.clear();
-				JSONArray names = getJPlayerArray(votes, p.getVoteTarget());
+				JSONArray names = getJPlayerArray(votes, p.getVoteTarget(), "Vote");
 				playerLists.put("Vote", names);
 				playerLists.getJSONArray(StateObject.type).put("Vote");
 				if(p.hasDayAction()){
@@ -416,7 +428,7 @@ public abstract class StateObject {
 							continue;
 						if(acceptableTargets.isEmpty())
 							continue;
-						names = getJPlayerArray(acceptableTargets, p.getTargets(ability));
+						names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
 						playerLists.put(s_ability, names);
 						playerLists.getJSONArray(StateObject.type).put(s_ability);
 					}
@@ -429,23 +441,32 @@ public abstract class StateObject {
 						PlayerList acceptableTargets = p.getAcceptableTargets(ability);
 						if(acceptableTargets.isEmpty())
 							continue;
-	
-						JSONArray names = getJPlayerArray(acceptableTargets, p.getTargets(ability));
+						
+						JSONArray names;
+						if(s_ability.equals(Witch.Control)){
+							Player control = p.getTargets(Role.MAIN_ABILITY).getFirst();
+							Player target = p.getTargets(Role.MAIN_ABILITY).getLast();
+							PlayerList controlList = control == null ? new PlayerList() : Player.list(control);
+							PlayerList targetList = target == null ? new PlayerList() : Player.list(target);
+							names = getJPlayerArray(acceptableTargets, new PlayerList[]{targetList, controlList}, s_ability);;
+						}else{
+							names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
+						}
 						playerLists.put(s_ability, names);
 						playerLists.getJSONArray(StateObject.type).put(s_ability);
 					}
 					if(playerLists.getJSONArray(StateObject.type).length() == 0){
-						JSONArray names = getJPlayerArray(new PlayerList());
+						JSONArray names = getJPlayerArray(new PlayerList(), "None");
 						playerLists.put("You have no acceptable night actions tonight!", names);
 						playerLists.getJSONArray(StateObject.type).put("You have no acceptable night actions tonight!");
 					}
 				}else{
-					playerLists.put("Game Over", getJPlayerArray(n.getAllPlayers(), new PlayerList()));
+					playerLists.put("Game Over", getJPlayerArray(n.getAllPlayers(), new PlayerList[]{new PlayerList()}, "Game Over"));
 					playerLists.getJSONArray(StateObject.type).put("Game Over");
 				}
 			}
 		}else{
-			JSONArray names = getJPlayerArray(n.getAllPlayers());
+			JSONArray names = getJPlayerArray(n.getAllPlayers(), "Lobby");
 			playerLists.put("Lobby", names);
 			playerLists.getJSONArray(StateObject.type).put("Lobby");
 		}
@@ -462,7 +483,7 @@ public abstract class StateObject {
 	
 				}
 			}
-			playerLists.put("info", getJPlayerArray(infoList));
+			playerLists.put("info", getJPlayerArray(infoList, "info"));
 		}
 		
 		state.getJSONArray(StateObject.type).put(StateObject.playerLists);
@@ -577,7 +598,7 @@ public abstract class StateObject {
 	public static final String playerIndex = "playerIndex";
 	public static final String playerVote = "playerVote";
 	public static final String skipVote = "skipVote";
-	public static final String playerSelected = "playerSelected";
+	public static final String playerSelectedColumn = "playerSelectedColumn";
 	public static final String isSkipping = "isSkipping";
 	public static final String playerActive = "playerActive";
 	public static final String playerColor = "playerColor";

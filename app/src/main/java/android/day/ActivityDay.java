@@ -1,6 +1,7 @@
 package android.day;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,7 +43,6 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
@@ -428,52 +428,62 @@ implements
 	public ArrayList<String> actionList;
 	protected void setActionList(JSONArray playerList, boolean day){
 		ArrayList<String> newActionList = new ArrayList<>();
-		ArrayList<Integer> checkedPositions = new ArrayList<>();
+		HashMap<String, ArrayList<Integer>> checkedPositions = new HashMap<>();
+		
 		JSONObject jPlayer;
 		int i;
+		JSONArray jArray;
+		ArrayList<Integer> selected;
 		for(i = 0; i < playerList.length(); i++){
 			jPlayer = JUtils.getJSONObject(playerList, i);
 			String name = JUtils.getString(jPlayer, StateObject.playerName);
 			newActionList.add(name);
-			if(JUtils.getBoolean(jPlayer, StateObject.playerSelected))
-				checkedPositions.add(i);
+			jArray = JUtils.getJSONArray(jPlayer, StateObject.playerSelectedColumn);
+			if(!checkedPositions.containsKey(name))
+				checkedPositions.put(name, new ArrayList<Integer>());
+			selected = checkedPositions.get(name);
+			for(int j = 0; j < jArray.length(); j++){
+				selected.add(JUtils.getInt(jArray, j));
+				
+			}
 		}
 		if(day){
 			newActionList.add("Skip Day");
 			if(manager.getCurrentPlayer() != null)
 				if(ns.isVoting(manager.getCurrentPlayer(), "Skip Day")){
-					checkedPositions.add(i);
+					selected = new ArrayList<>();
+					selected.add(0);
+					checkedPositions.put("Skip Day", selected);
 			}
 		}
 		
 		
 		synchronized(manager){
-			if(actionList == null || !actionList.equals(newActionList)){
+			if(targetablesAdapter == null || actionList == null || !actionList.equals(newActionList)){
 				targetablesAdapter = new TargetablesAdapter(manager, newActionList);
 				actionList = newActionList;
+				actionLV.setAdapter(targetablesAdapter);
 			}
 		}
-		actionLV.setAdapter(targetablesAdapter);
-		
-		targetablesAdapter.setColumn(checkedPositions, 0);
-		targetablesAdapter.setColumn(new ArrayList<Integer>(), 1);
 
-		
-		targetablesAdapter.showColumn(0);
-		if(manager.getCommand().equals(Witch.Control)){
-			targetablesAdapter.showColumn(1);
-			targetablesAdapter.getCheckbox(manager.getCurrentPlayer(), 0).setVisibility(View.INVISIBLE);
-			if(checkedPositions.size() == 1)
-				targetablesAdapter.setColumn(checkedPositions, 1);
-		}else{
+		if(manager.getCurrentPlayer() == null){
+			targetablesAdapter.hideColumn(0);
 			targetablesAdapter.hideColumn(1);
-		}
-		targetablesAdapter.hideColumn(2);
-	
-		actionLV.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+			targetablesAdapter.hideColumn(2);
+		}else {
+			targetablesAdapter.showColumn(0);
+			targetablesAdapter.setColumn(checkedPositions);
+			if (manager.getCommand().equals(Witch.Control)) {
+				targetablesAdapter.showColumn(1);
+				targetablesAdapter.getCheckbox(manager.getCurrentPlayer(), 1).setVisibility(View.INVISIBLE);
+			} else {
+				targetablesAdapter.hideColumn(1);
+			}
+			targetablesAdapter.hideColumn(2);
 
-		
-		actionLV.setOnItemClickListener(targetablesAdapter);
+
+			actionLV.setOnItemClickListener(targetablesAdapter);
+		}
 	}
 
 

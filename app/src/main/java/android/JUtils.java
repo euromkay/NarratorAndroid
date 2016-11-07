@@ -24,6 +24,15 @@ public class JUtils{
 		return null;
 	}
 
+	public static int getInt(JSONArray jObject, int i){
+		try {
+			return jObject.getInt(i);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
 	public static int getInt(JSONObject jObject, String key){
 		try {
 			return jObject.getInt(key);

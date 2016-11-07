@@ -267,7 +267,8 @@ public class NarratorService extends Service{
 			for(int i = 0; i < voteTargets.length(); i++){
 				playerObject = JUtils.getJSONObject(voteTargets, 0);
 				if(target_s.equals(JUtils.getString(playerObject, StateObject.playerName))){
-					return JUtils.getBoolean(playerObject, StateObject.playerSelected);
+					JSONArray jArray = JUtils.getJSONArray(playerObject, StateObject.playerSelectedColumn);
+					return jArray.length() == 1;
 				}
 			}
 			return false;
