@@ -267,18 +267,24 @@ public abstract class StateObject {
 	 */
 	
 	private void addJFactions(JSONObject state) throws JSONException{
-		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray();
+		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray(), availableClasses;
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
+		ArrayList<String> availableClassesBacker;
 		for(Faction f: fManager.factions){
 			jFaction = new JSONObject();
 			fMembers = new JSONArray();
 			blacklisted = new JSONArray();
-			
+			availableClasses = new JSONArray();
+			availableClassesBacker = new ArrayList<>();
+		
 			jFaction.put("name", f.getName());
 			factionNames.put(f.getName());
 			jFaction.put("color", f.getColor());
 			jFaction.put("description", f.getDescription());
 			jFaction.put("isEditable", f.isEditable);
+			
+			
+			
 			
 			for(RoleTemplate rt: f.members){
 				jRT = new JSONObject();
@@ -286,12 +292,20 @@ public abstract class StateObject {
 				jRT.put("description", rt.getDescription());
 				jRT.put("color", rt.getColor());
 				jRT.put("rules", new JSONArray(rt.getRules()));
+				for(String class_name: rt.getClasses()){
+					if(!availableClassesBacker.contains(class_name)){
+						availableClassesBacker.add(class_name);
+						availableClasses.put(class_name);
+					}
+				}
+				jRT.put("class", rt.getClasses());
 				if(!rt.isRandom()){
 					jRT.put("simpleName", ((Member) rt).getSimpleName());
 				}
 				jFactions.put(rt.getName() + rt.getColor(), jRT);
 				fMembers.put(jRT);
 			}
+			jFaction.put("class_names", availableClasses);
 			jFaction.put("members", fMembers);
 			for(Member rt: f.unavailableRoles){
 				jRT = new JSONObject();
