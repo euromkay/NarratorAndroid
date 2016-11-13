@@ -66,7 +66,6 @@ import shared.logic.exceptions.IllegalActionException;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.roles.Assassin;
 import shared.roles.Framer;
-import shared.roles.Witch;
 import voss.narrator.R;
 
 
@@ -447,43 +446,32 @@ implements
 				
 			}
 		}
-		if(day){
+		if(day && manager.getCommand().equals("Vote")){
 			newActionList.add("Skip Day");
+			selected = new ArrayList<>();
 			if(manager.getCurrentPlayer() != null)
 				if(ns.isVoting(manager.getCurrentPlayer(), "Skip Day")){
-					selected = new ArrayList<>();
+					
 					selected.add(0);
-					checkedPositions.put("Skip Day", selected);
 			}
+			checkedPositions.put("Skip Day", selected);
 		}
 		
 		
 		synchronized(manager){
 			if(targetablesAdapter == null || actionList == null || !actionList.equals(newActionList)){
-				targetablesAdapter = new TargetablesAdapter(manager, newActionList);
+				targetablesAdapter = new TargetablesAdapter(manager, newActionList, checkedPositions);
 				actionList = newActionList;
 				actionLV.setAdapter(targetablesAdapter);
+			}else{
+				targetablesAdapter.setCheckBoxes(checkedPositions);
 			}
 		}
-
-		if(manager.getCurrentPlayer() == null){
-			targetablesAdapter.hideColumn(0);
-			targetablesAdapter.hideColumn(1);
-			targetablesAdapter.hideColumn(2);
-		}else {
-			targetablesAdapter.showColumn(0);
-			targetablesAdapter.setColumn(checkedPositions);
-			if (manager.getCommand().equals(Witch.Control)) {
-				targetablesAdapter.showColumn(1);
-				targetablesAdapter.getCheckbox(manager.getCurrentPlayer(), 1).setVisibility(View.INVISIBLE);
-			} else {
-				targetablesAdapter.hideColumn(1);
-			}
-			targetablesAdapter.hideColumn(2);
+		
 
 
-			actionLV.setOnItemClickListener(targetablesAdapter);
-		}
+		actionLV.setOnItemClickListener(targetablesAdapter);
+		
 	}
 
 
@@ -976,10 +964,15 @@ implements
 	public ArrayList<String> getCheckedPlayers(int column) {
 		ArrayList<String> ret = new ArrayList<>();
 		CheckBox cb;
-		for(String name: targetablesAdapter.targetables){
-			cb = targetablesAdapter.getCheckbox(name, column);
-			if(cb.isChecked())
-				ret.add(name);
+		View v;
+		TextView tv;
+		for(int i = 0; i < targetablesAdapter.getCount(); i++){
+			v = actionLV.getChildAt(i);
+			cb = TargetablesAdapter.getCheckBox(v, column);
+			if(cb.isChecked()){
+				tv = (TextView) v.findViewById(R.id.target_name);
+				ret.add(tv.getText().toString());
+			}
 		}
 		return ret;
 	}

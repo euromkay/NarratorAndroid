@@ -95,7 +95,11 @@ public class ListingAdapter extends BaseAdapter{
 		}
 
 	    result.setText(item);
-		NActivity.setTextColor(result, viewColor);
+		try {
+			NActivity.setTextColor(result, viewColor);
+		}catch(IllegalArgumentException e){
+			e.printStackTrace();
+		}
 	    
 	    return result;
 	}

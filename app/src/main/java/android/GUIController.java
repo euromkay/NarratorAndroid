@@ -3,6 +3,7 @@ package android;
 import java.util.ArrayList;
 
 import android.day.ActivityDay;
+import android.day.TargetablesAdapter;
 import android.screens.SimpleGestureFilter;
 import android.texting.TextController;
 import android.texting.TextInput;
@@ -112,12 +113,13 @@ public class GUIController implements Controller, TextInput{
     }
     
     public void clickPlayer(Player p, int i){
-    	CheckBox cb = dScreen.targetablesAdapter.getCheckbox(p.getName(), i);
+    	int position = dScreen.actionList.indexOf(p.getName());
+    	CheckBox cb = TargetablesAdapter.getCheckBox(dScreen.actionLV.getChildAt(position), i);
     	
     	if(cb.getVisibility() != View.VISIBLE)
     		throw new NullPointerException("Button not found!");
     	cb.setChecked(!cb.isChecked());
-    	dScreen.targetablesAdapter.onCheckedChanged(cb, cb.isChecked());
+    	//dScreen.targetablesAdapter.onCheckedChanged(cb, cb.isChecked());
     }
     
     private void clickPlayer(String p){
@@ -125,7 +127,7 @@ public class GUIController implements Controller, TextInput{
         if (position == -1){
             throw new PlayerTargetingException(p + " not found\n" );
         }
-        dScreen.targetablesAdapter.onItemClick(null, null, position, 0);
+        dScreen.targetablesAdapter.onItemClick(null, dScreen.actionLV.getChildAt(position), position, 0);
     }
 
     public boolean swipeAbilityPanel(String action){
@@ -245,8 +247,16 @@ public class GUIController implements Controller, TextInput{
 			logger.unvote(slave);
 		selectSlave(slave);
         actionPanelClick();
-        ArrayList<String> pList = dScreen.getCheckedPlayers(0);
-        clickPlayer(pList.get(0));
+		swipeAbilityPanel("Vote");
+        String voted = dScreen.getCheckedPlayers(0).get(0);
+        voted.toString();
+        for(String possible: dScreen.actionList){
+        	if(voted.contains(possible)){
+        		clickPlayer(possible);
+        		return;
+        	}
+        }
+        
 	}
 	
 	public void cancelNightTarget(Player slave, Player target, String ability){
