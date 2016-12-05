@@ -298,7 +298,7 @@ public abstract class StateObject {
 						availableClasses.put(class_name);
 					}
 				}
-				jRT.put("class", rt.getClasses());
+				jRT.put("class_type", rt.getClasses());
 				if(!rt.isRandom()){
 					jRT.put("simpleName", ((Member) rt).getSimpleName());
 				}
