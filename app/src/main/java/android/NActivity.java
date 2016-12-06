@@ -82,15 +82,30 @@ public abstract class NActivity extends FragmentActivity{
 		void onConnect();
 	}
 
+	static Typeface headerFont = null, subFont = null;
+
+	public static void SetFont(TextView text, Context c, boolean header){
+		String s;
+		Typeface font;
+		if(header) {
+			if(headerFont == null){
+				s = "AbrilFatface-Regular.ttf";
+				headerFont = Typeface.createFromAsset(c.getAssets(), s);
+			}
+			font = headerFont;
+		}else {
+			if (subFont == null) {
+				s = "JosefinSans-Regular.ttf";
+				subFont = Typeface.createFromAsset(c.getAssets(), s);
+			}
+			font = subFont;
+		}
+		text.setTypeface(font);
+	}
+
 	public static void SetFont(int id, Activity c, boolean header){
 		TextView text = (TextView) c.findViewById(id);
-		String s;
-		if(header)
-			s = "AbrilFatface-Regular.ttf";
-		else
-			s = "JosefinSans-Regular.ttf";
-		Typeface font = Typeface.createFromAsset(c.getAssets(), s);
-		text.setTypeface(font);
+		SetFont(text, c, header);
 	}
 
 	public static int ParseColor(Context context, int id) {
