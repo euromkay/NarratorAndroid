@@ -1,6 +1,7 @@
 package android.alerts;
 
 
+import java.util.HashMap;
 import java.util.List;
 
 import android.NActivity;
@@ -8,11 +9,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,62 +59,27 @@ public class RoleCardPopUp extends DialogFragment {
         populateMembers();
     }
 
-    class ImageSetterTask extends AsyncTask<String, Void, Integer> {
-        ImageView bmImage;
-        Context ac;
-
-        public ImageSetterTask(ImageView bmImage, Context ac) {
-            this.bmImage = bmImage;
-            this.ac = ac;
-        }
-
-        protected Integer doInBackground(String... urls) {
-            String urldisplay = urls[0].toLowerCase();
-            Bitmap mIcon11 = null;
-            Integer drawableResourceId;
-            try {
-                drawableResourceId = ac.getResources().getIdentifier("cit", "drawable", ac.getPackageName());
-                //drawableResourceId = 0;
-               // bmImage.setImage
-                //mIcon11 = BitmapFactory.decodeResource(ac.getResources(), drawableResourceId);
-            } catch (Exception e) {
-                drawableResourceId = 0;
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return drawableResourceId;
-        }
-
-        protected void onPostExecute(Integer result) {
-            bmImage.setImageResource(result);
-        }
-    }
-
     class RoleCardAdapter extends BaseAdapter{
 
         String activeCard;
         private List<Member> members;
         private LayoutInflater inflater;
         private Context c;
-        public RoleCardAdapter(Context c, List<Member> members) {
+        private HashMap<String, String> clickedToBase;
+        RoleCardAdapter(Context c, List<Member> members) {
             this.members = members;
             inflater = (LayoutInflater) c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.c = c;
+            clickedToBase = new HashMap<>();
+
+            for(Member m : members){
+                if(!m.getName().equals(m.getBaseName())){
+                    clickedToBase.put(m.getName(), m.getBaseName());
+                }
+            }
         }
 
-        private void collapse(View v){
-            TextView tv = (TextView) v.findViewById(R.id.role_card_title);
-            tv.setTextSize((float)(tv.getTextSize() / 2));
 
-            v.findViewById(R.id.role_card_info).setVisibility(View.GONE);
-        }
-
-        private void expand(View v){
-            TextView tv = (TextView) v.findViewById(R.id.role_card_title);
-            tv.setTextSize((float)(tv.getTextSize() * 2));
-
-            v.findViewById(R.id.role_card_info).setVisibility(View.VISIBLE);
-        }
 
         public View getView(int position, View convertView, ViewGroup parent){
             Member m = members.get(position);
@@ -127,6 +89,8 @@ public class RoleCardPopUp extends DialogFragment {
                 public void onClick(View view) {
                     TextView tv = (TextView) view.findViewById(R.id.role_card_title);
                     String text = tv.getText().toString();
+                    if(clickedToBase.containsKey(text))
+                        text = clickedToBase.get(text);
                     if (text.equals(activeCard))
                         activeCard = null;
                     else
@@ -136,23 +100,27 @@ public class RoleCardPopUp extends DialogFragment {
                 }
             });
 
+            boolean activeCard = m.getBaseName().equals(this.activeCard);
+
             TextView tv = (TextView) roleView.findViewById(R.id.role_card_title);
             tv.setText(m.getName());
-            if(m.getName().equals(activeCard)) {
-                tv.setTextSize(tv.getTextSize() * 1.2f);
+            NActivity.SetFont(tv, c, true);
+            if(activeCard) {
+                tv.setTextSize(tv.getTextSize() * 1.05f);
             }
             NActivity.setTextColor(tv, m.getColor());
 
             TextView tv2 = (TextView) roleView.findViewById(R.id.role_card_info);
             tv2.setText(m.getDescription());
-            if(!m.getName().equals(activeCard))
-                tv2.setVisibility(View.GONE);
+            NActivity.SetFont(tv, c, false);
 
             ImageView iv = (ImageView) roleView.findViewById(R.id.role_card_picture);
-            if(m.getName().equals(activeCard)){
+            if(activeCard){
+                iv.setVisibility(View.VISIBLE);
                 tv2.setVisibility(View.VISIBLE);
-                loadImage(m.getName(), iv);
+                loadImage(m.getBaseName(), iv);
             }else{
+                iv.setVisibility(View.GONE);
                 tv2.setVisibility(View.GONE);
             }
 
@@ -160,7 +128,13 @@ public class RoleCardPopUp extends DialogFragment {
         }
 
         private void loadImage(String name, ImageView iv){
-            new ImageSetterTask(iv, this.c).execute(name);
+            String urldisplay = name.toLowerCase().replaceAll(" ", "");
+            Integer drawableResourceId;
+
+            drawableResourceId = c.getResources().getIdentifier(urldisplay, "drawable", c.getPackageName());
+            if(drawableResourceId == 0)
+                drawableResourceId = c.getResources().getIdentifier("citizen", "drawable", c.getPackageName());
+            iv.setImageResource(drawableResourceId);
         }
 
         public int getCount() {

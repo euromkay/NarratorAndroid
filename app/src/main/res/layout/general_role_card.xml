@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <View
         android:id="@+id/role_shim"
         android:layout_width="5dp"
-        android:layout_height="5dp"
+        android:layout_height="1dp"
         android:layout_centerHorizontal="true"
+        android:padding="2dp"
         />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:textSize="20sp"
         android:layout_alignParentTop="true"
         android:id="@+id/role_card_title"/>
     <TextView
         android:layout_below="@id/role_card_title"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_toEndOf="@id/role_shim"
         android:layout_toRightOf="@id/role_shim"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:visibility="gone"
         android:id="@+id/role_card_info"/>
 
     <ImageView
@@ -34,7 +37,9 @@
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@id/role_shim"
         android:layout_toStartOf="@id/role_shim"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:layout_height="150dp"
+        android:background="@android:color/transparent"
         />
 </RelativeLayout>
