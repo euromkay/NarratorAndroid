@@ -421,8 +421,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 		list.add(BasicRoles.Agent());
 		list.add(BasicRoles.Assassin());
-		list.add(BasicRoles.Coward());
 		list.add(BasicRoles.Blackmailer());
+		list.add(BasicRoles.Coward());
 		list.add(BasicRoles.Framer());
 		list.add(BasicRoles.Godfather());
 		list.add(BasicRoles.Janitor());
