@@ -10,6 +10,7 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,7 +107,7 @@ public class RoleCardPopUp extends DialogFragment {
             tv.setText(m.getName());
             NActivity.SetFont(tv, c, true);
             if(activeCard) {
-                tv.setTextSize(tv.getTextSize() * 1.05f);
+                tv.setTextSize(35);
             }
             NActivity.setTextColor(tv, m.getColor());
 
