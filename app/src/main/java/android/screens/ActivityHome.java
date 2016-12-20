@@ -180,6 +180,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			case R.id.home_login_signup:
 				if (isLoggedIn()){
 					server.LogOut();
+					ns.mWebSocketClient.close();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
 				}else if(isInternetAvailable()){

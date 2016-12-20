@@ -679,7 +679,7 @@ public class NarratorService extends Service{
 		    	try {
 					jo.put("server", true);
 					jo.put("message", "greeting");
-					jo.put("token", FirebaseInstanceId.getInstance().getToken());
+					jo.put("sessionID", FirebaseInstanceId.getInstance().getToken());
 					sendMessage(jo);
 				} catch (JSONException e) {
 					e.printStackTrace();
