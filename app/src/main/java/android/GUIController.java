@@ -13,6 +13,7 @@ import android.widget.CheckBox;
 import shared.ai.Controller;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.PlayerList;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Random;
 import shared.roles.Framer;
@@ -259,7 +260,7 @@ public class GUIController implements Controller, TextInput{
         
 	}
 	
-	public void cancelNightTarget(Player slave, Player target, String ability){
+	public void cancelNightTarget(Player slave, PlayerList target, String ability){
 		logger.cancelNightTarget(slave, target, ability);
 		selectSlave(slave);
         swipeAbilityPanel(ability);

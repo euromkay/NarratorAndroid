@@ -3,6 +3,7 @@ package android.texting;
 import shared.ai.Controller;
 import shared.logic.Narrator;
 import shared.logic.Player;
+import shared.logic.PlayerList;
 import shared.logic.exceptions.UnsupportedMethodException;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
@@ -65,8 +66,12 @@ public class TextController implements Controller {
         texter.text(a, action + " " +  b.getName() + " " + teamName, ASYNC);
     }
     
-    public void cancelNightTarget(Player a, Player b, String action) {
-		texter.text(a, action + " " +  b.getName(), ASYNC);
+    public void cancelNightTarget(Player a, PlayerList b, String action) {
+    	String text = action;
+    	for(Player x: b){
+    		text += (" " + x.getName());
+    	}
+		texter.text(a, text, ASYNC);
 	}
 
 	public void clearTargets(Player p){

@@ -291,7 +291,7 @@ public class NarratorService extends Service{
 			PlayerList targets = PlayerList.FromNames(target_s, local);
 			int ability = owner.parseAbility(ability_s);
 			if(owner.getActions().isTargeting(targets, ability))
-				owner.cancelTarget(targets.getFirst(), ability);
+				owner.cancelTarget(targets, ability);
 			else
 				owner.setTarget(ability, null, targets.getArray());
 		}
