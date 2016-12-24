@@ -7,7 +7,7 @@ import java.util.HashMap;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
-
+import shared.event.SelectionMessage;
 import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -17,6 +17,7 @@ import shared.logic.support.Constants;
 import shared.logic.support.Faction;
 import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.action.Action;
 import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
@@ -33,6 +34,7 @@ public abstract class StateObject {
 	public static final String GRAVEYARD = "Graveyard";
 	public static final String ROLEINFO = "RoleInfo";
 	public static final String ACTIVETEAMS = "ActiveTeams";
+	public static final String ACTIONS = "Actions";
 	
 	public static final String message = "message";
 	public static final String gameID = "gameID";
@@ -176,6 +178,37 @@ public abstract class StateObject {
 		
 		state.getJSONArray(StateObject.type).put(StateObject.activeTeams);
 		state.put(StateObject.activeTeams, activeTeams);
+	}
+	
+	private void addJActions(Player p, JSONObject state) throws JSONException{
+		ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
+		JSONArray jActions = new JSONArray();
+		
+		JSONObject jAction;
+		JSONArray jPlayerNames;
+		String text;
+		SelectionMessage sm;
+		for(Action a: actions){
+			jAction = new JSONObject();
+			sm = new SelectionMessage(p, true, false);
+			jPlayerNames = new JSONArray();
+			
+			subset.clear();
+			subset.add(a);
+			text = "You will " + sm.add(p.getRole().getPhrase(subset)).access(p, true) + ".";
+			jAction.put("text", text);
+			jAction.put("command", p.reverseParse(a.ability));
+			
+			for(Player target: a.getTargets())
+				jPlayerNames.put(target.getName());
+			jAction.put("playerNames", jPlayerNames);
+			
+			jActions.put(jAction);
+		}
+		
+
+		state.getJSONArray(StateObject.type).put(StateObject.actions);
+		state.put(StateObject.actions, jActions);
 	}
 	
 	private void addJRules(JSONObject state) throws JSONException{
@@ -525,6 +558,8 @@ public abstract class StateObject {
 					addJRoleInfo(p, obj);
 				else if(state.equals(ACTIVETEAMS))
 					addJActiveTeams(obj);
+				else if(state.equals(ACTIONS))
+					addJActions(p, obj);
 				
 			}
 			for(String key: extraKeys.keySet()){
@@ -631,4 +666,6 @@ public abstract class StateObject {
 	public static final String addTeamRole = "addTeamRole";
 	public static final String removeTeamRole = "removeTeamRole";
 	public static final String simpleName = "simpleName";
+	
+	public static final String actions = "actions";
 }
