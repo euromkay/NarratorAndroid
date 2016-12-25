@@ -85,8 +85,8 @@ public class DayScreenController{
 		public void onNightTarget(Player owner){
 			dController.onNightTarget();
 		}
-		public void onNightTargetRemove(Player owner, PlayerList prev){
-			dController.onNightTargetRemove(owner.getName(), prev.getNamesToStringList());
+		public void onNightTargetRemove(Player owner, String command, PlayerList prev){
+			dController.onNightTargetRemove(owner.getName(), command, prev.getNamesToStringList());
 		}
 
 		public void onEndNight(Player p){
@@ -210,11 +210,11 @@ public class DayScreenController{
 		updateChatPanel();
 	}
 
-	public void onNightTargetRemove(String owner, ArrayList<String> prev) {
+	public void onNightTargetRemove(String owner, String command, ArrayList<String> prev) {
 		if (owner.equals(currentPlayer)){
 			dScreen.uncheck(prev);
 		}
-		if (!playerSelected())
+		if (!playerSelected() && manager.getCommand().equalsIgnoreCase(command))
 			dScreen.uncheck(owner);
 
 		updateChatPanel();

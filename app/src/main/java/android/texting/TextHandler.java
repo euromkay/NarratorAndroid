@@ -39,6 +39,10 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         }
     }
     
+    public boolean canEditGame(){
+    	return false;
+    }
+    
     public void setTexters(PlayerList texters){
     	this.texters = texters;
     }
@@ -377,7 +381,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     }
 
-    public void onNightTargetRemove(Player p, PlayerList r){
+    public void onNightTargetRemove(Player p, String command, PlayerList r){
 
     }
 
