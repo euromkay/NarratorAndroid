@@ -15,6 +15,7 @@ import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.exceptions.PlayerTargetingException;
+import shared.logic.support.Constants;
 import shared.logic.support.Random;
 import shared.roles.Framer;
 import shared.roles.Role;
@@ -45,7 +46,8 @@ public class GUIController implements Controller, TextInput{
         
         selectSlave(slave);
         actionPanelClick();
-        
+
+        swipeAbilityPanel(Constants.VOTE);
         try{
         	clickPlayer(target.getName()  );
         }catch(PlayerTargetingException e){

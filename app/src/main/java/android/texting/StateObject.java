@@ -120,6 +120,7 @@ public abstract class StateObject {
 		roleInfo.put(StateObject.roleName, p.getRoleName());
 		roleInfo.put(StateObject.roleBaseName, p.getRole().getClass().getSimpleName());
 		roleInfo.put(StateObject.roleDescription, p.getRoleInfo());
+		roleInfo.put(StateObject.breadCount, p.getRole().getBread());
 		
 		ArrayList<Team> knownTeams = shouldShowTeam(p);
 		boolean displayTeam = !knownTeams.isEmpty();
@@ -182,7 +183,8 @@ public abstract class StateObject {
 	
 	private void addJActions(Player p, JSONObject state) throws JSONException{
 		ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
-		JSONArray jActions = new JSONArray();
+		JSONObject jActions = new JSONObject();
+		JSONArray jActionList = new JSONArray();
 		
 		JSONObject jAction;
 		JSONArray jPlayerNames;
@@ -203,10 +205,12 @@ public abstract class StateObject {
 				jPlayerNames.put(target.getName());
 			jAction.put("playerNames", jPlayerNames);
 			
-			jActions.put(jAction);
+			jActionList.put(jAction);
 		}
 		
-
+		jActions.put("canAddAction", p.getActions().canAddAnotherAction());
+		jActions.put("actionList", jActionList);
+		
 		state.getJSONArray(StateObject.type).put(StateObject.actions);
 		state.put(StateObject.actions, jActions);
 	}
@@ -612,6 +616,7 @@ public abstract class StateObject {
 	public static final String roleTeam = "roleTeam";
 	public static final String roleDescription = "roleDescription";
 	public static final String roleKnowsTeam = "roleKnowsTeam";
+	public static final String breadCount = "breadCount";
 	
 	public static final String teamName = "teamName";
 	public static final String teamAllyColor = "teamAllyColor";
@@ -668,4 +673,12 @@ public abstract class StateObject {
 	public static final String simpleName = "simpleName";
 	
 	public static final String actions = "actions";
+	
+	public static final String submitAction = "submitAction";
+	public static final String oldAction    = "oldAction";
+	public static final String newAction    = "newAction";
+	public static final String targets      = "targets";
+	public static final String command      = "command";
+	public static final String option       = "option";
+	public static final String cancelAction = "cancelAction";
 }
