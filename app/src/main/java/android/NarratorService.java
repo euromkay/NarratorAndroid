@@ -841,6 +841,19 @@ public class NarratorService extends Service{
 		}
 	}
 
+	public JSONArray getGraveyard(){
+		if(server.IsLoggedIn()){
+			return gameState.graveYard;
+		}else{
+			try {
+				return StateObject.jGraveYard(local);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
 	public JSONObject getRoleInfo(String name) {
 		if(server.IsLoggedIn()){
 			return gameState.roleInfo;

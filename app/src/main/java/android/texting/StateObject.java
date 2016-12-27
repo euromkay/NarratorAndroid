@@ -146,6 +146,13 @@ public abstract class StateObject {
 	}
 	
 	private void addJGraveYard(JSONObject state) throws JSONException{
+		JSONArray graveYard = jGraveYard(n);
+
+		state.getJSONArray(StateObject.type).put(StateObject.graveYard);
+		state.put(StateObject.graveYard, graveYard);
+	}
+	
+	public static JSONArray jGraveYard(Narrator n) throws JSONException{
 		JSONArray graveYard = new JSONArray();
 		
 		JSONObject graveMarker;
@@ -153,7 +160,7 @@ public abstract class StateObject {
 		for(Player p: n.getDeadPlayers().sortByDeath()){
 			graveMarker = new JSONObject();
 			if(p.isCleaned())
-				color = "#FFFFFF";
+				color = Constants.A_CLEANED;
 			else
 				color = p.getTeam().getColor();
 			graveMarker.put(StateObject.color, color);
@@ -162,8 +169,8 @@ public abstract class StateObject {
 			graveYard.put(graveMarker);
 		}
 		
-		state.getJSONArray(StateObject.type).put(StateObject.graveYard);
-		state.put(StateObject.graveYard, graveYard);
+		
+		return graveYard;
 	}
 	
 	private void addJActiveTeams(JSONObject state) throws JSONException{
@@ -431,8 +438,13 @@ public abstract class StateObject {
 			jo.put(StateObject.playerActive, isActive(pi));
 			jo.put(StateObject.playerDescription, getDescription(pi));
 			jo.put(StateObject.playerColor, getColor(pi));
-			if(n.isStarted() && pi.getVoters() != null){
-				jo.put(StateObject.playerVote, pi.getVoters().size());
+			if(n.isStarted()){
+				if(pi.getVoters() != null){
+					jo.put(StateObject.playerVote, pi.getVoters().size());
+				}
+				if(n.isNight()){
+					jo.put(StateObject.endedNight, pi.endedNight());
+				}
 			}
 			jo.put("isComputer", pi.isComputer());
 			jo.put(StateObject.endedNight, pi.endedNight());
@@ -524,15 +536,10 @@ public abstract class StateObject {
 
 		if(n.isInProgress()){
 			PlayerList infoList = new PlayerList();
-			for (Player pi : n.getLivePlayers()) {
-				if (n.isDay()) {
-					//if (pi.getVoteTarget() == null)
-					infoList.add(pi);
-				} else {
-					if (!pi.endedNight())
-						infoList.add(pi);
-	
-				}
+			for (Player pi : n.getAllPlayers()) {
+
+				infoList.add(pi);
+				
 			}
 			playerLists.put("info", getJPlayerArray(infoList, "info"));
 		}
