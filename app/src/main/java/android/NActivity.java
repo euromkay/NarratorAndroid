@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.setup.ActivityCreateGame;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.texting.StateObject;
 import android.widget.TextView;
 
 import android.parse.Server;
@@ -21,28 +22,41 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import json.JSONObject;
 import shared.logic.Member;
 
 public abstract class NActivity extends FragmentActivity{
     public NarratorService ns;
 
-    public Server server;
-    protected boolean isStarted = false;
+    //protected boolean isStarted = false;
 	private ServiceConnection sC = null;
     protected void connectNarrator(final NarratorConnectListener ncl){
-    	server = new Server();
-    	if(isStarted)
-    		server.Start();
-		Intent i = new Intent(this, NarratorService.class);
+    	Intent i = new Intent(this, NarratorService.class);
 		startService(i);
 		if(ns != null)
 			ns.activity = this;
+
+		final NarratorConnectListener my_ncl = new NarratorConnectListener(){
+			public void onConnect(){
+				ncl.onConnect();
+				if(ns.server.IsLoggedIn())
+					ns.connectWebSocket(null);/*new NarratorConnectListener() {
+					public void onConnect() {
+						JSONObject jo = new JSONObject();
+						JUtils.put(jo, StateObject.message, StateObject.requestGameState);
+						//ns.sendMessage(jo);
+					}
+				});*/
+			}
+		};
+
 		if(sC == null) {
 			sC = new ServiceConnection() {
 				public void onServiceConnected(ComponentName className, IBinder binder) {
 					NarratorService.MyBinder b = (NarratorService.MyBinder) binder;
 					ns = b.getService();
-					ns.server = server;
+					if(ns.server == null)
+						ns.server = new Server(NActivity.this);
 					ns.activity = NActivity.this;
 					synchronized(ns){
 						if(ns.activity.getClass().equals(ActivityDay.class))
@@ -50,9 +64,9 @@ public abstract class NActivity extends FragmentActivity{
 						else if(ns.activity.getClass().equals(ActivityCreateGame.class))
 							ns.pendingCreate = false;
 					}
-					if (ncl != null)
-						ncl.onConnect();
 
+					ns.server.onConnected(my_ncl);
+					
 				}
 
 				public void onServiceDisconnected(ComponentName className) {
@@ -61,6 +75,8 @@ public abstract class NActivity extends FragmentActivity{
 			};
 			bindService(i, sC, Context.BIND_AUTO_CREATE);
 		}
+    	
+    	
 	}
     public void unbindNarrator(){
 		try {
@@ -75,7 +91,7 @@ public abstract class NActivity extends FragmentActivity{
     }
     
     public boolean networkCapable(){
-		return server.IsLoggedIn();
+		return ns.server.IsLoggedIn();
 	}
 
 	public interface NarratorConnectListener{
@@ -129,4 +145,7 @@ public abstract class NActivity extends FragmentActivity{
 
 	public RoleCardPopUp roleCardPopUp;
 	public abstract List<Member> setMembers();
+	public void onServerConnect(NarratorConnectListener ncl){
+		
+	}
 }

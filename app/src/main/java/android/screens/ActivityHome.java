@@ -57,23 +57,12 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_home);
 
-
+		
 		setText(R.id.home_roleCard);
 		setText(R.id.home_join);
 		setText(R.id.home_host);
 		setText(R.id.home_login_signup);
 		setText(R.id.home_tutorial);
-
-
-		//FirebaseCrash.report(new Exception("My first Android non-fatal error"));
-
-		if(isLoggedIn()){
-			TextView tv = (TextView) findViewById(R.id.home_login_signup);
-			tv.setText("Sign Out");
-		}else{
-
-		}
-
 
 		/*try {
 			final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -87,7 +76,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 				}
 			});
 		}catch(PackageManager.NameNotFoundException e){}*/
-		
+
 
 	}
 
@@ -105,18 +94,10 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		creating(b);
 	}
 
-	protected void onStart(){
-		super.onStart();
-		if(server != null)
-			server.Start();
-		else
-			isStarted = true;
-	}
-
 	protected void onStop(){
 		super.onStop();
-		if(server != null)
-			server.Stop();
+		if(ns.server != null)
+			ns.server.Stop();
 	}
 
 
@@ -134,9 +115,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	private boolean isLoggedIn(){
-		if(server == null)
-			server = new Server();
-		return server.IsLoggedIn();
+		return ns.server.IsLoggedIn();
 	}
 
 	public static int buildNumber(){
@@ -179,7 +158,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 			case R.id.home_login_signup:
 				if (isLoggedIn()){
-					server.LogOut();
+					ns.server.LogOut();
 					ns.mWebSocketClient.close();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
@@ -359,14 +338,10 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		super.onResume();
 		connectNarrator(new NarratorConnectListener() {
 			public void onConnect() {
-				if (server.IsLoggedIn())
-					ns.connectWebSocket(new NarratorConnectListener() {
-						public void onConnect() {
-						JSONObject jo = new JSONObject();
-						JUtils.put(jo, StateObject.message, StateObject.requestGameState);
-						ns.sendMessage(jo);
-						}
-					});
+				if (ns.server.IsLoggedIn()) {
+					TextView tv = (TextView) findViewById(R.id.home_login_signup);
+					tv.setText("Sign Out");
+				}
 			}
 		});
 

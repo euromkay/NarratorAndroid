@@ -9,6 +9,9 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import android.app.Activity;
@@ -22,6 +25,7 @@ import android.os.IBinder;
 import android.parse.Server;
 import android.setup.ActivityCreateGame;
 import android.setup.SetupManager;
+import android.support.annotation.NonNull;
 import android.texting.StateObject;
 import android.util.Log;
 import android.widget.Toast;
@@ -673,90 +677,105 @@ public class NarratorService extends Service{
 			return;
 		}
 
-		mWebSocketClient = new WebSocketClient(uri) {
-			public void onOpen(ServerHandshake unused) {
-				JSONObject jo = new JSONObject();
-		    	try {
-					jo.put("server", true);
-					jo.put("message", "greeting");
-					jo.put("sessionID", FirebaseInstanceId.getInstance().getToken());
-					sendMessage(jo);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				if(nc != null)
-					nc.onConnect();
-		    }
+		if (mWebSocketClient == null){
+			mWebSocketClient = new WebSocketClient(uri) {
+				public void onOpen(ServerHandshake unused) {
 
+					OnCompleteListener<GetTokenResult> x = new OnCompleteListener<GetTokenResult>() {
+						public void onComplete(@NonNull Task<GetTokenResult> task) {
+							if (task.isSuccessful()) {
+								JSONObject jo = new JSONObject();
 
-		    public void onMessage(String s) {
-				if(gameState == null)
-					gameState = new GameState(NarratorService.this);
-				while(s.substring(0,1).equals("\n")){
-					s = s.substring(1);
-				}
-		    	ArrayList<NodeListener> toRemove = new ArrayList<>();
-		    	for(NodeListener nL: nListeners){
-		    		if(nL.onMessageReceive(s))
-		    			toRemove.add(nL);
-		    	}
-		    	for(NodeListener nL: toRemove){
-		    		nListeners.remove(nL);
-		    	}
-		    	try{
-		    		JSONObject jo = new JSONObject(s);
-		    		if(hasBoolean("lobbyUpdate", jo))
-		    			return;
-		    		
-		    		if(hasBoolean("guiUpdate", jo)){
-		    			gameState.parse(jo);
-		    			activityCheck();
-		    		}else{
-		    			String message = jo.getString("message");
-		    			if(jo.has("chatReset"))
-		    				gameState.resetChat();
-		    			gameState.addToChat(message);
-		    			
-		    			//only reason gamestate is doing this is because it runOnMain
-		    			gameState.refreshChat(); 
-		    			
-		    		}
-		    			
-		    	}catch(JSONException e){
-					Log.e("NaratorService,", e.getLocalizedMessage());
-		    		e.printStackTrace();
-					throw new NullPointerException(e.getMessage());
-		    	}
-		    }
-
-
-		    public void onClose(int i, String s, boolean b) {
-		      Log.i("Websocket", "Closed because: " + s);
-		    }
-
-
-		    public void onError(Exception e) {
-				if (mWebSocketClient.getConnection().isClosing() || mWebSocketClient.getConnection().isClosed()) {
-					new Thread(new Runnable() {
-						public void run() {
-							if (activity != null) {
-								Toast.makeText(activity, "Reconnecting", Toast.LENGTH_LONG).show();
-							}
-							if (WAIT_TIME != 0)
 								try {
-									Thread.sleep(WAIT_TIME);
-								} catch (InterruptedException e) {
+									jo.put("server", true);
+									jo.put("message", "greeting");
+									jo.put("tokenID", FirebaseInstanceId.getInstance().getToken());
+									jo.put("sessionID", task.getResult().getToken());
+									Log.d("gcr", task.getResult().getToken());
+
+									Log.d("androidToken", FirebaseInstanceId.getInstance().getToken());
+									sendMessage(jo);
+								} catch (JSONException e) {
+									e.printStackTrace();
 								}
-							connectWebSocket(null);
+								if (nc != null)
+									nc.onConnect();
+							}
 						}
-					}).start();
+					};
+					server.getAuthToken(x);
 				}
-				if (WAIT_TIME != 0)
-					e.printStackTrace();
-				Log.i("Websocket", "Error " + e.getMessage());
-			}
-		};
-		mWebSocketClient.connect();
+
+				;
+
+				public void onMessage(String s) {
+					while (s.substring(0, 1).equals("\n")) {
+						s = s.substring(1);
+					}
+					ArrayList<NodeListener> toRemove = new ArrayList<>();
+					for (NodeListener nL : nListeners) {
+						if (nL.onMessageReceive(s))
+							toRemove.add(nL);
+					}
+					for (NodeListener nL : toRemove) {
+						nListeners.remove(nL);
+					}
+					try {
+						if (gameState == null)
+							gameState = new GameState(NarratorService.this);
+						JSONObject jo = new JSONObject(s);
+						if (hasBoolean("lobbyUpdate", jo))
+							return;
+
+						if (hasBoolean("guiUpdate", jo)) {
+							gameState.parse(jo);
+							if(gameState.seenMessage)
+								activityCheck();
+						} else if(gameState.seenMessage){
+							String message = jo.getString("message");
+							if (jo.has("chatReset"))
+								gameState.resetChat();
+							gameState.addToChat(message);
+
+							//only reason gamestate is doing this is because it runOnMain
+							gameState.refreshChat();
+
+						}
+
+					} catch (JSONException e) {
+						Log.e("NaratorService,", e.getLocalizedMessage());
+						e.printStackTrace();
+						throw new NullPointerException(e.getMessage());
+					}
+				}
+
+				public void onClose(int i, String s, boolean b) {
+					Log.i("Websocket", "Closed because: " + s);
+				}
+
+				public void onError(Exception e) {
+					if (mWebSocketClient.getConnection().isClosing() || mWebSocketClient.getConnection().isClosed()) {
+						new Thread(new Runnable() {
+							public void run() {
+								if (activity != null) {
+									Toast.makeText(activity, "Reconnecting", Toast.LENGTH_LONG).show();
+								}
+								if (WAIT_TIME != 0)
+									try {
+										Thread.sleep(WAIT_TIME);
+									} catch (InterruptedException e) {
+									}
+								connectWebSocket(null);
+							}
+						}).start();
+					}
+					if (WAIT_TIME != 0)
+						e.printStackTrace();
+					Log.i("Websocket", "Error " + e.getMessage());
+				}
+			};
+			mWebSocketClient.connect();
+		}
 	}
 	public GameState gameState;
 	public boolean pendingDay = false;
@@ -765,13 +784,13 @@ public class NarratorService extends Service{
 		if(gameState == null)
 			return;
 		if(gameState.isStarted){
-			if(activity.getClass() != ActivityDay.class && !pendingDay){
+			if((activity == null || activity.getClass() != ActivityDay.class) && !pendingDay){
 				Intent i = new Intent(activity, ActivityDay.class);
 				activity.startActivity(i);
 				pendingDay = true;
 			}
 		}else{
-			if(activity.getClass() != ActivityCreateGame.class && !pendingCreate){
+			if((activity == null || activity.getClass() != ActivityCreateGame.class) && !pendingCreate){
 				Intent i = new Intent(activity, ActivityCreateGame.class);
 				activity.startActivity(i);
 				pendingCreate = true;
@@ -955,5 +974,6 @@ public class NarratorService extends Service{
 			return Integer.toString(local.getPlayerByName(name).getVoteCount());
 		}
 	}
+	
 	
 }

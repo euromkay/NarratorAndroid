@@ -29,7 +29,7 @@ public class TextAdder extends BroadcastReceiver{
         	}catch(JSONException e){}
             return;
         }
-        if(manager.screen.server.IsLoggedIn())
+        if(manager.screen.ns.server.IsLoggedIn())
             return;
         PhoneNumber number = new PhoneNumber(intent.getExtras().getString("number"));
         String name = intent.getExtras().getString("message");

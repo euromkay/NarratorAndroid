@@ -176,7 +176,7 @@ public class DayManager{
 
 
 	public boolean isHost() {
-		if(dScreenController.dScreen.server.IsLoggedIn())
+		if(dScreenController.dScreen.ns.server.IsLoggedIn())
 			return false;
 		return true;
 	}
@@ -195,7 +195,7 @@ public class DayManager{
 
 		String sender = command[0];
 		message = message.substring(sender.length() + 1);//1 length for comma
-		if(sender.equals(" ") || !sender.equals(dScreenController.dScreen.server.GetCurrentUserName())){//everyone should do it.
+		if(sender.equals(" ") || !sender.equals(dScreenController.dScreen.ns.server.GetCurrentUserName())){//everyone should do it.
 			//ns.onRead(message, null);//nulll for chat manager, unused in this function, also its synch protected.
 		}
 	}

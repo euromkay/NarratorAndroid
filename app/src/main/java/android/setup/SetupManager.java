@@ -41,7 +41,7 @@ public class SetupManager {
     
     public SetupManager(ActivityCreateGame a, NarratorService ns) throws JSONException{
     	this.ns = ns;
-    	server = a.server;
+    	server = a.ns.server;
     	ns.setSetupManager(this);
         screen = a;
         listeners = new ArrayList<>();

@@ -143,7 +143,7 @@ implements
 				onPlayerClick(null);
 			onDrawerClosed(null);
 
-			if(!server.IsLoggedIn())
+			if(!ns.server.IsLoggedIn())
 				onClick(infoButton);
 
 		}
@@ -271,7 +271,7 @@ implements
 		String topInDrawer = JUtils.getString(playersInDrawer, 0);
 		if(onePersonActive()) {
 			toast("Press back to switch between general information and your information.");
-			if(server.IsLoggedIn())
+			if(ns.server.IsLoggedIn())
 				if(ns.gameState.isAlive){
 					GUIController.selectScreen(this, topInDrawer);
 			}else{

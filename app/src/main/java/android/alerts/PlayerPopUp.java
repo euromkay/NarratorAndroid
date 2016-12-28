@@ -79,7 +79,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
         ListAdapter adapter = getAdapter();
         lv.setAdapter(adapter);
-        if (activity.server.IsLoggedIn()) {
+        if (activity.ns.server.IsLoggedIn()) {
             mainView.findViewById(R.id.addPlayerContent).setVisibility(View.GONE);
             mainView.findViewById(R.id.addPlayerConfirm).setVisibility(View.GONE);
         }else {
@@ -116,7 +116,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
     public void onItemClick(AdapterView<?> unusedA, View clickedItem, int position, long unusedL){
         
-        if(activity.server.IsLoggedIn()){
+        if(activity.ns.server.IsLoggedIn()){
         	return;
         } 
         Player clicked = null;
@@ -155,7 +155,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
 
 
     public void onClick(View v) {
-    	if(activity.server.IsLoggedIn())
+    	if(activity.ns.server.IsLoggedIn())
     		return;
         EditText et = (EditText) mainView.findViewById(R.id.addPlayerContent);
         String name = et.getText().toString();

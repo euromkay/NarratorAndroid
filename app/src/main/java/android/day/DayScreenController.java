@@ -29,7 +29,7 @@ public class DayScreenController{
 		this.dScreen = dScreen;
 		this.manager = manager;
 
-		if(!dScreen.server.IsLoggedIn()){
+		if(!dScreen.ns.server.IsLoggedIn()){
 			manager.ns.local.addListener(new NarratorLocalListener(this));
 		}
 		//setNarratorInfoView();
@@ -282,7 +282,7 @@ public class DayScreenController{
 	}
 
 	public void setDayLabel(){
-		if(dScreen.server.IsLoggedIn())
+		if(dScreen.ns.server.IsLoggedIn())
 			((TextView) dScreen.findViewById(R.id.day_title)).setText(manager.ns.gameState.dayLabel);
 		else
 			dScreen.setDayLabel(manager.ns.isDay(), this.manager.ns.local.getDayNumber());
@@ -290,8 +290,8 @@ public class DayScreenController{
 
 	private void setupPlayerDrawer() {
 		JSONArray jArray = new JSONArray();
-		if(dScreen.server.IsLoggedIn()){
-			jArray.put(dScreen.server.GetCurrentUserName());
+		if(dScreen.ns.server.IsLoggedIn()){
+			jArray.put(dScreen.ns.server.GetCurrentUserName());
 		}else{
 			Narrator n = manager.ns.local;
 			PlayerList list;

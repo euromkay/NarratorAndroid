@@ -68,17 +68,19 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 	
 	public void onBackPressed() {
-		if(server.IsLoggedIn()){
-			ns.refresh();
+
+		moveTaskToBack(true);
+		if(ns.server.IsLoggedIn()){
+			/*ns.refresh();
 			JSONObject jo = new JSONObject();
 			try {
 				jo.put(StateObject.message, StateObject.leaveGame);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			ns.sendMessage(jo);
+			ns.sendMessage(jo);*/
 		}
-		finish();
+		//finish();
 	}
 
 	public void onPause(){
@@ -163,13 +165,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		Button startGameButton = (Button) findViewById(R.id.roles_startGame);
 		if(manager.isHost())
 			startGameButton.setOnClickListener(this);
-		else if (server.IsLoggedIn()) {
+		else if (ns.server.IsLoggedIn()) {
 			startGameButton.setOnClickListener(this);
 			startGameButton.setText("Exit");
 		}else
 			startGameButton.setVisibility(View.GONE);
 
-		if(server.IsLoggedIn()) {
+		if(ns.server.IsLoggedIn()) {
 			chatButton.setOnClickListener(this);
 			SetFont(R.id.create_toChat, this, false);
 		}else
@@ -268,7 +270,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
     private void setHostCode(){
-		if(server.IsLoggedIn()) {
+		if(ns.server.IsLoggedIn()) {
 			//rolesLeftTV.setText("Host Code: " + manager.ns.getIp().replace("", "*"));
 		}else
 			rolesLeftTV.setVisibility(View.GONE);
@@ -409,7 +411,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		ada.setLayoutID(R.layout.create_roles_left_item);
 		rolesLV.setAdapter(ada);
 		
-		if(chatVisible() && server.IsLoggedIn())
+		if(chatVisible() && ns.server.IsLoggedIn())
 			rolesLV.setVisibility(View.GONE);
 		else
 			rolesLV.setVisibility(View.VISIBLE);
@@ -418,7 +420,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	private EditText chatET;
 	private TextView chatTV;
 	private void sendMessage(){
-		if(!server.IsLoggedIn())
+		if(!ns.server.IsLoggedIn())
 			return;
 
 		String message = chatET.getText().toString();
@@ -430,7 +432,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	public void updateChat(){
-		if(!server.IsLoggedIn())
+		if(!ns.server.IsLoggedIn())
 			return;
 
 		String events = ns.getChat();
@@ -518,7 +520,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				return;
 			
             case R.id.roles_startGame:
-				if (server.IsLoggedIn()){
+				if (ns.server.IsLoggedIn()){
 					JSONObject jo = new JSONObject();
 					if(ns.isHost()){
 						ns.put(jo, StateObject.message, StateObject.startGame);

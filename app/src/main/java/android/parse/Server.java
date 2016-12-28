@@ -3,24 +3,25 @@ package android.parse;
 
 import java.util.HashMap;
 
-import json.JSONException;
-import json.JSONObject;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 import android.JUtils;
+import android.NActivity;
+import android.NActivity.NarratorConnectListener;
 import android.SuccessListener;
 import android.screens.ActivityHome;
 import android.support.annotation.NonNull;
 import android.texting.StateObject;
+import json.JSONException;
+import json.JSONObject;
 
 
-@SuppressWarnings("unused")
 public class Server {
 
     public interface LoginListener{
@@ -34,22 +35,49 @@ public class Server {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    public void Init(){
-    	if(mAuth != null)
-    		return;
+    private boolean started;
+    public Server(NActivity nActivity){
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+            	
+            	synchronized(Server.this){
+            		started = true;
+            		if(ncl != null){
+            			ncl.onConnect();
+                        ncl = null;
+            		}
+            	}
+            	
+                //FirebaseUser user = firebaseAuth.getCurrentUser();
+                /*if (user != null) {
 
                 } else {
 
-                }
+                }*/
                 // ...
             }
         };
+        Start();
+        if(testing)
+        	mAuthListener.onAuthStateChanged(mAuth);
     }
+    
+    public static boolean testing = false;
+    
+    NarratorConnectListener ncl;
+    public synchronized void onConnected(NarratorConnectListener ncl) {
+    	if(started)
+    		ncl.onConnect();
+    	else
+    		this.ncl = ncl;
+	}
+
+    public void getAuthToken(OnCompleteListener<GetTokenResult> x){
+        Task<GetTokenResult> task = mAuth.getCurrentUser().getToken(true);
+        task.addOnCompleteListener(x);
+    }
+
     
     public void Destroy(){
     	mAuth = null;
@@ -57,14 +85,10 @@ public class Server {
     }
 
     public boolean IsLoggedIn(){
-    	if(mAuth == null)
-    		Init();
         return mAuth.getCurrentUser() != null;
     }
 
     public void Start(){
-        if(mAuth == null)
-            Init();
         mAuth.addAuthStateListener(mAuthListener);
     }
 
@@ -85,8 +109,6 @@ public class Server {
             return;
         }
         username = username + "@sc2mafia.com";
-        if(mAuth == null)
-            Init();
         mAuth.signInWithEmailAndPassword(username, password)
                 .addOnCompleteListener(ah, new OnCompleteListener<AuthResult>() {
                     public void onComplete(@NonNull Task<AuthResult> task) {

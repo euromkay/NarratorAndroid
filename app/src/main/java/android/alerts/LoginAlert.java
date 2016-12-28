@@ -58,7 +58,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
                 String username = userET.getText().toString();
                 String password = pwET.getText().toString();
 
-                activity.server.Login(username, password, activity, this);
+                activity.ns.server.Login(username, password, activity, this);
                 break;
             case R.id.login_signup:
                 userET = (EditText) mainView.findViewById(R.id.login_username);
@@ -74,7 +74,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
                 password = pwET.getText().toString();
 
-                activity.server.SignUp(username, password, this, activity);
+                activity.ns.server.SignUp(username, password, this, activity);
                 break;
             case R.id.login_cancelLogin:
                 getDialog().cancel();
@@ -98,9 +98,7 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
         		return true;
         	}
         });
-        Server.Greet(activity);
-        try {
-        }catch(NullPointerException e){}
+        activity.ns.connectWebSocket(null);
     }
 
     public void onFailure(String message){

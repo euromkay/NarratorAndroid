@@ -29,10 +29,12 @@ public class GameState {
 		chat = new StringBuilder();
 	}
 
+
 	public boolean isHost, isDay, isSkipping, showButton;
 	
 	public int skipVoteCount, timer, mayorVoteCount;
 
+	public boolean seenMessage = false;
 	public boolean isStarted = false;
 	public boolean isOver = false;
 	public boolean isAlive = true;
@@ -56,9 +58,10 @@ public class GameState {
 	}
 	
 	public void parse(JSONObject jo) throws JSONException {
-		if(jo.has(StateObject.gameStart))
+		if(jo.has(StateObject.gameStart)) {
 			isStarted = jo.getBoolean(StateObject.gameStart);
-		if(jo.has(StateObject.isFinished))
+			seenMessage = true;
+		}if(jo.has(StateObject.isFinished))
 			isOver = jo.getBoolean(StateObject.isFinished);
 		if(jo.has(StateObject.host))
 			hostName = jo.getString(StateObject.host);

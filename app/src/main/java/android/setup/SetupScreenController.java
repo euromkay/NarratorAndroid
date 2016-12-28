@@ -169,7 +169,7 @@ public class SetupScreenController implements SetupListener, CompoundButton.OnCh
         if(name.equals("Randoms")){
         	rules = new JSONArray();
         	rules.put(Rules.DAY_START[0]);
-        	if(screen.server.IsLoggedIn()){
+        	if(screen.ns.server.IsLoggedIn()){
         		rules.put(Rules.DAY_LENGTH[0]);
         		rules.put(Rules.NIGHT_LENGTH[0]);
         	}
