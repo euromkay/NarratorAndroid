@@ -315,7 +315,7 @@
         android:layout_marginBottom="2dp"
         android:inputType="text"
         android:hint="Send Message"/>
-    <ScrollView
+    <ListView
         android:id="@+id/day_chatHolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -327,14 +327,8 @@
         android:orientation="vertical"
         android:scrollbars="vertical" >
 
-        <TextView
-            android:id="@+id/day_chatTV"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:textColor="@color/white"
-            android:textSize="12sp" />
-    </ScrollView>
+
+    </ListView>
 
 
 

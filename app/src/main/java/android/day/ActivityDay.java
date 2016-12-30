@@ -50,7 +50,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,9 +83,10 @@ implements
 	private IntentFilter iF;
 	private TextToSpeech speaker;
 	public ListView rolesLV, membersLV, actionLV, alliesLV;
-	public TextView membersTV, rolesTV, roleTV, roleInfoTV, alliesTV, commandTV, chatTV, playerLabelTV;
+	public TextView membersTV, rolesTV, roleTV, roleInfoTV, alliesTV, commandTV, playerLabelTV;
 	public Spinner framerSpinner;
-	private ScrollView chatLV;
+	private ListView chatLV;
+	public ChatAdapter chatAdapter;
 	public EditText chatET;
 	public Button button, chatButton, messagesButton, actionButton, infoButton;
 
@@ -166,7 +166,7 @@ implements
 		dayWindow.setDrawerListener(this);
 		dayWindow.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
-		chatLV         = (ScrollView) findViewById(R.id.day_chatHolder);
+		chatLV         = (ListView) findViewById(R.id.day_chatHolder);
 		chatET         = (EditText) findViewById(R.id.day_chatET);
 		chatET.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -192,7 +192,7 @@ implements
 		int color = ParseColor(this, R.color.trimmings);
 		roleInfoTV.setTextColor(color);
 
-		chatTV         = (TextView) findViewById(R.id.day_chatTV);
+		//chatTV         = (TextView) findViewById(R.id.day_chatTV);
 		playerLabelTV  = (TextView) findViewById(R.id.day_currentPlayerTV);
 
 		membersTV      = (TextView) findViewById(R.id.day_membersLabel);
@@ -411,8 +411,7 @@ implements
 				}
 			}catch(Exception|Error e) {
 				e.printStackTrace();
-				if (owner != null)
-					new OGIMessage(owner, e.getMessage());
+				new OGIMessage(owner, e.getMessage());
 			}
 		}
 	};
@@ -579,22 +578,28 @@ implements
 		chatET.setText("");
 	}
 
-	public void updateChatPanel(String text){
-		setChatPanelText(text);
+	public void updateChatPanel(){
+		setChatPanelText();
 
-		ScrollView chatHolder = (ScrollView) findViewById(R.id.day_chatHolder);
-		View cView = chatHolder.getChildAt(chatHolder.getChildCount() - 1);
-		int diff = (cView.getBottom()-(chatHolder.getHeight()+chatHolder.getScrollY()));
-		boolean isAtBottom = diff <= 0;
-
+		ListView chatHolder = (ListView) findViewById(R.id.day_chatHolder);
+		/*View cView = chatHolder.getChildAt(chatHolder.getChildCount() - 1);
+		int diff = (cView.getBottom()-(chatHolder.getHeight()+chatHolder.getScrollY()));*/
+		boolean isAtBottom = chatHolder.getLastVisiblePosition() == chatHolder.getAdapter().getCount() -1 &&
+				chatHolder.getChildAt(chatHolder.getChildCount() - 1).getBottom() <= chatHolder.getHeight();
 		if(isAtBottom)
 			pushChatDown();
 	}
 
 	private boolean progress = true;
-	private void setChatPanelText(String text){
+	private void setChatPanelText(){
+		if(chatAdapter == null){
+			chatAdapter = new ChatAdapter(manager.ns.getChat(), this);
+			chatLV.setAdapter(chatAdapter);
+		}
+		chatAdapter.notifyDataSetChanged();
+		/*chatLV.getAdapter().notifyDataSetChanged();
 		if(progress)
-			chatTV.setText(Html.fromHtml(text.replace("\n", "<br>")));
+			chatTV.setText(Html.fromHtml(text));*/
 	}
 
 	public void hideMessagePanel(){
@@ -782,11 +787,11 @@ implements
 	}
 
 	public void pushChatDown() {
-		chatLV.post(new Runnable() {
+		/*chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
 			}
-		});
+		});*/
 		
 	}
 
@@ -834,7 +839,6 @@ implements
 
 		showView(chatLV);
 
-		setChatPanelText(ns.getChat());
 		progress = false;
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
@@ -909,7 +913,7 @@ implements
 		ArrayList<String> checkedPlayers = getCheckedPlayers(0);
 		if(checkedPlayers.isEmpty())
 			return;
-		manager.command(checkedPlayers);
+		manager.command(true, checkedPlayers);
 	}
 
 	public void onNothingSelected(AdapterView<?> arg0) {

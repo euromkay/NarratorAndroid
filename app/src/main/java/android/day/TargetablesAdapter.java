@@ -135,7 +135,7 @@ public class TargetablesAdapter extends BaseAdapter implements OnItemClickListen
 				setCheckBox(cb2, false);
 				clicked.remove(new ClickAction(selected, cb1));
 				clicked.remove(new ClickAction(selected, cb2));
-				manager.command(selected, selected);
+				manager.command(false, selected, selected);
 			
 			}else if(cb2.isChecked()){
 				//clicked.remove(new ClickAction(selected, cb1));
@@ -219,7 +219,7 @@ public class TargetablesAdapter extends BaseAdapter implements OnItemClickListen
 		String newTarget = buttonToPlayer.get(buttonView);
 		ClickAction ca = new ClickAction(newTarget, (CheckBox) buttonView);
 		if(clicked.contains(ca)){
-			manager.command(ClickAction.getTargets(clicked));
+			manager.command(false, ClickAction.getTargets(clicked));
 			clicked.remove(ca);
 			return;
 		}
@@ -229,10 +229,10 @@ public class TargetablesAdapter extends BaseAdapter implements OnItemClickListen
 			if(clicked.size() > 2)
 				clicked.remove(0);
 			if(clicked.size() == 2){
-				manager.command(clicked.get(0).name, clicked.get(1).name);
+				manager.command(true, clicked.get(0).name, clicked.get(1).name);
 			}
 		}else if(getCheckBox(1, (View) buttonView.getParent()).getVisibility() == View.GONE){ //regular targets
-			manager.command(newTarget);
+			manager.command(true, newTarget);
 		}else if(manager.getCommand().equals(Witch.Control)){
 			String target = null;
 			String control = null;
@@ -254,7 +254,7 @@ public class TargetablesAdapter extends BaseAdapter implements OnItemClickListen
 				clicked.remove(toUncheck);
 			}
 			if(target != null && control != null){
-				manager.command(control, target);
+				manager.command(true, control, target);
 			}
 		}
 	}

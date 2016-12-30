@@ -7,24 +7,21 @@ import android.NActivity;
 import android.alerts.PlayerPopUp;
 import android.alerts.TeamBuilder;
 import android.alerts.TeamEditor;
-import android.content.Context;
+import android.day.ChatAdapter;
 import android.os.Bundle;
 import android.screens.ListingAdapter;
-import android.text.Html;
 import android.texting.StateObject;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import json.JSONArray;
 import json.JSONException;
@@ -38,6 +35,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 	public ListView cataLV, rolesLV, rolesListLV;
 	public TextView playersInGameTV, rolesLeftTV;
+	public ChatAdapter chatAdapter;
 
 	private Button chatButton;
 
@@ -101,7 +99,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		SetFont(R.id.create_chatButton, this, false);
 		
 		chatET = (EditText) findViewById(R.id.create_chatET);
-		chatTV = (TextView) findViewById(R.id.create_chatTV);
+		//chatTV = (TextView) findViewById(R.id.create_chatTV);
 		findViewById(R.id.roles_show_Players).setOnClickListener(this);
 		
 		findViewById(R.id.create_createTeamButton).setOnClickListener(this);
@@ -434,10 +432,16 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	public void updateChat(){
 		if(!ns.server.IsLoggedIn())
 			return;
+		ListView lv = (ListView) findViewById(R.id.create_chatHolder);
+		if(chatAdapter == null){
+			chatAdapter = new ChatAdapter(manager.ns.getChat(), this);
+			lv.setAdapter(chatAdapter);
+		}
+		chatAdapter.notifyDataSetChanged();
 
-		String events = ns.getChat();
+		/*String events = ns.getChat();
 		events = events.replace("\n", "<br>");
-		chatTV.setText(Html.fromHtml(events));
+		chatTV.setText(Html.fromHtml(events));*/
 		pushChatDown();
 	}
 
@@ -549,7 +553,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 	public void pushChatDown() {
 		boolean hasFocus = chatET.hasFocus();
-		final ScrollView chatLV = (ScrollView) findViewById(R.id.create_chatHolder);
+		/*final ListView chatLV = (ListView) findViewById(R.id.create_chatHolder);
 		chatLV.post(new Runnable() {
 			public void run() {
 				chatLV.fullScroll(View.FOCUS_DOWN);
@@ -562,7 +566,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 				InputMethodManager lManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 				lManager.showSoftInput(chatET, 0);
 			}
-		});
+		});*/
 	}
 
 

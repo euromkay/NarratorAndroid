@@ -14,6 +14,7 @@ import shared.logic.PlayerList;
 import shared.logic.templates.TestController;
 import shared.roles.Assassin;
 import shared.roles.Driver;
+import shared.roles.Framer;
 
 public class DayManager{
 
@@ -84,13 +85,13 @@ public class DayManager{
 
 	//from gui input
 	//garuntee that someone is selected
-	protected void command(String ... target){
+	protected void command(boolean targeting, String ... target){
 		ArrayList<String> targets = new ArrayList<>();
 		for(String s: target)
 			targets.add(s);
-		command(targets);
+		command(targeting, targets);
 	}
-	protected void command(ArrayList<String> targets){
+	protected void command(boolean targeting, ArrayList<String> targets){
 		if (!dScreenController.playerSelected() || (!ns.isDay() && ns.endedNight(currentPlayer)) || ns.isDead(currentPlayer)) {
 			dScreenController.updateActionPanel();
 			return;
@@ -134,7 +135,12 @@ public class DayManager{
 			}
 		}else {
 			String ability_s = dScreenController.dScreen.getSelectedAbility();
-			ns.target(currentPlayer, targets, ability_s);
+			String option;
+			if(ability_s.equalsIgnoreCase(Framer.FRAME))
+				option = dScreenController.dScreen.framerSpinner.getSelectedItem().toString();
+			else
+				option = null;
+			ns.target(currentPlayer, targets, ability_s, option, targeting);
 		}
 		
 	}

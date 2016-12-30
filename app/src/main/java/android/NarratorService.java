@@ -19,6 +19,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.day.ActivityDay;
+import android.day.ChatItem;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
@@ -33,6 +34,8 @@ import android.wifi.NodeListener;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import shared.event.ChatMessage;
+import shared.event.EventList;
 import shared.event.Message;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -285,10 +288,23 @@ public class NarratorService extends Service{
 		}
 	}
 
-	public void target(String owner_s, ArrayList<String> target_s, String ability_s){
+	public void target(String owner_s, ArrayList<String> target_s, String ability_s, String option, boolean submitAction){
+		ability_s = ability_s.toLowerCase();
 		if(server.IsLoggedIn()){
 			JSONObject jo = new JSONObject();
-			put(jo, StateObject.message, ability_s + " " + target_s);
+			if(!submitAction){
+				put(jo, StateObject.message, StateObject.cancelAction);
+			}else
+				put(jo, StateObject.message, StateObject.submitAction);
+			
+			if(ability_s.equals("give gun"))
+				ability_s = "gun";
+			else if(ability_s.equals("give armor")){
+				ability_s = "armor";
+			}
+			put(jo, StateObject.command, ability_s);
+			put(jo, StateObject.targets, target_s);
+			
 			sendMessage(jo);
 		}else{
 			Player owner = local.getPlayerByName(owner_s);
@@ -297,7 +313,7 @@ public class NarratorService extends Service{
 			if(owner.getActions().isTargeting(targets, ability))
 				owner.cancelTarget(targets, ability);
 			else
-				owner.setTarget(ability, null, targets.getArray());
+				owner.setTarget(ability, option, targets.getArray());
 		}
 	}
 
@@ -727,15 +743,23 @@ public class NarratorService extends Service{
 						if (hasBoolean("lobbyUpdate", jo))
 							return;
 
-						if (hasBoolean("guiUpdate", jo)) {
+						if (hasBoolean(StateObject.guiUpdate, jo)) {
 							gameState.parse(jo);
 							if(gameState.seenMessage)
 								activityCheck();
 						} else if(gameState.seenMessage){
-							String message = jo.getString("message");
-							if (jo.has("chatReset"))
+							ChatItem ci;
+							
+							try{
+								ci = new ChatItem(jo.getString(StateObject.message));
+							}catch(JSONException e){
+								String text   = jo.getString("text");
+								String sender = jo.getString("sender");
+								ci = new ChatItem(sender, text);
+							}
+							if (jo.has(StateObject.chatReset))
 								gameState.resetChat();
-							gameState.addToChat(message);
+							gameState.addToChat(ci);
 
 							//only reason gamestate is doing this is because it runOnMain
 							gameState.refreshChat();
@@ -765,6 +789,7 @@ public class NarratorService extends Service{
 										Thread.sleep(WAIT_TIME);
 									} catch (InterruptedException e) {
 									}
+								NarratorService.this.mWebSocketClient = null;
 								connectWebSocket(null);
 							}
 						}).start();
@@ -815,32 +840,71 @@ public class NarratorService extends Service{
 	public void removeNodeListener(NodeListener nL){
 		nListeners.remove(nL);
 	}
-	public String getChat() {
+	public ArrayList<ChatItem> getChat() {
 		if(server.IsLoggedIn()){
 			return gameState.getChat();
 		}else{
+			String accessKey;
 			if(local.isInProgress())
-				return local.getEventManager().getEvents(shared.event.Message.PUBLIC).access(shared.event.Message.PUBLIC, true);
+				accessKey = shared.event.Message.PUBLIC;
 			else
-				return local.getWinMessage().access(Message.PRIVATE, true) + "\n" +  
-						local.getEventManager().getEvents(shared.event.Message.PRIVATE).access(shared.event.Message.PRIVATE, true);
+				accessKey = shared.event.Message.PRIVATE;
+			EventList el = local.getEventManager().getEvents(accessKey);
+			ArrayList<ChatItem> ret = new ArrayList<>();
+
+			ChatItem ci;
+			ChatMessage cMessage;
+			for(Message cm : el){
+				if(cm instanceof ChatMessage){
+					cMessage = (ChatMessage) cm;
+					ci = new ChatItem(Message.accessHelper(cMessage.sender, accessKey, cm.getDay(), true));
+				}else
+					ci = new ChatItem(cm.access(accessKey, true));
+				ret.add(ci);
+			}
+
+			if(!local.isInProgress())
+				ret.add(new ChatItem(local.getWinMessage().access(Message.PRIVATE, true)));
+
+			return ret;
 		}
 	}
 
-	public String getEvents(String currentPlayer){
+	public ArrayList<ChatItem> getEvents(String currentPlayer){
 		if(server.IsLoggedIn()){
 			return gameState.getChat();
 		}else{
-			String text;
-			if (!local.isInProgress()){
-				text = local.getEventManager().getEvents(shared.event.Message.PRIVATE).access(shared.event.Message.PRIVATE, true);
-			}else if (currentPlayer == null)
-				text = local.getEventManager().getEvents(shared.event.Message.PUBLIC).access(shared.event.Message.PUBLIC, true);
-			else{
+
+			EventList eList;
+			String accessKey;
+			if(!local.isInProgress()) {
+				eList = local.getEventManager().getEvents(shared.event.Message.PRIVATE);
+				accessKey = shared.event.Message.PRIVATE;
+			}else if(currentPlayer == null) {
+				eList = local.getEventManager().getEvents(shared.event.Message.PUBLIC);
+				accessKey = shared.event.Message.PUBLIC;
+			}else {
 				Player p = local.getPlayerByName(currentPlayer);
-				text = p.getEvents().access(p, true);
+				eList = p.getEvents();
+				accessKey = currentPlayer;
 			}
-			return text;
+			
+			ArrayList<ChatItem> ret = new ArrayList<ChatItem>();
+			ChatItem ci;
+			ChatMessage cMessage;
+			for(Message cm : eList){
+				if(cm instanceof ChatMessage){
+					cMessage = (ChatMessage) cm;
+					ci = new ChatItem(Message.accessHelper(cMessage.sender, accessKey, cm.getDay(), true));
+				}else
+					ci = new ChatItem(cm.access(accessKey, true));
+				ret.add(ci);
+			}
+
+			if(!local.isInProgress())
+				ret.add(new ChatItem(local.getWinMessage().access(Message.PRIVATE, true)));
+
+			return ret;
 		}
 	}
 

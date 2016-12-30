@@ -419,7 +419,7 @@ public class DayScreenController{
 	}
 
 	public void updateChatPanel(){
-		dScreen.updateChatPanel(manager.ns.getEvents(currentPlayer));
+		dScreen.updateChatPanel();
 	}
 	
 	public void setButtonText(){

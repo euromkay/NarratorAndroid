@@ -598,8 +598,9 @@ public abstract class StateObject {
 	}
 	
 	
-	
-	public static final String guiUpdate = "guiUpdate";
+	public static final String guiUpdate   = "guiUpdate";
+	public static final String chatReset   = "chatReset";
+	public static final String messageType = "messageType";
 
 	public static final String dayLabel = "dayLabel";
 	

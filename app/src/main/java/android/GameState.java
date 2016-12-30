@@ -2,9 +2,13 @@ package android;
 
 import android.alerts.PlayerPopUp;
 import android.day.ActivityDay;
+import android.day.ChatItem;
 import android.setup.ActivityCreateGame;
 import android.texting.StateObject;
 import android.view.View;
+
+import java.util.ArrayList;
+
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -26,7 +30,7 @@ public class GameState {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		chat = new StringBuilder();
+		chat = new ArrayList<>();
 	}
 
 
@@ -40,21 +44,20 @@ public class GameState {
 	public boolean isAlive = true;
 	public boolean endedNight = false;
 	public String hostName, dayLabel;
-	private StringBuilder chat;
+	private ArrayList<ChatItem> chat;
 	public JSONObject rules, factions, roleInfo, players;
 	public JSONArray graveYard, rolesList, activeTeams;
 
-	public String getChat(){
-		return chat.toString();
+	public ArrayList<ChatItem> getChat(){
+		return chat;
 	}
 	
 	public void resetChat(){
-		chat = new StringBuilder();
+		chat.clear();
 	}
 	
-	public void addToChat(String s){
-		chat.append(s);
-		chat.append("\n");
+	public void addToChat(ChatItem ci){
+		chat.add(ci);
 	}
 	
 	public void parse(JSONObject jo) throws JSONException {
