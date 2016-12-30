@@ -405,12 +405,27 @@
 
     </View>
 
+
+
     <Button
-        android:id="@+id/roles_startGame"
+        android:id="@+id/roles_leaveGame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="@string/roles_leave"
+        android:textColor="@color/mafia"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/roles_startGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/roles_leaveGame"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:background="?android:attr/selectableItemBackground"
         android:text="@string/roles_start"
         android:textColor="@color/mafia"

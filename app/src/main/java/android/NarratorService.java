@@ -750,16 +750,24 @@ public class NarratorService extends Service{
 						} else if(gameState.seenMessage){
 							ChatItem ci;
 							
-							try{
-								ci = new ChatItem(jo.getString(StateObject.message));
-							}catch(JSONException e){
-								String text   = jo.getString("text");
-								String sender = jo.getString("sender");
-								ci = new ChatItem(sender, text);
-							}
 							if (jo.has(StateObject.chatReset))
 								gameState.resetChat();
-							gameState.addToChat(ci);
+							
+							JSONArray jArray = jo.getJSONArray(StateObject.message);
+							JSONObject jChat;
+							for(int i = 0; i < jArray.length(); i++){
+								try{
+									ci = new ChatItem(jArray.getString(i));
+								}catch(JSONException e){
+									jChat = jArray.getJSONObject(i);
+									String text   = jChat.getString("text");
+									String sender = jChat.getString("sender");
+									ci = new ChatItem(sender, text);
+								}
+								
+								gameState.addToChat(ci);
+							}
+							
 
 							//only reason gamestate is doing this is because it runOnMain
 							gameState.refreshChat();

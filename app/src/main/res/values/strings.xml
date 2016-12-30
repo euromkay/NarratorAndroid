@@ -67,6 +67,7 @@
     <string name = "roles_addRole">Add</string>
     <string name = "roles_deleteRole">Delete</string>
     <string name = "roles_start">Start</string>
+    <string name = "roles_leave">Leave</string>
     <string name = "roles_categoryTitle">Categories</string>
     <string name = "roles_rolesTitle">Available Roles</string>
     <string name = "roles_rolesListTitle">Roles List</string>
