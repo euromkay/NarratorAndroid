@@ -22,6 +22,7 @@ import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
+import shared.roles.RandomMember;
 import shared.roles.Role;
 import shared.roles.Witch;
 
@@ -44,6 +45,7 @@ public abstract class StateObject {
 	private Narrator n;
 	private FactionManager fManager; 
 	private HashMap<String, Object> extraKeys;
+	public boolean showHiddenRoles = false;
 	public StateObject(Narrator n, FactionManager fManager){
 		states = new ArrayList<String>();
 		this.n = n;
@@ -60,12 +62,21 @@ public abstract class StateObject {
 	private void addJRolesList(JSONObject state) throws JSONException{
 		JSONArray roles = new JSONArray();
 		JSONObject role;
+		JSONArray jPossibleRandoms;
+		RandomMember rm;
 		for(RoleTemplate r: n.getAllRoles()){
 			role = new JSONObject();
 			role.put(StateObject.roleType, r.getName());
 			
 			role.put(StateObject.color, r.getColor());
 			roles.put(role);
+			
+			if(showHiddenRoles && r.isRandom()){
+				rm = (RandomMember) r;
+				jPossibleRandoms = new JSONArray();
+				
+				role.put(StateObject.possibleRandoms, jPossibleRandoms);
+			}
 		}
 		state.getJSONArray(StateObject.type).put(StateObject.roles);
 		state.put(StateObject.roles, roles);
@@ -189,34 +200,44 @@ public abstract class StateObject {
 	}
 	
 	private void addJActions(Player p, JSONObject state) throws JSONException{
-		ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
 		JSONObject jActions = new JSONObject();
 		JSONArray jActionList = new JSONArray();
-		
-		JSONObject jAction;
-		JSONArray jPlayerNames;
-		String text;
-		SelectionMessage sm;
-		for(Action a: actions){
-			jAction = new JSONObject();
-			sm = new SelectionMessage(p, true, false);
-			jPlayerNames = new JSONArray();
+		if(p != null){
+			ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
 			
-			subset.clear();
-			subset.add(a);
-			text = "You will " + sm.add(p.getRole().getPhrase(subset)).access(p, true) + ".";
-			jAction.put("text", text);
-			jAction.put("command", p.reverseParse(a.ability).toLowerCase());
+
+			String text;
+			JSONObject jAction;
+			SelectionMessage sm;
+			JSONArray jPlayerNames;
 			
-			for(Player target: a.getTargets())
-				jPlayerNames.put(target.getName());
-			jAction.put("playerNames", jPlayerNames);
+			for(Action a: actions){
+				jAction = new JSONObject();
+				sm = new SelectionMessage(p, true, false);
+				jPlayerNames = new JSONArray();
+				
+				subset.clear();
+				subset.add(a);
+				text = "You will " + sm.add(p.getRole().getPhrase(subset)).access(p, true) + ".";
+				jAction.put("text", text);
+				jAction.put("command", p.reverseParse(a.ability).toLowerCase());
+				
+				for(Player target: a.getTargets())
+					jPlayerNames.put(target.getName());
+				jAction.put("playerNames", jPlayerNames);
+				
+				jActionList.put(jAction);
+			}
 			
-			jActionList.put(jAction);
+			
+			jActions.put("canAddAction", p.getActions().canAddAnotherAction());
+		}else{
+			jActions.put("canAddAction", false);
 		}
-		
-		jActions.put("canAddAction", p.getActions().canAddAnotherAction());
+
 		jActions.put("actionList", jActionList);
+		
+		
 		
 		state.getJSONArray(StateObject.type).put(StateObject.actions);
 		state.put(StateObject.actions, jActions);
@@ -631,6 +652,8 @@ public abstract class StateObject {
 	public static final String teamMembers = "teamMembers";
 	public static final String teamAllyName = "teamAllyName";
 	public static final String teamAllyRole = "teamAllyRole";
+	
+	public static final String possibleRandoms = "possibleRandoms";
 
 	public static final String gameStart = "gameStart";
 
@@ -649,6 +672,7 @@ public abstract class StateObject {
 	public static final String addRole = "addRole";
 	public static final String removeRole = "removeRole";
 	public static final String startGame = "startGame";
+	public static final String hiddenRandoms = "hiddenRandoms";
 	public static final String host = "host";
 	public static final String timer = "timer";
 	
