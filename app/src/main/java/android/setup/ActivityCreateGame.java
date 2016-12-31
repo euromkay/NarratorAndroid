@@ -161,14 +161,14 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 
 
 		Button startGameButton = (Button) findViewById(R.id.roles_startGame);
-		if(manager.isHost())
+		Button leaveGameButton = (Button) findViewById(R.id.roles_leaveGame);
+		if(manager.isHost()) {
 			startGameButton.setOnClickListener(this);
-		else if (ns.server.IsLoggedIn()) {
-			startGameButton.setOnClickListener(this);
-			startGameButton.setText("Exit");
-		}else
+			leaveGameButton.setOnClickListener(this);
+		}else {
 			startGameButton.setVisibility(View.GONE);
-
+			leaveGameButton.setOnClickListener(this);
+		}
 		if(ns.server.IsLoggedIn()) {
 			chatButton.setOnClickListener(this);
 			SetFont(R.id.create_toChat, this, false);
@@ -526,21 +526,25 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
             case R.id.roles_startGame:
 				if (ns.server.IsLoggedIn()){
 					JSONObject jo = new JSONObject();
-					if(ns.isHost()){
-						ns.put(jo, StateObject.message, StateObject.startGame);
-					}else{
-						ns.put(jo, StateObject.message, StateObject.leaveGame);
-					}
+					ns.put(jo, StateObject.message, StateObject.startGame);
+
 					ns.sendMessage(jo);
-					
-					if(!ns.isHost()){
-						if(manager != null)
-							manager.stopTexting();
-						unbindNarrator();
-						finish();
-					}
-				}else if (manager.isHost())
+				}else
 					manager.startGame(manager.getNarrator().getSeed());
+				break;
+
+			case R.id.roles_leaveGame:
+				if (ns.server.IsLoggedIn()){
+					JSONObject jo = new JSONObject();
+					ns.put(jo, StateObject.message, StateObject.leaveGame);
+					ns.sendMessage(jo);
+				}else{
+					if(manager != null)
+						manager.stopTexting();
+				}
+
+				unbindNarrator();
+				finish();
 				break;
 
             case R.id.roles_show_Players:

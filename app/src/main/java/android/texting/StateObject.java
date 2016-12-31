@@ -206,7 +206,7 @@ public abstract class StateObject {
 			subset.add(a);
 			text = "You will " + sm.add(p.getRole().getPhrase(subset)).access(p, true) + ".";
 			jAction.put("text", text);
-			jAction.put("command", p.reverseParse(a.ability));
+			jAction.put("command", p.reverseParse(a.ability).toLowerCase());
 			
 			for(Player target: a.getTargets())
 				jPlayerNames.put(target.getName());
