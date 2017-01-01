@@ -80,7 +80,7 @@ public abstract class StateObject {
 					m = rm.list.get(key);
 					subRole = new JSONObject();
 					subRole.put(StateObject.roleType, m.getName());
-					subRole.put(StateObject.color, r.getColor());
+					subRole.put(StateObject.color, m.getColor());
 					subRole.put(StateObject.key, key);
 					jPossibleRandoms.put(subRole);
 					
