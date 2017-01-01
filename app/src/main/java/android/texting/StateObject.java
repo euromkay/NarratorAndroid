@@ -61,7 +61,7 @@ public abstract class StateObject {
 	
 	private void addJRolesList(JSONObject state) throws JSONException{
 		JSONArray roles = new JSONArray();
-		JSONObject role;
+		JSONObject role, subRole;
 		JSONArray jPossibleRandoms;
 		RandomMember rm;
 		for(RoleTemplate r: n.getAllRoles()){
@@ -69,14 +69,35 @@ public abstract class StateObject {
 			role.put(StateObject.roleType, r.getName());
 			
 			role.put(StateObject.color, r.getColor());
-			roles.put(role);
 			
 			if(showHiddenRoles && r.isRandom()){
+				role.put(StateObject.roleID, r.getID());
 				rm = (RandomMember) r;
 				jPossibleRandoms = new JSONArray();
 				
+				Member m;
+				for(String key: rm.list.keySet()){
+					m = rm.list.get(key);
+					subRole = new JSONObject();
+					subRole.put(StateObject.roleType, m.getName());
+					subRole.put(StateObject.color, r.getColor());
+					subRole.put(StateObject.key, key);
+					jPossibleRandoms.put(subRole);
+					
+				}
+				
+				m = rm.getSpawn();
+				if(m != null){
+					subRole = new JSONObject();
+					subRole.put(StateObject.roleType, m.getName());
+					subRole.put(StateObject.color, r.getColor());
+					role.put(StateObject.spawn, subRole);
+				}
+
 				role.put(StateObject.possibleRandoms, jPossibleRandoms);
 			}
+
+			roles.put(role);
 		}
 		state.getJSONArray(StateObject.type).put(StateObject.roles);
 		state.put(StateObject.roles, roles);
@@ -647,17 +668,21 @@ public abstract class StateObject {
 	public static final String roleKnowsTeam = "roleKnowsTeam";
 	public static final String breadCount = "breadCount";
 	
-	public static final String teamName = "teamName";
+	public static final String teamName      = "teamName";
 	public static final String teamAllyColor = "teamAllyColor";
-	public static final String teamMembers = "teamMembers";
-	public static final String teamAllyName = "teamAllyName";
-	public static final String teamAllyRole = "teamAllyRole";
+	public static final String teamMembers   = "teamMembers";
+	public static final String teamAllyName  = "teamAllyName";
+	public static final String teamAllyRole  = "teamAllyRole";
 	
 	public static final String possibleRandoms = "possibleRandoms";
+	public static final String spawn           = "spawn";
+	public static final String roleID          = "roleID";
+	public static final String setRandom       = "setRandom";
+	public static final String key             = "key";
 
 	public static final String gameStart = "gameStart";
 
-	public static final String isDay = "isDay";
+	public static final String isDay      = "isDay";
 	public static final String isObserver = "isObserver";
 
 	public static final String showButton = "showButton";
