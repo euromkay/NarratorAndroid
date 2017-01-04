@@ -244,8 +244,12 @@ public abstract class StateObject {
 				jAction.put("text", text);
 				jAction.put("command", p.reverseParse(a.ability).toLowerCase());
 				
-				for(Player target: a.getTargets())
-					jPlayerNames.put(target.getName());
+				if(p.is(Spy.class) && a.ability == Spy.MAIN_ABILITY){
+					jPlayerNames.put(a.getOption());
+				}else{
+					for(Player target: a.getTargets())
+						jPlayerNames.put(target.getName());
+				}
 				jAction.put("playerNames", jPlayerNames);
 				
 				jActionList.put(jAction);
