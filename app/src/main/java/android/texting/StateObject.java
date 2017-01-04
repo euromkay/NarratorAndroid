@@ -24,6 +24,7 @@ import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
 import shared.roles.RandomMember;
 import shared.roles.Role;
+import shared.roles.Spy;
 import shared.roles.Witch;
 
 public abstract class StateObject {
@@ -544,18 +545,22 @@ public abstract class StateObject {
 					for(String s_ability: abilities){
 						int ability = p.parseAbility(s_ability);
 						PlayerList acceptableTargets = p.getAcceptableTargets(ability);
-						if(acceptableTargets.isEmpty())
-							continue;
-						
 						JSONArray names;
-						if(s_ability.equals(Witch.Control)){
-							Player control = p.getTargets(Role.MAIN_ABILITY).getFirst();
-							Player target = p.getTargets(Role.MAIN_ABILITY).getLast();
-							PlayerList controlList = control == null ? new PlayerList() : Player.list(control);
-							PlayerList targetList = target == null ? new PlayerList() : Player.list(target);
-							names = getJPlayerArray(acceptableTargets, new PlayerList[]{targetList, controlList}, s_ability);;
+						if(ability == Role.MAIN_ABILITY && p.is(Spy.class)){
+							names = new JSONArray();
 						}else{
-							names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
+							if(acceptableTargets.isEmpty())
+								continue;
+							
+							if(s_ability.equals(Witch.Control)){
+								Player control = p.getTargets(Role.MAIN_ABILITY).getFirst();
+								Player target = p.getTargets(Role.MAIN_ABILITY).getLast();
+								PlayerList controlList = control == null ? new PlayerList() : Player.list(control);
+								PlayerList targetList = target == null ? new PlayerList() : Player.list(target);
+								names = getJPlayerArray(acceptableTargets, new PlayerList[]{targetList, controlList}, s_ability);;
+							}else{
+								names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
+							}
 						}
 						playerLists.put(s_ability, names);
 						playerLists.getJSONArray(StateObject.type).put(s_ability);
@@ -682,8 +687,9 @@ public abstract class StateObject {
 
 	public static final String gameStart = "gameStart";
 
-	public static final String isDay      = "isDay";
-	public static final String isObserver = "isObserver";
+	public static final String isDay        = "isDay";
+	public static final String isObserver   = "isObserver";
+	public static final String hasDayAction = "hasDayAction";
 
 	public static final String showButton = "showButton";
 
