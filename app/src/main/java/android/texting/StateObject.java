@@ -232,7 +232,7 @@ public abstract class StateObject {
 			JSONObject jAction;
 			SelectionMessage sm;
 			JSONArray jPlayerNames;
-			
+			Team t;
 			for(Action a: actions){
 				jAction = new JSONObject();
 				sm = new SelectionMessage(p, true, false);
@@ -245,7 +245,8 @@ public abstract class StateObject {
 				jAction.put("command", p.reverseParse(a.ability).toLowerCase());
 				
 				if(p.is(Spy.class) && a.ability == Spy.MAIN_ABILITY){
-					jPlayerNames.put(a.getOption());
+					t = n.getTeam(a.getOption());
+					jPlayerNames.put(t.getName());
 				}else{
 					for(Player target: a.getTargets())
 						jPlayerNames.put(target.getName());
