@@ -71,7 +71,7 @@ public abstract class StateObject {
 			
 			role.put(StateObject.color, r.getColor());
 			
-			if(showHiddenRoles && r.isRandom()){
+			if(r.isRandom()){
 				role.put(StateObject.roleID, r.getID());
 				rm = (RandomMember) r;
 				jPossibleRandoms = new JSONArray();
@@ -88,7 +88,7 @@ public abstract class StateObject {
 				}
 				
 				m = rm.getSpawn();
-				if(m != null){
+				if(m != null && showHiddenRoles){
 					subRole = new JSONObject();
 					subRole.put(StateObject.roleType, m.getName());
 					subRole.put(StateObject.color, r.getColor());
@@ -358,6 +358,19 @@ public abstract class StateObject {
 	 * isEditable  -> can editFaction
 	 */
 	
+	private void addMembersToJRandomRole(JSONObject jRandomRole, RandomMember rr) throws JSONException{
+		JSONArray jMembers = new JSONArray();
+		JSONObject jMemb;
+		for(Member rm: rr.list.values()){
+			jMemb = new JSONObject();
+			jMemb.put("name", rm.getName());
+			jMemb.put("color", rm.getColor());
+			
+			jMembers.put(jMemb);
+		}
+		jRandomRole.put("members", jMembers);
+	}
+	
 	private void addJFactions(JSONObject state) throws JSONException{
 		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray(), availableClasses;
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
@@ -393,6 +406,8 @@ public abstract class StateObject {
 				jRT.put("class_type", rt.getClasses());
 				if(!rt.isRandom()){
 					jRT.put("simpleName", ((Member) rt).getSimpleName());
+				}else{
+					addMembersToJRandomRole(jRT, (RandomMember) rt);
 				}
 				jFactions.put(rt.getName() + rt.getColor(), jRT);
 				fMembers.put(jRT);
