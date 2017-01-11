@@ -19,10 +19,12 @@ import android.content.IntentFilter;
 import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.screens.ListingAdapter;
 import android.screens.MembersAdapter;
 import android.screens.SimpleGestureFilter;
 import android.screens.SimpleGestureFilter.SimpleGestureListener;
+import android.setup.ActivityCreateGame;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -53,6 +55,9 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -989,5 +994,9 @@ implements
 			unregisterReceiver(intentReceiver);
 		}catch(IllegalArgumentException e){}
 		super.onDestroy();
+	}
+
+	public void onAuthStateChanged(FirebaseAuth fa){
+		super.nonHomeAuthChange(fa);
 	}
 }

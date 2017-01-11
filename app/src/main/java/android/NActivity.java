@@ -10,22 +10,26 @@ import android.day.ActivityDay;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.setup.ActivityCreateGame;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.texting.StateObject;
+import android.util.Log;
 import android.widget.TextView;
 
 import android.parse.Server;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
 import json.JSONObject;
 import shared.logic.Member;
 
-public abstract class NActivity extends FragmentActivity{
+public abstract class NActivity extends FragmentActivity implements FirebaseAuth.AuthStateListener{
     public NarratorService ns;
 
     //protected boolean isStarted = false;
@@ -40,7 +44,7 @@ public abstract class NActivity extends FragmentActivity{
 			public void onConnect(){
 				ncl.onConnect();
 				if(ns.server.IsLoggedIn())
-					ns.connectWebSocket(null);/*new NarratorConnectListener() {
+					ns.connectWebSocket();/*new NarratorConnectListener() {
 					public void onConnect() {
 						JSONObject jo = new JSONObject();
 						JUtils.put(jo, StateObject.message, StateObject.requestGameState);
@@ -55,13 +59,14 @@ public abstract class NActivity extends FragmentActivity{
 				public void onServiceConnected(ComponentName className, IBinder binder) {
 					NarratorService.MyBinder b = (NarratorService.MyBinder) binder;
 					ns = b.getService();
-					if(ns.server == null)
-						ns.server = new Server(NActivity.this);
+					if(ns.server != null)
+						ns.server.Destroy();
+					ns.server = new Server(NActivity.this);
 					ns.activity = NActivity.this;
 					synchronized(ns){
-						if(ns.activity.getClass().equals(ActivityDay.class))
+						if(ns.activity instanceof ActivityDay)
 							ns.pendingDay = false;
-						else if(ns.activity.getClass().equals(ActivityCreateGame.class))
+						else if(ns.activity instanceof ActivityCreateGame)
 							ns.pendingCreate = false;
 					}
 
@@ -147,5 +152,31 @@ public abstract class NActivity extends FragmentActivity{
 	public abstract List<Member> setMembers();
 	public void onServerConnect(NarratorConnectListener ncl){
 		
+	}
+
+	public void nonHomeAuthChange(FirebaseAuth fa){
+		//this method should only be called when logged in
+		if(fa.getCurrentUser() == null || ns.server.getStatus() == Server.LOGGED_IN)
+			return;
+
+
+		Log.d("myAuth", fa.toString());
+
+
+		toast("Strangely, you have been logged out!");
+
+		final Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
+			public void run() {
+				NActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						NActivity.this.finish();
+					}
+				});
+			}
+		}, 3000);
+		Log.d("myAuth", "Auth changed caused this activity to terminate");
+
+		//need to kill touch events
 	}
 }

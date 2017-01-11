@@ -84,6 +84,7 @@
         android:paddingLeft="30dp"
         android:paddingRight="30dp"
         android:textColor="@color/black"
+        android:visibility="invisible"
         android:layout_alignTop="@+id/home_host"
         android:layout_toRightOf="@id/home_roleCard"
         android:layout_toEndOf="@id/home_roleCard" />
@@ -100,6 +101,7 @@
         android:textColor="@color/black"
         android:layout_above="@+id/button"
         android:layout_alignParentLeft="true"
+        android:visibility="invisible"
         android:layout_alignParentStart="true" />
 
     <TextView

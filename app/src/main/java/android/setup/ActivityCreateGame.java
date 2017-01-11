@@ -9,8 +9,10 @@ import android.alerts.TeamBuilder;
 import android.alerts.TeamEditor;
 import android.day.ChatAdapter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.screens.ListingAdapter;
 import android.texting.StateObject;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,6 +25,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -80,6 +85,13 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 		}
 		//finish();
 	}
+
+
+
+	public void onAuthStateChanged(FirebaseAuth fa){
+		super.nonHomeAuthChange(fa);
+	}
+
 
 	public void onPause(){
 		if(manager != null)

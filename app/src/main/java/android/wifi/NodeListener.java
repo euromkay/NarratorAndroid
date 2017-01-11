@@ -1,5 +1,8 @@
 package android.wifi;
 
+import json.JSONException;
+import json.JSONObject;
+
 public interface NodeListener {
-	boolean onMessageReceive(String message);
+	boolean onMessageReceive(JSONObject jo) throws JSONException;
 }

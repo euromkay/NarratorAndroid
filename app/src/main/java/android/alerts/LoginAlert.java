@@ -3,13 +3,16 @@ package android.alerts;
 
 import android.JUtils;
 import android.SuccessListener;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.parse.Server;
 import android.screens.ActivityHome;
 import android.texting.StateObject;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +20,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.wifi.NodeListener;
 
+import json.JSONException;
 import json.JSONObject;
 
 import voss.narrator.R;
@@ -25,9 +29,17 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
 
     public View mainView;
     private ActivityHome activity;
-    public void setServer(ActivityHome a){
-        activity = a;
+
+    public void onAttach(Context a){
+        super.onAttach(a);
+        activity = (ActivityHome) a;
     }
+
+    public void onAttach(Activity a){
+        super.onAttach(a);
+        activity = (ActivityHome) a;
+    }
+
 
     public EditText userET, pwET;
 
@@ -83,22 +95,38 @@ public class LoginAlert extends DialogFragment implements View.OnClickListener, 
     }
 
     public void onSuccess(){
+        Log.d("myAuth", "login was successful");
         activity.toast("Successfully logged in");
         Button v = (Button) activity.findViewById(R.id.home_login_signup);
         v.setText("Signout");
+        activity.findViewById(R.id.home_join).setVisibility(View.INVISIBLE);
+        activity.findViewById(R.id.home_host).setVisibility(View.INVISIBLE);
         activity.ns.addNodeListener(new NodeListener(){
-        	
-        	public boolean onMessageReceive(String message){
-        		try{
-        			LoginAlert.this.getDialog().cancel();
-                    JSONObject jo = new JSONObject();
-                    JUtils.put(jo, StateObject.message, StateObject.requestGameState);
-                    //activity.ns.sendMessage(jo);
-        		}catch(NullPointerException e){}
-        		return true;
+        	public boolean onMessageReceive(JSONObject jo ) throws JSONException {
+                Log.d("myAuth", jo.toString());
+                Runnable r;
+
+                if(jo.has("lobbyUpdate") && jo.getBoolean("lobbyUpdate")){
+                    r = new Runnable(){
+                        public void run(){
+                            activity.findViewById(R.id.home_join).setVisibility(View.VISIBLE);
+                            activity.findViewById(R.id.home_host).setVisibility(View.VISIBLE);
+                        }
+                    };
+                }else{
+                    r = new Runnable(){
+                        public void run(){
+                            activity.toast("Loading game!");
+                        }
+                    };
+                    activity.toast("Loading game!");
+                }
+                activity.runOnUiThread(r);
+                return true;
         	}
         });
-        activity.ns.connectWebSocket(null);
+        activity.ns.connectWebSocket();
+        getDialog().cancel();
     }
 
     public void onFailure(String message){

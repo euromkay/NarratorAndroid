@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.RunnableFuture;
 
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
@@ -43,6 +44,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.wifi.NodeListener;
+
+import com.google.firebase.auth.FirebaseAuth;
+
+import json.JSONException;
 import json.JSONObject;
 import shared.logic.Member;
 import shared.logic.Narrator;
@@ -50,7 +57,7 @@ import shared.logic.Player;
 import shared.logic.templates.BasicRoles;
 import voss.narrator.R;
 
-public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener {
+public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener, NodeListener {
 
 
 	public void creating(Bundle b){
@@ -84,6 +91,92 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	private void displayUpdate(){
 		findViewById(R.id.home_update).setVisibility(View.VISIBLE);
 	}*/
+
+	public void onStart(){
+		super.onStart();
+		connectNarrator(new NarratorConnectListener() {
+			public void onConnect() {
+				if (ns.server.IsLoggedIn()) {
+					TextView tv = (TextView) findViewById(R.id.home_login_signup);
+					tv.setText("Sign Out");
+				}
+			}
+		});
+	}
+
+	private void authLog(String x){
+
+		Log.d("myAuth",x);
+	}
+
+	//public void onpause
+
+	private Toast loadingGameInfoToast;
+	public void onAuthStateChanged(FirebaseAuth fa){
+
+		authLog("auth hit");
+		if(fa.getCurrentUser() == null){
+			authLog("not logged in");
+			Runnable r = new Runnable(){
+				public void run(){
+					findViewById(R.id.home_host).setVisibility(View.VISIBLE);
+					findViewById(R.id.home_join).setVisibility(View.VISIBLE);
+				}
+			};
+
+			//hide the buttons
+			runOnUiThread(r);
+			return;
+		}
+
+		Runnable r = new Runnable(){
+			public void run(){
+				loadingGameInfoToast = Toast.makeText(ActivityHome.this, "Loading game information", Toast.LENGTH_SHORT);
+				loadingGameInfoToast.show();
+			}
+		};
+
+		//hide the buttons
+		runOnUiThread(r);
+
+		ns.addNodeListener(this);
+
+	}
+
+	public boolean onMessageReceive(JSONObject jo) throws JSONException {
+
+		authLog("got the message");
+		authLog(jo.toString());
+		if(jo.has("lobbyUpdate") && jo.getBoolean("lobbyUpdate")){
+			Runnable r = new Runnable(){
+				public void run(){
+					if(loadingGameInfoToast != null) {
+						loadingGameInfoToast.cancel();
+						loadingGameInfoToast.setText("");
+					}
+					findViewById(R.id.home_host).setVisibility(View.VISIBLE);
+					findViewById(R.id.home_join).setVisibility(View.VISIBLE);
+				}
+			};
+			ActivityHome.this.runOnUiThread(r);
+
+			//wont fire again
+			return true;
+		}else if(jo.has(StateObject.guiUpdate) && jo.has(StateObject.gameStart)){
+			Class<?> activ;
+			if(jo.getBoolean(StateObject.gameStart))
+				activ = ActivityDay.class;
+			else {
+				activ = ActivityCreateGame.class;
+			}
+			ns.activity = null;
+			Intent i = new Intent(this, activ);
+			startActivity(i);
+			return true;
+		}
+		return false;
+	}
+
 
 	public Narrator getNarrator(){
 		return ns.getNarrator();
@@ -159,12 +252,11 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			case R.id.home_login_signup:
 				if (isLoggedIn()){
 					ns.server.LogOut();
-					ns.mWebSocketClient.close();
+					ns.closeWebSocket();
 					TextView tv = (TextView) v;
 					tv.setText("Login/Signup");
 				}else if(isInternetAvailable()){
 					LoginAlert loginer = new LoginAlert();
-					loginer.setServer(this);
 					loginer.show(getFragmentManager(), "logginer");
 				}else{
 					toast("You must be connected to the internet to login.");
@@ -334,18 +426,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	/** register the BroadcastReceiver with the intent values to be matched */
-	public void onResume() {
-		super.onResume();
-		connectNarrator(new NarratorConnectListener() {
-			public void onConnect() {
-				if (ns.server.IsLoggedIn()) {
-					TextView tv = (TextView) findViewById(R.id.home_login_signup);
-					tv.setText("Sign Out");
-				}
-			}
-		});
-
-	}
 
 	public void onPause() {
 		super.onPause();
@@ -421,4 +501,6 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 		return list;
 	}
+
+
 }

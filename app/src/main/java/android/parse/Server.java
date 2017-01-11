@@ -22,7 +22,7 @@ import json.JSONException;
 import json.JSONObject;
 
 
-public class Server {
+public class Server implements FirebaseAuth.AuthStateListener{
 
     public interface LoginListener{
         void onSuccess();
@@ -33,31 +33,13 @@ public class Server {
     }
 
 
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
+    public FirebaseAuth mAuth;
+    public FirebaseAuth.AuthStateListener mAuthListener;
     private boolean started;
-    public Server(NActivity nActivity){
+    public Server(FirebaseAuth.AuthStateListener ol){
         mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            	
-            	synchronized(Server.this){
-            		started = true;
-            		if(ncl != null){
-            			ncl.onConnect();
-                        ncl = null;
-            		}
-            	}
-            	
-                //FirebaseUser user = firebaseAuth.getCurrentUser();
-                /*if (user != null) {
+        mAuthListener = ol;
 
-                } else {
-
-                }*/
-                // ...
-            }
-        };
         Start();
         if(testing)
         	mAuthListener.onAuthStateChanged(mAuth);
@@ -67,7 +49,7 @@ public class Server {
     
     NarratorConnectListener ncl;
     public synchronized void onConnected(NarratorConnectListener ncl) {
-    	if(started)
+    	if(getStatus() != NOT_STARTED)
     		ncl.onConnect();
     	else
     		this.ncl = ncl;
@@ -80,6 +62,8 @@ public class Server {
 
     
     public void Destroy(){
+        mAuth.removeAuthStateListener(mAuthListener);
+        mAuth.removeAuthStateListener(this);
     	mAuth = null;
     	mAuthListener = null;
     }
@@ -89,7 +73,30 @@ public class Server {
     }
 
     public void Start(){
-        mAuth.addAuthStateListener(mAuthListener);
+        mAuth.addAuthStateListener(this);
+    }
+
+    public static final int NOT_STARTED = -1, LOGGED_IN = 0, LOGGED_OUT = 1;
+    private int state = NOT_STARTED;
+    public void onAuthStateChanged(FirebaseAuth fa){
+        synchronized(this){
+            if(fa.getCurrentUser() == null){
+                state = LOGGED_OUT;
+            }else
+                state = LOGGED_IN;
+            if(ncl != null) {
+                //this is the narrator service waiting for firebase to hit
+                ncl.onConnect();
+                ncl = null;
+            }
+        }
+
+        //this is the activity listening for stuff
+        mAuthListener.onAuthStateChanged(fa);
+    }
+
+    public synchronized int getStatus(){
+        return state;
     }
 
     public void Stop(){
@@ -190,7 +197,7 @@ public class Server {
 	}
 
 	public static void Greet(ActivityHome activity) {
-		activity.ns.connectWebSocket(null);
+		activity.ns.connectWebSocket();
 		
 	}
 

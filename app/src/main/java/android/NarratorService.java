@@ -24,6 +24,7 @@ import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.parse.Server;
+import android.screens.ActivityHome;
 import android.setup.ActivityCreateGame;
 import android.setup.SetupManager;
 import android.support.annotation.NonNull;
@@ -53,46 +54,49 @@ import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
 
-public class NarratorService extends Service{
+public class NarratorService extends Service {
 
 	public Server server;
 	public Narrator local;//this is the one i keep communicators in
 	public FactionManager fManager;
-	public int onStartCommand(Intent i, int flags, int startId){
-		if(local == null)
+
+	public int onStartCommand(Intent i, int flags, int startId) {
+		if (local == null)
 			refresh();
-        return Service.START_STICKY;
+		return Service.START_STICKY;
 	}
-	public void refresh(){
+
+	public void refresh() {
 		local = Narrator.Default();
 		fManager = new FactionManager(local);
 		Log.d("NS", "Narrator started");
-		if(nListeners == null)
+		if (nListeners == null)
 			nListeners = new ArrayList<>();
 	}
-	
-    private final IBinder mBinder = new MyBinder();
-    public IBinder onBind(Intent arg0) {
-        return mBinder;
-    }
+
+	private final IBinder mBinder = new MyBinder();
+
+	public IBinder onBind(Intent arg0) {
+		return mBinder;
+	}
 
 	public class MyBinder extends Binder {
-        public NarratorService getService() {
-            return NarratorService.this;
-        }
-    }
-    
+		public NarratorService getService() {
+			return NarratorService.this;
+		}
+	}
+
 	public void shutdown() {
-		
+
 	}
 
 	public Narrator getNarrator() {
 		return local;
 	}
 
-	private StateObject stateObject(){
-		return new StateObject(local, fManager){
-			
+	private StateObject stateObject() {
+		return new StateObject(local, fManager) {
+
 			public boolean isActive(Player p) {
 				return true;
 			}
@@ -104,17 +108,17 @@ public class NarratorService extends Service{
 				return jo;
 			}
 
-			public void write(Player p, JSONObject jo){
-				
+			public void write(Player p, JSONObject jo) {
+
 			}
-			
+
 		};
 	}
-	
-	public JSONObject getFactions() throws JSONException{
-		if(server.IsLoggedIn()){
+
+	public JSONObject getFactions() throws JSONException {
+		if (server.IsLoggedIn()) {
 			return gameState.factions;
-		}else{
+		} else {
 			StateObject so = stateObject();
 			so.addState(StateObject.RULES);
 			return so.send((Player) null).getJSONObject(StateObject.factions);
@@ -122,48 +126,43 @@ public class NarratorService extends Service{
 	}
 
 
-    public boolean isHost(){
-    	if(server.IsLoggedIn()){
-    		if(gameState == null)
-    			gameState = new GameState(this);
-    		return gameState.isHost;
-    	}
-    	return true;
-    }
-
+	public boolean isHost() {
+		if (server.IsLoggedIn()) {
+			if (gameState == null)
+				gameState = new GameState(this);
+			return gameState.isHost;
+		}
+		return true;
+	}
 
 
 	public SuccessListener sc;
+
 	public void submitName(String name, SuccessListener sc) {
 		this.sc = sc;
 	}
 
-	
-	
-	public void disconnect(ServiceConnection sC, Activity a){
+
+	public void disconnect(ServiceConnection sC, Activity a) {
 		try {
 			a.unbindService(sC);
-		}catch(IllegalArgumentException e){
+		} catch (IllegalArgumentException e) {
 
 		}
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
+
 	private SetupManager sManager;
-	public void setSetupManager(SetupManager sm){
+
+	public void setSetupManager(SetupManager sm) {
 		sManager = sm;
 	}
-	public void removeSetupManager(){
+
+	public void removeSetupManager() {
 		sManager = null;
 	}
-	public void put(JSONObject jo, String key, Object o){
+
+	public void put(JSONObject jo, String key, Object o) {
 		try {
 			jo.put(key, o);
 		} catch (JSONException e) {
@@ -171,146 +170,146 @@ public class NarratorService extends Service{
 		}
 	}
 
-	public boolean endedNight(String name){
-		if(server.IsLoggedIn()){
+	public boolean endedNight(String name) {
+		if (server.IsLoggedIn()) {
 			return gameState.endedNight;
-		}else{
+		} else {
 			return local.getPlayerByName(name).endedNight();
 		}
 	}
 
-	public void vote(String voter_s, String target_s){
-		if(server.IsLoggedIn()){
+	public void vote(String voter_s, String target_s) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, Constants.VOTE + " " + target_s);
 			sendMessage(jo);
-		}else{
-			Player voter  = local.getPlayerByName(voter_s);
+		} else {
+			Player voter = local.getPlayerByName(voter_s);
 			Player target = local.getPlayerByName(target_s);
 			voter.vote(target);
 		}
 	}
 
-	public void skipVote(String voter){
-		if(server.IsLoggedIn()){
+	public void skipVote(String voter) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, Constants.SKIP_VOTE);
 			sendMessage(jo);
-		}else{
+		} else {
 			local.getPlayerByName(voter).voteSkip();
 		}
 	}
 
-	public void unvote(String unvoter){
-		if(server.IsLoggedIn()){
+	public void unvote(String unvoter) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, Constants.UNVOTE);
 			sendMessage(jo);
-		}else{
+		} else {
 			local.getPlayerByName(unvoter).unvote();
 		}
 	}
 
-	public void talk(String name, String message){
-		if(server.IsLoggedIn()){
+	public void talk(String name, String message) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			String team;
-			if(gameState.isStarted){
+			if (gameState.isStarted) {
 				team = JUtils.getString(gameState.roleInfo, StateObject.roleColor);
-			}else{
+			} else {
 				team = "null";
 			}
 			put(jo, StateObject.message, Constants.SAY + " " + team + " " + message);
 			sendMessage(jo);
-		}else {
+		} else {
 			Player p = local.getPlayerByName(name);
 			if (p.isDead() || p.isBlackmailed())
 				return;
 			String key;
-			if(local.isNight()){
-				if(!p.getTeam().knowsTeam())
+			if (local.isNight()) {
+				if (!p.getTeam().knowsTeam())
 					return;
 				key = p.getTeam().getName();
-			}else
+			} else
 				key = Constants.REGULAR_CHAT;
 
 			p.say(message, key);
 		}
 	}
 
-	public boolean isDead(String name){
-		if(server.IsLoggedIn()){
+	public boolean isDead(String name) {
+		if (server.IsLoggedIn()) {
 			JSONObject deadPlayer;
-			for(int i = 0; i < gameState.graveYard.length(); i++){
+			for (int i = 0; i < gameState.graveYard.length(); i++) {
 				deadPlayer = JUtils.getJSONObject(gameState.graveYard, i);
-				if(name.equals(JUtils.getString(deadPlayer, "name"))){
+				if (name.equals(JUtils.getString(deadPlayer, "name"))) {
 					return true;
 				}
 			}
 			return false;
-		}else{
+		} else {
 			return local.getPlayerByName(name).isDead();
 		}
 	}
 
-	public String getColor(String name){
-		if(server.IsLoggedIn()){
+	public String getColor(String name) {
+		if (server.IsLoggedIn()) {
 			return JUtils.getString(gameState.roleInfo, StateObject.roleColor);
-		}else{
+		} else {
 			return local.getPlayerByName(name).getColor();
 		}
 	}
 
 
-	public boolean isVoting(String owner_s, String target_s){
-		if(server.IsLoggedIn()){
-			if(target_s.equalsIgnoreCase("Skip Day")) {
+	public boolean isVoting(String owner_s, String target_s) {
+		if (server.IsLoggedIn()) {
+			if (target_s.equalsIgnoreCase("Skip Day")) {
 				return gameState.isSkipping;
 			}
 			JSONArray voteTargets = JUtils.getJSONArray(gameState.players, "Vote");
-			if(voteTargets.length() == 0)
+			if (voteTargets.length() == 0)
 				return false;
 			JSONObject playerObject;
-			for(int i = 0; i < voteTargets.length(); i++){
+			for (int i = 0; i < voteTargets.length(); i++) {
 				playerObject = JUtils.getJSONObject(voteTargets, 0);
-				if(target_s.equals(JUtils.getString(playerObject, StateObject.playerName))){
+				if (target_s.equals(JUtils.getString(playerObject, StateObject.playerName))) {
 					JSONArray jArray = JUtils.getJSONArray(playerObject, StateObject.playerSelectedColumn);
 					return jArray.length() == 1;
 				}
 			}
 			return false;
-		}else{
-			Player owner  = local.getPlayerByName(owner_s);
+		} else {
+			Player owner = local.getPlayerByName(owner_s);
 			Player target = owner.getVoteTarget();
-			if(target == null)
+			if (target == null)
 				return false;
 			return owner.getVoteTarget().getName().equals(target_s);
 		}
 	}
 
-	public void target(String owner_s, ArrayList<String> target_s, String ability_s, String option, boolean submitAction){
+	public void target(String owner_s, ArrayList<String> target_s, String ability_s, String option, boolean submitAction) {
 		ability_s = ability_s.toLowerCase();
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
-			if(!submitAction){
+			if (!submitAction) {
 				put(jo, StateObject.message, StateObject.cancelAction);
-			}else
+			} else
 				put(jo, StateObject.message, StateObject.submitAction);
-			
-			if(ability_s.equals("give gun"))
+
+			if (ability_s.equals("give gun"))
 				ability_s = "gun";
-			else if(ability_s.equals("give armor")){
+			else if (ability_s.equals("give armor")) {
 				ability_s = "armor";
 			}
 			put(jo, StateObject.command, ability_s);
 			put(jo, StateObject.targets, target_s);
-			
+
 			sendMessage(jo);
-		}else{
+		} else {
 			Player owner = local.getPlayerByName(owner_s);
 			PlayerList targets = PlayerList.FromNames(target_s, local);
 			int ability = owner.parseAbility(ability_s);
-			if(owner.getActions().isTargeting(targets, ability))
+			if (owner.getActions().isTargeting(targets, ability))
 				owner.cancelTarget(targets, ability);
 			else
 				owner.setTarget(ability, option, targets.getArray());
@@ -318,90 +317,92 @@ public class NarratorService extends Service{
 	}
 
 
-	public void doDayAction(String name){
-		if(server.IsLoggedIn()){
+	public void doDayAction(String name) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			String roleName = JUtils.getString(gameState.roleInfo, StateObject.roleBaseName);
-			if(roleName.equals(Mayor.ROLE_NAME)){
+			if (roleName.equals(Mayor.ROLE_NAME)) {
 				put(jo, StateObject.message, Mayor.REVEAL);
-			}else if(roleName.equals(Arsonist.ROLE_NAME)){
+			} else if (roleName.equals(Arsonist.ROLE_NAME)) {
 				put(jo, StateObject.message, Arsonist.BURN);
-			}else{
+			} else {
 				ActivityDay ad = (ActivityDay) activity;
 				int checkedPosition = ad.actionLV.getCheckedItemPosition();
-				if(checkedPosition == -1){
+				if (checkedPosition == -1) {
 					ad.toast("You must select someone to assasinate them");
 					return;
 				}
 				String target = ad.actionList.get(checkedPosition);
 				put(jo, StateObject.message, Assassin.ASSASSINATE + " " + target);
-				
+
 			}
 			sendMessage(jo);
-		}else{
+		} else {
 			local.getPlayerByName(name).doDayAction();
 		}
 	}
 
-	public void endNight(String name){
-		if(server.IsLoggedIn()){
+	public void endNight(String name) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, Constants.END_NIGHT);
 			sendMessage(jo);
-		}else{
+		} else {
 			local.getPlayerByName(name).endNight();
 		}
 	}
-	public void cancelEndNight(String name){
-		if(server.IsLoggedIn()){
+
+	public void cancelEndNight(String name) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, Constants.END_NIGHT);
 			sendMessage(jo);
-		}else{
+		} else {
 			local.getPlayerByName(name).cancelEndNight();
 		}
 	}
 
-	public void addRole(String name, String color){
+	public void addRole(String name, String color) {
 		//if server is hosting narrator instance, then you don't do anything here.  you just have to track the object that the server gives you
 		//if you're hosting
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.roleColor, color);
 			put(jo, StateObject.roleName, name);
 			put(jo, StateObject.message, StateObject.addRole);
 			sendMessage(jo);
-		}else{
+		} else {
 			RoleTemplate rt = null;
 			Faction f = fManager.getFaction(color);
-			if(f != null)
+			if (f != null)
 				rt = f.getRole(name);
-			if(rt == null){
+			if (rt == null) {
 				f = fManager.getFaction(Constants.A_NEUTRAL);
 				rt = f.getRole(name);
-				if(rt == null){
+				if (rt == null) {
 					f = fManager.getFaction(Constants.A_RANDOM);
 					rt = f.getRole(name);
 				}
-			}else{
+			} else {
 				rt = f.getRole(name);
 			}
 
 			local.addRole(rt);
 			//onRoleAdd(SetupManager.TranslateRole(rt));
-			if(sManager != null)
+			if (sManager != null)
 				sManager.addRole(rt);
 		}
 	}
-	public void removeRole(RoleTemplate rt){
-		if(sManager == null){
+
+	public void removeRole(RoleTemplate rt) {
+		if (sManager == null) {
 			onRoleRemove(rt);
-		}else{
+		} else {
 			sManager.removeRole(rt.getName(), rt.getColor());
 		}
 	}
-	
-	
+
+
 	public void onRoleAdd(RoleTemplate s) {
 		local.addRole(s);
 	}
@@ -409,31 +410,31 @@ public class NarratorService extends Service{
 	public void onRoleRemove(RoleTemplate s) {
 		local.removeRole(s);
 	}
-	
+
 	public Player addPlayer(String name, Communicator c) {
 		Player p = local.addPlayer(name, c);
-		
-		if(sManager != null){//just looking for a trigger here
-			sManager.addPlayer(name, (Communicator) null); 
+
+		if (sManager != null) {//just looking for a trigger here
+			sManager.addPlayer(name, (Communicator) null);
 		}
-		
+
 		return p;
 	}
-	
-	public void setComputer(String s){
+
+	public void setComputer(String s) {
 		local.getPlayerByName(s).setComputer();
 	}
-	
+
 	public void onPlayerAdd(String s, Communicator c) {
-		if(c == null)
+		if (c == null)
 			c = new CommunicatorNull();
 		local.addPlayer(s, c);
 	}
-	
-	public void removePlayer(String name){
-		if(sManager != null){
+
+	public void removePlayer(String name) {
+		if (sManager != null) {
 			sManager.removePlayer(name, true);//tells manager to not tell the hostAdder
-		}else{
+		} else {
 			onPlayerRemove(name);
 		}
 	}
@@ -442,13 +443,9 @@ public class NarratorService extends Service{
 		local.removePlayer(s);
 	}
 
-	
-	
-	
 
-	
-	public synchronized void startGame(long seed){
-		if(!local.isStarted()) {
+	public synchronized void startGame(long seed) {
+		if (!local.isStarted()) {
 			local.setSeed(seed);
 			local.startGame();
 		}
@@ -456,50 +453,54 @@ public class NarratorService extends Service{
 
 		sManager.startDay();
 
-		
+
 		removeSetupManager();
 	}
 
 	public String getIp() {
-        WifiManager wm = (WifiManager) getSystemService(Activity.WIFI_SERVICE);
-        int ip = wm.getConnectionInfo().getIpAddress();
-        String ip_addr = String.format("%d.%d.%d.%d",
-                (ip & 0xff),
-                (ip >> 8 & 0xff),
-                (ip >> 16 & 0xff),
-                (ip >> 24 & 0xff));
-        return ip_addr;
+		WifiManager wm = (WifiManager) getSystemService(Activity.WIFI_SERVICE);
+		int ip = wm.getConnectionInfo().getIpAddress();
+		String ip_addr = String.format("%d.%d.%d.%d",
+				(ip & 0xff),
+				(ip >> 8 & 0xff),
+				(ip >> 16 & 0xff),
+				(ip >> 24 & 0xff));
+		return ip_addr;
 	}
 
 	public boolean isInProgress() {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			return !gameState.isOver;
-		}else{
+		} else {
 			return local.isInProgress();
 		}
 	}
+
 	public boolean isDay() {
-		if(server.IsLoggedIn())
+		if (server.IsLoggedIn())
 			return gameState.isDay;
 		else
 			return local.isDay();
 	}
-	public boolean isNight(){
-		if(server.IsLoggedIn())
+
+	public boolean isNight() {
+		if (server.IsLoggedIn())
 			return !gameState.isDay;
 		else
 			return local.isNight();
 	}
+
 	public JSONObject getRuleById(String ruleName) throws JSONException {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			return gameState.rules.getJSONObject(ruleName);
-		}else{
+		} else {
 			JSONObject jo = stateObject().addState(StateObject.RULES).send((Player) null);
 			return jo.getJSONObject("rules").getJSONObject(ruleName);
 		}
 	}
+
 	public void ruleChange(String id, boolean b) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			try {
 				gameState.rules.getJSONObject(id).put("val", b);
 				JSONObject jo = new JSONObject();
@@ -509,51 +510,51 @@ public class NarratorService extends Service{
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-		}else if (isHost()) {
+		} else if (isHost()) {
 			local.getRules().setBool(id, b);
 		}
-    }
-		
+	}
+
 	public void ruleChange(String id, int b) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			//server.UpdateRules(ns.getGameListing(), ns.local.getRules());
-		}else if (isHost()) {
+		} else if (isHost()) {
 			local.getRules().setInt(id, b);
 		}
-    }
-	
+	}
+
 	public void removeRole(String roleName, String color) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.roleColor, color);
 			put(jo, StateObject.roleName, roleName);
 			put(jo, StateObject.message, StateObject.removeRole);
 			sendMessage(jo);
-		}else{
+		} else {
 			RoleTemplate rt = local.getAllRoles().get(roleName, color);
 			local.removeRole(rt);
 		}
-		if(sManager != null)
-			sManager.onRoleRemove(roleName, color);	
+		if (sManager != null)
+			sManager.onRoleRemove(roleName, color);
 	}
-	
+
 	public void newTeam(String name, String color, SuccessListener sL) {
 		color = color.toUpperCase();
-		if(server.IsLoggedIn()){
-			if(sL != null)
+		if (server.IsLoggedIn()) {
+			if (sL != null)
 				sL.onSuccess();//too lazy to figure out a signaling message from the instance object;
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, "addTeam");
 			put(jo, StateObject.color, color);
 			put(jo, "teamName", name);
 			sendMessage(jo);
-		}else{
+		} else {
 			Faction f = fManager.addFaction(name, color);
 			f.setDescription("Custom team");
-			if(sManager == null)
+			if (sManager == null)
 				return;
 			try {
-				if(sL != null)
+				if (sL != null)
 					sL.onSuccess();
 				ActivityCreateGame ac = sManager.screen;
 				ac.refreshAvailableFactions();
@@ -566,17 +567,18 @@ public class NarratorService extends Service{
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
+
 	public void deleteTeam(String color) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, StateObject.deleteTeam);
 			put(jo, StateObject.color, color);
 			sendMessage(jo);
-		}else{
+		} else {
 			fManager.removeTeam(color);
-			if(sManager == null)
+			if (sManager == null)
 				return;
 			ActivityCreateGame ac = sManager.screen;
 			try {
@@ -589,102 +591,136 @@ public class NarratorService extends Service{
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
-	
-	
+
+
 	public void setEnemies(String color, String teamColor, SuccessListener sl) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, StateObject.removeTeamAlly);
 			put(jo, StateObject.color, teamColor);
 			put(jo, StateObject.ally, color);
 			sendMessage(jo);
-		}else{
+		} else {
 			Team curTeam = local.getTeam(teamColor);
 			Team enemyTeam = local.getTeam(color);
 			curTeam.setEnemies(enemyTeam);
-			if(activityCreateGameActive())
+			if (activityCreateGameActive())
 				((ActivityCreateGame) activity).resetView();
 		}
 	}
+
 	public void setAllies(String color, String teamColor, SuccessListener sl) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, StateObject.removeTeamEnemy);
 			put(jo, StateObject.color, teamColor);
 			put(jo, StateObject.enemy, color);
 			sendMessage(jo);
-		}else{
+		} else {
 			Team curTeam = local.getTeam(teamColor);
 			Team allyTeam = local.getTeam(color);
 			curTeam.setAllies(allyTeam);
-			if(activityCreateGameActive())
+			if (activityCreateGameActive())
 				((ActivityCreateGame) activity).resetView();
 		}
 	}
 
-	public boolean activityCreateGameActive(){
-		if(activity == null)
+	public boolean activityCreateGameActive() {
+		if (activity == null)
 			return false;
 		return activity.getClass() == ActivityCreateGame.class;
 	}
 
-	
-	public void addTeamRole(String className, String teamColor, SuccessListener sl){
-		if(server.IsLoggedIn()){
+
+	public void addTeamRole(String className, String teamColor, SuccessListener sl) {
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, StateObject.addTeamRole);
 			put(jo, StateObject.color, teamColor);
 			put(jo, StateObject.simpleName, className);
 			sendMessage(jo);
-		}else{
+		} else {
 			Faction f = fManager.getFaction(teamColor);
 			f.makeAvailable(className, fManager);
-			if(activityCreateGameActive())
+			if (activityCreateGameActive())
 				((ActivityCreateGame) activity).resetView();
 		}
 	}
+
 	public void removeTeamRole(String name, String teamColor, SuccessListener sl) {
-		if(server.IsLoggedIn()){
+		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			put(jo, StateObject.message, StateObject.removeTeamRole);
 			put(jo, StateObject.color, teamColor);
 			put(jo, StateObject.roleName, name);
 			sendMessage(jo);
-		}else{
+		} else {
 			Faction f = fManager.getFaction(teamColor);
 			f.makeUnavailable(name, fManager);
-			if(activityCreateGameActive())
+			if (activityCreateGameActive())
 				((ActivityCreateGame) activity).resetView();
 		}
 	}
 
 
-	public boolean isStarted(){
-		if(server.IsLoggedIn())
+	public boolean isStarted() {
+		if (server.IsLoggedIn())
 			return gameState.isStarted;
 		return local.isStarted();
 	}
-		
-	public void sendMessage(JSONObject jo){
+
+	public void sendMessage(JSONObject jo) {
 		put(jo, "name", server.GetCurrentUserName());
 		try {
-			mWebSocketClient.send(jo.toString());
-		}catch(WebsocketNotConnectedException e){
+			if(mWebSocketClient != null)  //this sometimes happens when clicking logout and i'm trying to send a message to the server
+				mWebSocketClient.send(jo.toString());
+		} catch (WebsocketNotConnectedException e) {
 			activity.toast("Connecting to server! Try again in a moment.");
 			try {
 				Thread.sleep(3000);
-			}catch(InterruptedException f){}
-			connectWebSocket(null);
+			} catch (InterruptedException f) {
+			}
+			connectWebSocket();
 		}
 	}
-	
+
+	private void sendGreeting(){//final NActivity.NarratorConnectListener nc){
+		Log.d("myAuth", "trying to get firebase token");
+
+		OnCompleteListener<GetTokenResult> x = new OnCompleteListener<GetTokenResult>() {
+			public void onComplete(@NonNull Task<GetTokenResult> task) {
+				if (task.isSuccessful()) {
+					JSONObject jo = new JSONObject();
+
+					try {
+						jo.put("server", true);
+						jo.put("message", "greeting");
+						jo.put("tokenID", FirebaseInstanceId.getInstance().getToken());
+						jo.put("sessionID", task.getResult().getToken());
+						Log.d("gcr", task.getResult().getToken());
+
+						Log.d("androidToken", FirebaseInstanceId.getInstance().getToken());
+						sendMessage(jo);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+					//if (nc != null)
+					//	nc.onConnect();
+				}
+			}
+		};
+		server.getAuthToken(x);
+	}
+
 	public static int WAIT_TIME = 10000;
 	public WebSocketClient mWebSocketClient;
 	private ArrayList<NodeListener> nListeners;
-	protected NActivity activity;
-	public void connectWebSocket(final NActivity.NarratorConnectListener nc) {
+	public NActivity activity;
+
+	public void connectWebSocket(){//final NActivity.NarratorConnectListener nc) {
+		Log.d("myAuth", "trying to connect websocket");
 		URI uri;
 		try {
 			uri = new URI("ws://narrator.systeminplace.net:3000");
@@ -693,33 +729,13 @@ public class NarratorService extends Service{
 			return;
 		}
 
-		if (mWebSocketClient == null){
+		if (mWebSocketClient == null) {
+			Log.d("myAuth", "trying to get open connection");
 			mWebSocketClient = new WebSocketClient(uri) {
 				public void onOpen(ServerHandshake unused) {
 
-					OnCompleteListener<GetTokenResult> x = new OnCompleteListener<GetTokenResult>() {
-						public void onComplete(@NonNull Task<GetTokenResult> task) {
-							if (task.isSuccessful()) {
-								JSONObject jo = new JSONObject();
+					sendGreeting();
 
-								try {
-									jo.put("server", true);
-									jo.put("message", "greeting");
-									jo.put("tokenID", FirebaseInstanceId.getInstance().getToken());
-									jo.put("sessionID", task.getResult().getToken());
-									Log.d("gcr", task.getResult().getToken());
-
-									Log.d("androidToken", FirebaseInstanceId.getInstance().getToken());
-									sendMessage(jo);
-								} catch (JSONException e) {
-									e.printStackTrace();
-								}
-								if (nc != null)
-									nc.onConnect();
-							}
-						}
-					};
-					server.getAuthToken(x);
 				}
 
 				;
@@ -728,46 +744,49 @@ public class NarratorService extends Service{
 					while (s.substring(0, 1).equals("\n")) {
 						s = s.substring(1);
 					}
-					ArrayList<NodeListener> toRemove = new ArrayList<>();
-					for (NodeListener nL : nListeners) {
-						if (nL.onMessageReceive(s))
-							toRemove.add(nL);
-					}
-					for (NodeListener nL : toRemove) {
-						nListeners.remove(nL);
-					}
+
 					try {
+						JSONObject jo = new JSONObject(s);
+
+						for (int i = 0; i < nListeners.size(); i++) {
+							if (nListeners.get(i).onMessageReceive(jo)) {
+								synchronized (this) {
+									nListeners.remove(i);
+								}
+								i--;
+							}
+						}
+
 						if (gameState == null)
 							gameState = new GameState(NarratorService.this);
-						JSONObject jo = new JSONObject(s);
 						if (hasBoolean("lobbyUpdate", jo))
 							return;
 
 						if (hasBoolean(StateObject.guiUpdate, jo)) {
 							gameState.parse(jo);
-							if(gameState.seenMessage)
+							if (gameState.seenMessage)
 								activityCheck();
-						} else if(gameState.seenMessage){
+						} else if (gameState.seenMessage) {
 							ChatItem ci;
-							
+
 							if (jo.has(StateObject.chatReset))
 								gameState.resetChat();
-							
+
 							JSONArray jArray = jo.getJSONArray(StateObject.message);
 							JSONObject jChat;
-							for(int i = 0; i < jArray.length(); i++){
-								try{
+							for (int i = 0; i < jArray.length(); i++) {
+								try {
 									ci = new ChatItem(jArray.getString(i));
-								}catch(JSONException e){
+								} catch (JSONException e) {
 									jChat = jArray.getJSONObject(i);
-									String text   = jChat.getString("text");
+									String text = jChat.getString("text");
 									String sender = jChat.getString("sender");
 									ci = new ChatItem(sender, text);
 								}
-								
+
 								gameState.addToChat(ci);
 							}
-							
+
 
 							//only reason gamestate is doing this is because it runOnMain
 							gameState.refreshChat();
@@ -797,8 +816,10 @@ public class NarratorService extends Service{
 										Thread.sleep(WAIT_TIME);
 									} catch (InterruptedException e) {
 									}
+								if(NarratorService.this.mWebSocketClient != null)
+									NarratorService.this.mWebSocketClient.close();
 								NarratorService.this.mWebSocketClient = null;
-								connectWebSocket(null);
+								connectWebSocket();
 							}
 						}).start();
 					}
@@ -808,22 +829,33 @@ public class NarratorService extends Service{
 				}
 			};
 			mWebSocketClient.connect();
+		} else if (mWebSocketClient.getConnection().isClosing() || mWebSocketClient.getConnection().isClosed()) {
+			closeWebSocket();
+			connectWebSocket();
+		}else{
+			sendGreeting();
 		}
 	}
+
+	public void closeWebSocket(){
+		mWebSocketClient.close();
+		mWebSocketClient=null;
+	}
+
 	public GameState gameState;
 	public boolean pendingDay = false;
 	public boolean pendingCreate = false;
 	private synchronized void activityCheck() throws JSONException{
-		if(gameState == null)
+		if(gameState == null || activity == null || activity instanceof ActivityHome)
 			return;
 		if(gameState.isStarted){
-			if((activity == null || activity.getClass() != ActivityDay.class) && !pendingDay){
+			if((activity.getClass() != ActivityDay.class) && !pendingDay){
 				Intent i = new Intent(activity, ActivityDay.class);
 				activity.startActivity(i);
 				pendingDay = true;
 			}
 		}else{
-			if((activity == null || activity.getClass() != ActivityCreateGame.class) && !pendingCreate){
+			if((activity.getClass() != ActivityCreateGame.class) && !pendingCreate){
 				Intent i = new Intent(activity, ActivityCreateGame.class);
 				activity.startActivity(i);
 				pendingCreate = true;
@@ -842,8 +874,9 @@ public class NarratorService extends Service{
 		}
 		return false;
 	}
-	public void addNodeListener(NodeListener nL) {
-		nListeners.add(nL);
+	public synchronized void addNodeListener(NodeListener nL) {
+		if(!nListeners.contains(nL))
+			nListeners.add(nL);
 	}
 	public void removeNodeListener(NodeListener nL){
 		nListeners.remove(nL);
