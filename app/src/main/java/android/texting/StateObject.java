@@ -29,14 +29,15 @@ import shared.roles.Witch;
 
 public abstract class StateObject {
 
-	public static final String RULES = "Rules";
-	public static final String ROLESLIST = "RolesList";
+	public static final String RULES       = "Rules";
+	public static final String ROLESLIST   = "RolesList";
 	public static final String PLAYERLISTS = "PlayerLists";
-	public static final String DAYLABEL = "DayLabel";
-	public static final String GRAVEYARD = "Graveyard";
-	public static final String ROLEINFO = "RoleInfo";
+	public static final String DAYLABEL    = "DayLabel";
+	public static final String GRAVEYARD   = "Graveyard";
+	public static final String ROLEINFO    = "RoleInfo";
 	public static final String ACTIVETEAMS = "ActiveTeams";
-	public static final String ACTIONS = "Actions";
+	public static final String ACTIONS     = "Actions";
+	public static final String VOTES       = "Votes";
 	
 	public static final String message = "message";
 	public static final String gameID = "gameID";
@@ -476,6 +477,47 @@ public abstract class StateObject {
 		return "#FFFFFF";
 	}
 	
+	private void addJVotes(JSONObject state) throws JSONException{
+		JSONArray voteCounts = new JSONArray(), voters;
+		
+		JSONObject dayRecap, finalScore;
+		PlayerList playersVotingX, votingPlayers;
+		for(int i = 1; i <= n.getDayNumber(); i++){
+			dayRecap = new JSONObject();
+			finalScore = new JSONObject();
+			votingPlayers = new PlayerList();
+			if(i != n.getDayNumber()){
+				voteCounts.put(dayRecap);
+				return;
+			}
+			
+			for(Player p: n.getLivePlayers().add(n.Skipper)){
+				voters = new JSONArray();
+				playersVotingX = p.getVoters();
+				votingPlayers.add(playersVotingX);
+				if(!playersVotingX.isEmpty()){
+					for(Player voter: playersVotingX){
+						voters.put(voter.getName());
+					}
+					finalScore.put(p.getName(), voters);
+				}
+			}
+			playersVotingX = n.getLivePlayers().remove(votingPlayers);
+			if(!playersVotingX.isEmpty()){
+				voters = new JSONArray();
+				for(Player voter: playersVotingX){
+					voters.put(voter.getName());
+				}
+				finalScore.put("Not Voting", voters);
+			}
+			voteCounts.put(finalScore);
+		}
+		
+
+		state.getJSONArray(StateObject.type).put(StateObject.voteCounts);
+		state.put(StateObject.voteCounts, voteCounts);
+	}
+	
 	private JSONArray getJPlayerArray(PlayerList input, PlayerList[] selected, String type) throws JSONException{
 		JSONArray arr = new JSONArray();
 		if(input.isEmpty())
@@ -638,6 +680,8 @@ public abstract class StateObject {
 					addJActiveTeams(obj);
 				else if(state.equals(ACTIONS))
 					addJActions(p, obj);
+				else if(state.equals(VOTES))
+					addJVotes(obj);
 				
 			}
 			for(String key: extraKeys.keySet()){
@@ -664,6 +708,9 @@ public abstract class StateObject {
 		return this;
 	}
 	
+	
+	public static final String hostPublic = "hostPublic";
+	public static final String joinPublic = "joinPublic";
 	
 	public static final String guiUpdate   = "guiUpdate";
 	public static final String chatReset   = "chatReset";
@@ -764,4 +811,6 @@ public abstract class StateObject {
 	public static final String command      = "command";
 	public static final String option       = "option";
 	public static final String cancelAction = "cancelAction";
+	
+	public static final String voteCounts   = "voteCounts";
 }
