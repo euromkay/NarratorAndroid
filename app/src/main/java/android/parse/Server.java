@@ -12,7 +12,6 @@ import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 import android.JUtils;
-import android.NActivity;
 import android.NActivity.NarratorConnectListener;
 import android.SuccessListener;
 import android.screens.ActivityHome;
@@ -35,7 +34,6 @@ public class Server implements FirebaseAuth.AuthStateListener{
 
     public FirebaseAuth mAuth;
     public FirebaseAuth.AuthStateListener mAuthListener;
-    private boolean started;
     public Server(FirebaseAuth.AuthStateListener ol){
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = ol;
@@ -92,7 +90,8 @@ public class Server implements FirebaseAuth.AuthStateListener{
         }
 
         //this is the activity listening for stuff
-        mAuthListener.onAuthStateChanged(fa);
+        if(mAuthListener != null)
+            mAuthListener.onAuthStateChanged(fa);
     }
 
     public synchronized int getStatus(){
@@ -206,6 +205,7 @@ public class Server implements FirebaseAuth.AuthStateListener{
 		try {
 			jo.put("action", true);
 			jo.put("message", "joinPublic");
+            aHome.ns.addActivity(aHome);
 			aHome.ns.sendMessage(jo);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -220,6 +220,7 @@ public class Server implements FirebaseAuth.AuthStateListener{
 		try {
 			jo.put("action", true);
 			jo.put("message", "hostPublic");
+            aHome.ns.addActivity(aHome);
 			aHome.ns.sendMessage(jo);
 		} catch (JSONException e) {
 			e.printStackTrace();

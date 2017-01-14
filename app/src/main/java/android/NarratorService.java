@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.day.ActivityDay;
 import android.day.ChatItem;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.parse.Server;
@@ -30,7 +29,7 @@ import android.setup.SetupManager;
 import android.support.annotation.NonNull;
 import android.texting.StateObject;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
 import android.wifi.NodeListener;
 import json.JSONArray;
 import json.JSONException;
@@ -53,6 +52,7 @@ import shared.logic.support.rules.Rules;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
+import voss.narrator.R;
 
 public class NarratorService extends Service {
 
@@ -61,12 +61,14 @@ public class NarratorService extends Service {
 	public FactionManager fManager;
 
 	public int onStartCommand(Intent i, int flags, int startId) {
-		if (local == null)
+		if (nacs == null)
 			refresh();
 		return Service.START_STICKY;
 	}
 
 	public void refresh() {
+		if(nacs == null)
+			nacs = new ArrayList<>();
 		local = Narrator.Default();
 		fManager = new FactionManager(local);
 		Log.d("NS", "Narrator started");
@@ -84,10 +86,6 @@ public class NarratorService extends Service {
 		public NarratorService getService() {
 			return NarratorService.this;
 		}
-	}
-
-	public void shutdown() {
-
 	}
 
 	public Narrator getNarrator() {
@@ -317,7 +315,7 @@ public class NarratorService extends Service {
 	}
 
 
-	public void doDayAction(String name) {
+	public void doDayAction(String name, String target) {
 		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			String roleName = JUtils.getString(gameState.roleInfo, StateObject.roleBaseName);
@@ -326,15 +324,11 @@ public class NarratorService extends Service {
 			} else if (roleName.equals(Arsonist.ROLE_NAME)) {
 				put(jo, StateObject.message, Arsonist.BURN);
 			} else {
-				ActivityDay ad = (ActivityDay) activity;
-				int checkedPosition = ad.actionLV.getCheckedItemPosition();
-				if (checkedPosition == -1) {
-					ad.toast("You must select someone to assasinate them");
+				if (target == null) {
+					toast("You must select someone to assasinate them");
 					return;
 				}
-				String target = ad.actionList.get(checkedPosition);
 				put(jo, StateObject.message, Assassin.ASSASSINATE + " " + target);
-
 			}
 			sendMessage(jo);
 		} else {
@@ -455,17 +449,6 @@ public class NarratorService extends Service {
 
 
 		removeSetupManager();
-	}
-
-	public String getIp() {
-		WifiManager wm = (WifiManager) getSystemService(Activity.WIFI_SERVICE);
-		int ip = wm.getConnectionInfo().getIpAddress();
-		String ip_addr = String.format("%d.%d.%d.%d",
-				(ip & 0xff),
-				(ip >> 8 & 0xff),
-				(ip >> 16 & 0xff),
-				(ip >> 24 & 0xff));
-		return ip_addr;
 	}
 
 	public boolean isInProgress() {
@@ -606,8 +589,8 @@ public class NarratorService extends Service {
 			Team curTeam = local.getTeam(teamColor);
 			Team enemyTeam = local.getTeam(color);
 			curTeam.setEnemies(enemyTeam);
-			if (activityCreateGameActive())
-				((ActivityCreateGame) activity).resetView();
+			for(NActivity activity: nacs)
+				activity.resetView();
 		}
 	}
 
@@ -622,17 +605,26 @@ public class NarratorService extends Service {
 			Team curTeam = local.getTeam(teamColor);
 			Team allyTeam = local.getTeam(color);
 			curTeam.setAllies(allyTeam);
-			if (activityCreateGameActive())
-				((ActivityCreateGame) activity).resetView();
+			for(NActivity activity: nacs)
+				activity.resetView();
 		}
 	}
 
 	public boolean activityCreateGameActive() {
-		if (activity == null)
-			return false;
-		return activity.getClass() == ActivityCreateGame.class;
+		for(NActivity nac: nacs){
+			if(nac instanceof ActivityCreateGame)
+				return true;
+		}
+		return false;
 	}
 
+	public boolean activityDayActive() {
+		for(NActivity nac: nacs){
+			if(nac instanceof ActivityDay)
+				return true;
+		}
+		return false;
+	}
 
 	public void addTeamRole(String className, String teamColor, SuccessListener sl) {
 		if (server.IsLoggedIn()) {
@@ -644,8 +636,8 @@ public class NarratorService extends Service {
 		} else {
 			Faction f = fManager.getFaction(teamColor);
 			f.makeAvailable(className, fManager);
-			if (activityCreateGameActive())
-				((ActivityCreateGame) activity).resetView();
+			for(NActivity activity: nacs)
+				activity.resetView();
 		}
 	}
 
@@ -660,7 +652,8 @@ public class NarratorService extends Service {
 			Faction f = fManager.getFaction(teamColor);
 			f.makeUnavailable(name, fManager);
 			if (activityCreateGameActive())
-				((ActivityCreateGame) activity).resetView();
+				for(NActivity activity: nacs)
+					activity.resetView();
 		}
 	}
 
@@ -674,10 +667,13 @@ public class NarratorService extends Service {
 	public void sendMessage(JSONObject jo) {
 		put(jo, "name", server.GetCurrentUserName());
 		try {
-			if(mWebSocketClient != null)  //this sometimes happens when clicking logout and i'm trying to send a message to the server
+			if(mWebSocketClient != null) {  //this sometimes happens when clicking logout and i'm trying to send a message to the server
+				Log.d("myAuth", "sending");
+				Log.d("myAuth", "\t" + jo.toString());
 				mWebSocketClient.send(jo.toString());
+			}
 		} catch (WebsocketNotConnectedException e) {
-			activity.toast("Connecting to server! Try again in a moment.");
+			toast("Connecting to server! Try again in a moment.");
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException f) {
@@ -692,6 +688,7 @@ public class NarratorService extends Service {
 		OnCompleteListener<GetTokenResult> x = new OnCompleteListener<GetTokenResult>() {
 			public void onComplete(@NonNull Task<GetTokenResult> task) {
 				if (task.isSuccessful()) {
+					Log.d("myAuth", "was successful, sending the greeting now.");
 					JSONObject jo = new JSONObject();
 
 					try {
@@ -714,10 +711,22 @@ public class NarratorService extends Service {
 		server.getAuthToken(x);
 	}
 
+	ArrayList<NActivity> nacs;
+
+	public synchronized void addActivity(NActivity na){
+		if(!nacs.contains(na))
+			nacs.add(na);
+	}
+
+	public synchronized void removeActivity(NActivity na){
+		nacs.remove(na);
+	}
+
+
+
 	public static int WAIT_TIME = 10000;
 	public WebSocketClient mWebSocketClient;
 	private ArrayList<NodeListener> nListeners;
-	public NActivity activity;
 
 	public void connectWebSocket(){//final NActivity.NarratorConnectListener nc) {
 		Log.d("myAuth", "trying to connect websocket");
@@ -741,6 +750,7 @@ public class NarratorService extends Service {
 				;
 
 				public void onMessage(String s) {
+
 					while (s.substring(0, 1).equals("\n")) {
 						s = s.substring(1);
 					}
@@ -748,6 +758,8 @@ public class NarratorService extends Service {
 					try {
 						JSONObject jo = new JSONObject(s);
 
+						Log.d("myAuth", "receiving");
+						Log.d("myAuth", "\t" + jo.toString());
 						for (int i = 0; i < nListeners.size(); i++) {
 							if (nListeners.get(i).onMessageReceive(jo)) {
 								synchronized (this) {
@@ -759,13 +771,19 @@ public class NarratorService extends Service {
 
 						if (gameState == null)
 							gameState = new GameState(NarratorService.this);
-						if (hasBoolean("lobbyUpdate", jo))
+						if (hasBoolean("lobbyUpdate", jo)){
+							Log.d("myAuth", "trying to show the buttons");
+							showActivityHomeButtons();
 							return;
+						}
 
 						if (hasBoolean(StateObject.guiUpdate, jo)) {
 							gameState.parse(jo);
-							if (gameState.seenMessage)
+
+							if (gameState.seenMessage) {
+								Log.d("myAuth", "checking activity");
 								activityCheck();
+							}
 						} else if (gameState.seenMessage) {
 							ChatItem ci;
 
@@ -808,9 +826,7 @@ public class NarratorService extends Service {
 					if (mWebSocketClient.getConnection().isClosing() || mWebSocketClient.getConnection().isClosed()) {
 						new Thread(new Runnable() {
 							public void run() {
-								if (activity != null) {
-									Toast.makeText(activity, "Reconnecting", Toast.LENGTH_LONG).show();
-								}
+								toast("Reconnecting");
 								if (WAIT_TIME != 0)
 									try {
 										Thread.sleep(WAIT_TIME);
@@ -846,19 +862,37 @@ public class NarratorService extends Service {
 	public boolean pendingDay = false;
 	public boolean pendingCreate = false;
 	private synchronized void activityCheck() throws JSONException{
-		if(gameState == null || activity == null || activity instanceof ActivityHome)
-			return;
+		boolean hasDay = false;
+		boolean hasSetup = false;
+		for(NActivity nac: nacs){
+			if(nac instanceof ActivityDay)
+				hasDay = true;
+			if(nac instanceof ActivityCreateGame)
+				hasSetup = true;
+		}
+
 		if(gameState.isStarted){
-			if((activity.getClass() != ActivityDay.class) && !pendingDay){
-				Intent i = new Intent(activity, ActivityDay.class);
-				activity.startActivity(i);
+			if(!pendingDay && !hasDay){
+				Intent i = new Intent(nacs.get(0), ActivityDay.class);
+				nacs.get(0).startActivity(i);
 				pendingDay = true;
 			}
 		}else{
-			if((activity.getClass() != ActivityCreateGame.class) && !pendingCreate){
-				Intent i = new Intent(activity, ActivityCreateGame.class);
-				activity.startActivity(i);
+			if(!pendingCreate && !hasSetup) {
+				Intent i = new Intent(nacs.get(0), ActivityCreateGame.class);
+				nacs.get(0).startActivity(i);
 				pendingCreate = true;
+			}
+		}
+	}
+	private synchronized void showActivityHomeButtons(){
+		gameState = new GameState(this);
+		for(NActivity nac: nacs) {
+			if (nac instanceof ActivityHome) {
+				nac.findViewById(R.id.home_host).setVisibility(View.VISIBLE);
+				nac.findViewById(R.id.home_join).setVisibility(View.VISIBLE);
+			} else {
+				nac.finish();
 			}
 		}
 	}
@@ -1079,6 +1113,18 @@ public class NarratorService extends Service {
 			return Integer.toString(local.getPlayerByName(name).getVoteCount());
 		}
 	}
-	
+
+
+	public void shutdown() {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void toast(String message){
+		for(NActivity na: nacs){
+			na.toast(message);
+		}
+	}
+
 	
 }

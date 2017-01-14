@@ -5,11 +5,11 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.RunnableFuture;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import android.ActivityTutorial;
 import android.CommunicatorPhone;
-import android.JUtils;
 import android.NActivity;
 import android.SuccessListener;
 import android.alerts.IpPrompt;
@@ -46,9 +46,6 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.wifi.NodeListener;
-
-import com.google.firebase.auth.FirebaseAuth;
-
 import json.JSONException;
 import json.JSONObject;
 import shared.logic.Member;
@@ -59,17 +56,14 @@ import voss.narrator.R;
 
 public class ActivityHome extends NActivity implements OnClickListener, IpPromptListener, NamePromptListener, AddPhoneListener, NodeListener {
 
+	private static final int[] home_buttons = {R.id.home_roleCard, R.id.home_join, R.id.home_host, R.id.home_login_signup, R.id.home_tutorial};
 
 	public void creating(Bundle b){
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_home);
 
-		
-		setText(R.id.home_roleCard);
-		setText(R.id.home_join);
-		setText(R.id.home_host);
-		setText(R.id.home_login_signup);
-		setText(R.id.home_tutorial);
+		setFont(home_buttons);
+
 
 		/*try {
 			final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -103,6 +97,8 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			}
 		});
 	}
+
+
 
 	private void authLog(String x){
 
@@ -169,7 +165,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			else {
 				activ = ActivityCreateGame.class;
 			}
-			ns.activity = null;
+			//ns.removeActivity(this);
 			Intent i = new Intent(this, activ);
 			startActivity(i);
 			return true;
@@ -188,19 +184,47 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 	}
 
 	protected void onStop(){
-		super.onStop();
 		if(ns.server != null)
 			ns.server.Stop();
+		super.onStop();
 	}
 
-
-
-	private void setText(int id){
-		SetFont(id, this, true);
-		findViewById(id).setOnClickListener(this);
+	private void addClickListeners(int ... ids){
+		View v;
+		for(int id: ids){
+			v = findViewById(id);
+			if(!v.hasOnClickListeners())
+				v.setOnClickListener(this);
+		}
 	}
 
-	
+	private void setFont(int ... ids){
+		for(int id: ids){
+			SetFont(id, this, true);
+		}
+	}
+
+	private void onEnterGameClick(){
+		findViewById(R.id.home_host).setVisibility(View.INVISIBLE);
+		findViewById(R.id.home_join).setVisibility(View.INVISIBLE);
+
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					Thread.sleep(5000);
+					runOnUiThread(new Runnable() {
+						public void run() {
+							ActivityHome.this.findViewById(R.id.home_host).setVisibility(View.VISIBLE);
+							ActivityHome.this.findViewById(R.id.home_join).setVisibility(View.VISIBLE);
+						}
+					});
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		toast("Loading Game information");
+	}
 
 
 	public Context passContext(){
@@ -215,12 +239,13 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 		return Build.VERSION.SDK_INT;
 	}
 
-	public void onClick(View v) {
+	public synchronized void onClick(View v) {
 		int id = v.getId();
 		switch(id){
 
 			case R.id.home_host:
 				if(isLoggedIn()) {
+					onEnterGameClick();
 					Server.HostPublic(this);
 				}else{
 					if(buildNumber() < 16)
@@ -232,6 +257,7 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 			case R.id.home_join:
 				if(isLoggedIn()) {
 					Server.JoinPublic(this);
+					onEnterGameClick();
 				}else if(networkCapable()){
 					showIpPrompt();
 				}else{
@@ -429,6 +455,13 @@ public class ActivityHome extends NActivity implements OnClickListener, IpPrompt
 
 	public void onPause() {
 		super.onPause();
+	}
+
+
+	public void onResume(){
+		super.onResume();
+		addClickListeners(home_buttons);
+		connectNarrator(null);
 	}
 
 

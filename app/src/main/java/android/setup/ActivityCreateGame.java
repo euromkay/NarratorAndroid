@@ -3,16 +3,16 @@ package android.setup;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import android.NActivity;
 import android.alerts.PlayerPopUp;
 import android.alerts.TeamBuilder;
 import android.alerts.TeamEditor;
 import android.day.ChatAdapter;
 import android.os.Bundle;
-import android.os.Handler;
 import android.screens.ListingAdapter;
 import android.texting.StateObject;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,9 +25,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import com.google.firebase.auth.FirebaseAuth;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -428,7 +425,6 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	}
 
 	private EditText chatET;
-	private TextView chatTV;
 	private void sendMessage(){
 		if(!ns.server.IsLoggedIn())
 			return;
@@ -568,7 +564,7 @@ public class ActivityCreateGame extends NActivity implements OnItemClickListener
 	
 
 	public void pushChatDown() {
-		boolean hasFocus = chatET.hasFocus();
+		//boolean hasFocus = chatET.hasFocus();
 		/*final ListView chatLV = (ListView) findViewById(R.id.create_chatHolder);
 		chatLV.post(new Runnable() {
 			public void run() {

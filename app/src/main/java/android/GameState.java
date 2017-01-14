@@ -5,6 +5,7 @@ import android.day.ActivityDay;
 import android.day.ChatItem;
 import android.setup.ActivityCreateGame;
 import android.texting.StateObject;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class GameState {
 	public void parse(JSONObject jo) throws JSONException {
 		if(jo.has(StateObject.gameStart)) {
 			isStarted = jo.getBoolean(StateObject.gameStart);
+			Log.d("myauth", "seenMessage is now true");
 			seenMessage = true;
 		}if(jo.has(StateObject.isFinished))
 			isOver = jo.getBoolean(StateObject.isFinished);
@@ -72,12 +74,15 @@ public class GameState {
 			isDay = jo.getBoolean(StateObject.isDay);
 		if(jo.has(StateObject.endedNight)){
 			endedNight = jo.getBoolean(StateObject.endedNight);
-			if(isActivityDay()){
-				runOnMain(new Runnable(){
-					public void run(){
-						getActivityDay().manager.dScreenController.setButtonText();
-					}
-				});
+			for(final NActivity nac: ns.nacs){
+				if(nac instanceof ActivityDay){
+					runOnMain(new Runnable(){
+						public void run(){
+							ActivityDay ad = (ActivityDay) nac;
+							ad.manager.dScreenController.setButtonText();
+						}
+					});
+				}
 			}
 		}
 		if(jo.has(StateObject.activeTeams))
@@ -88,8 +93,9 @@ public class GameState {
 			if(isActivityCreate())
 				runOnMain(new Runnable(){
 					public void run(){
-						ActivityCreateGame ac = (ActivityCreateGame) ns.activity;
-						ac.resetView();
+						for(NActivity ac : ns.nacs){
+							ac.resetView();
+						}
 					}
 				});
 			
@@ -99,18 +105,21 @@ public class GameState {
 		if(jo.has(StateObject.isHost)){
 			isHost = jo.getBoolean(StateObject.isHost);
 			if(isActivityCreate()) {
-				final View v = ns.activity.findViewById(R.id.create_createTeamButton);
-				if (v != null)
-					runOnMain(new Runnable() {
-						public void run() {
-							int visibility;
-							if (isHost)
-								visibility = View.VISIBLE;
-							else
-								visibility = View.GONE;
-							v.setVisibility(visibility);
-						}
-					});
+				for(NActivity nac: ns.nacs){
+					final View v = nac.findViewById(R.id.create_createTeamButton);
+					if (v != null && nac instanceof ActivityCreateGame)
+						runOnMain(new Runnable() {
+							public void run() {
+								int visibility;
+								if (isHost)
+									visibility = View.VISIBLE;
+								else
+									visibility = View.GONE;
+								v.setVisibility(visibility);
+							}
+						});
+				}
+
 			}
 		}
 		if(jo.has(StateObject.roleInfo))
@@ -131,12 +140,13 @@ public class GameState {
 		
 		if(jo.has(StateObject.showButton)){
 			showButton = jo.getBoolean(StateObject.showButton);
-			if(isActivityDay()){
-				runOnMain(new Runnable(){
-					public void run(){
-						getActivityDay().showButton();
-					}
-				});
+			for(final NActivity nac: ns.nacs){
+				if(nac instanceof ActivityDay)
+					runOnMain(new Runnable(){
+						public void run(){
+							((ActivityDay) nac).showButton();
+						}
+					});
 			}
 		}
 		
@@ -147,22 +157,24 @@ public class GameState {
 		
 		if(jo.has(StateObject.playerLists)){
 			players = jo.getJSONObject(StateObject.playerLists);
-			if(isActivityCreate()){
-				final PlayerPopUp pPop = ((ActivityCreateGame) ns.activity).pPop;
-				if(pPop != null){
+			for(final NActivity nac: ns.nacs){
+				if((nac instanceof ActivityCreateGame)){
+					final PlayerPopUp pPop = ((ActivityCreateGame) nac).pPop;
+					if(pPop != null){
+						runOnMain(new Runnable(){
+							public void run(){
+								pPop.updatePlayerList();
+								pPop.setTitle();
+							}
+						});
+					}
+				}else if(nac instanceof ActivityDay){
 					runOnMain(new Runnable(){
 						public void run(){
-							pPop.updatePlayerList();
-							pPop.setTitle();
+							((ActivityDay) nac).manager.dScreenController.updateActionPanel();
 						}
 					});
 				}
-			}else if(isActivityDay()){
-				runOnMain(new Runnable(){
-					public void run(){
-						getActivityDay().manager.dScreenController.updateActionPanel();
-					}
-				});
 			}
 				
 		}
@@ -176,60 +188,58 @@ public class GameState {
 		}
 		if(jo.has(StateObject.dayLabel)){
 			dayLabel = jo.getString(StateObject.dayLabel);
-			runOnMain(new Runnable(){
-				public void run(){
-					if(isActivityDay()){
-						getActivityDay().manager.dScreenController.setDayLabel();
+			for(final NActivity nac: ns.nacs) {
+				if(nac instanceof ActivityDay)
+					runOnMain(new Runnable() {
+					public void run() {
+						((ActivityDay) nac).manager.dScreenController.updateActionPanel();
 					}
-				}
-			});
+				});
+			}
 		}
 		if(jo.has(StateObject.timer))
 			timer = jo.getInt(StateObject.timer);
 	}
 
 	private boolean isActivityCreate(){
-		if(ns.activity == null)
-			return false;
-		return ns.activity.getClass().equals(ActivityCreateGame.class);
+		return ns.activityCreateGameActive();
 	}
 
 	private boolean isActivityDay(){
-		if(ns.activity == null)
-			return false;
-		return ns.activity.getClass().equals(ActivityDay.class);
-	}
-	private ActivityDay getActivityDay(){
-		return (ActivityDay) ns.activity;
+		return ns.activityDayActive();
 	}
 
+	/*private ActivityDay getActivityDay(){
+		return (ActivityDay) ns.getActivity();
+	}*/
+
 	private void refreshRolesList(){
-		runOnMain(new Runnable(){
-			public void run(){
-				((ActivityCreateGame) ns.activity).refreshRolesList();
-			}
-		});
+		for(final NActivity nac: ns.nacs) {
+			nac.runOnUiThread(new Runnable(){
+				public void run() {
+					nac.refreshRolesList();
+				}
+			});
+		}
 	}
 
 	private void runOnMain(Runnable r){
-		if(ns.activity != null)
-			ns.activity.runOnUiThread(r);
+		for(NActivity nac: ns.nacs)
+			nac.runOnUiThread(r);
 
 	}
 
 	public void refreshChat() {
-		Runnable r = new Runnable(){
-			public void run(){
-				if(ns.activity == null)
-					return;
-				if(ns.activity.getClass() == ActivityCreateGame.class){
-					((ActivityCreateGame) ns.activity).updateChat(); 
-				}else if(ns.activity.getClass() == ActivityDay.class){
-					((ActivityDay) ns.activity).manager.dScreenController.updateChatPanel();
+		Runnable r;
+		for(final NActivity nac: ns.nacs){
+			r = new Runnable(){
+				public void run(){
+				nac.updateChat();
 				}
-			}
-		};
-		runOnMain(r);
+			};
+			runOnMain(r);
+		}
+
 		
 	}
 

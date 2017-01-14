@@ -1,5 +1,9 @@
 package android;
 
+import java.util.List;
+
+import com.google.firebase.auth.FirebaseAuth;
+
 import android.alerts.RoleCardPopUp;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -12,21 +16,13 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.parse.Server;
 import android.setup.ActivityCreateGame;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.texting.StateObject;
 import android.util.Log;
 import android.widget.TextView;
-
-import android.parse.Server;
 import android.widget.Toast;
-
-import com.google.firebase.auth.FirebaseAuth;
-
-import java.util.List;
-
-import json.JSONObject;
 import shared.logic.Member;
 
 public abstract class NActivity extends FragmentActivity implements FirebaseAuth.AuthStateListener{
@@ -37,20 +33,19 @@ public abstract class NActivity extends FragmentActivity implements FirebaseAuth
     protected void connectNarrator(final NarratorConnectListener ncl){
     	Intent i = new Intent(this, NarratorService.class);
 		startService(i);
-		if(ns != null)
-			ns.activity = this;
-
+		if(ns != null) {
+			ns.addActivity(this);
+			if(ns.server.IsLoggedIn())
+				ns.connectWebSocket();
+			return;
+		}
 		final NarratorConnectListener my_ncl = new NarratorConnectListener(){
 			public void onConnect(){
-				ncl.onConnect();
+				Log.d("myauth", "finished connecting");
+				if(ncl != null)
+					ncl.onConnect();
 				if(ns.server.IsLoggedIn())
-					ns.connectWebSocket();/*new NarratorConnectListener() {
-					public void onConnect() {
-						JSONObject jo = new JSONObject();
-						JUtils.put(jo, StateObject.message, StateObject.requestGameState);
-						//ns.sendMessage(jo);
-					}
-				});*/
+					ns.connectWebSocket();
 			}
 		};
 
@@ -62,11 +57,11 @@ public abstract class NActivity extends FragmentActivity implements FirebaseAuth
 					if(ns.server != null)
 						ns.server.Destroy();
 					ns.server = new Server(NActivity.this);
-					ns.activity = NActivity.this;
+					ns.addActivity(NActivity.this);
 					synchronized(ns){
-						if(ns.activity instanceof ActivityDay)
+						if(NActivity.this instanceof ActivityDay)
 							ns.pendingDay = false;
-						else if(ns.activity instanceof ActivityCreateGame)
+						else if(NActivity.this instanceof ActivityCreateGame)
 							ns.pendingCreate = false;
 					}
 
@@ -89,8 +84,7 @@ public abstract class NActivity extends FragmentActivity implements FirebaseAuth
 		} catch (IllegalArgumentException | NullPointerException e) {}
 		sC = null;
 		if(ns!=null) {
-			if(ns.activity == this)
-				ns.activity = null;
+			ns.removeActivity(this);
 		}
 
     }
@@ -98,6 +92,23 @@ public abstract class NActivity extends FragmentActivity implements FirebaseAuth
     public boolean networkCapable(){
 		return ns.server.IsLoggedIn();
 	}
+
+	/*
+	 * over-ridden by activity create game
+	 */
+	public void resetView() {}
+
+	/*
+	 * over-ridden by activity create game
+	 */
+	public void refreshRolesList() {}
+
+	/*
+	 * over-ridden by:
+	 *   activity day
+	 *   activity-create-game
+	 */
+	public void updateChat() {}
 
 	public interface NarratorConnectListener{
 		void onConnect();
@@ -178,5 +189,35 @@ public abstract class NActivity extends FragmentActivity implements FirebaseAuth
 		Log.d("myAuth", "Auth changed caused this activity to terminate");
 
 		//need to kill touch events
+	}
+
+	public void onRestart(){
+		super.onRestart();
+		Log.d("myauth", "on restart called");
+	}
+
+	protected void onResume(){
+		super.onRestart();
+		Log.d("myauth", "on resume called");
+	}
+
+	public void onStart(){
+		super.onRestart();
+		Log.d("myauth", "on start called");
+	}
+
+	public void onPause(){
+		Log.d("myauth", "on pause called");
+		super.onPause();
+	}
+
+	public void onDestroy(){
+		Log.d("myauth", "on destroy called");
+		super.onPause();
+	}
+
+	protected void onStop(){
+		Log.d("myauth", "on stop called");
+		super.onPause();
 	}
 }

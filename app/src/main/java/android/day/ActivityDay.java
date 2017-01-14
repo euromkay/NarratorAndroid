@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import android.GUIController;
 import android.GameState;
 import android.JUtils;
@@ -19,12 +21,10 @@ import android.content.IntentFilter;
 import android.day.PlayerDrawerAdapter.OnPlayerClickListener;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.screens.ListingAdapter;
 import android.screens.MembersAdapter;
 import android.screens.SimpleGestureFilter;
 import android.screens.SimpleGestureFilter.SimpleGestureListener;
-import android.setup.ActivityCreateGame;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.annotation.NonNull;
@@ -55,9 +55,6 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.firebase.auth.FirebaseAuth;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -159,7 +156,11 @@ implements
 
 		return list;
 	}
-	
+
+	public void updateChat(){
+		manager.dScreenController.updateChatPanel();
+	}
+
 	public void setup(Bundle b){
 		if (playerMenu != null)
 			return;
@@ -595,7 +596,6 @@ implements
 			pushChatDown();
 	}
 
-	private boolean progress = true;
 	private void setChatPanelText(){
 		if(chatAdapter == null){
 			chatAdapter = new ChatAdapter(manager.ns.getChat(), this);
@@ -844,7 +844,6 @@ implements
 
 		showView(chatLV);
 
-		progress = false;
 		((RelativeLayout.LayoutParams)chatLV.getLayoutParams()).addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
 		if(wideMode()){

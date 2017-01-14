@@ -59,9 +59,15 @@ public class DayManager{
 		synchronized(ns.local){
 			if(!dScreenController.playerSelected() || ns.isDead(currentPlayer))
 				return;
-			if (ns.isDay())
-				ns.doDayAction(currentPlayer);
-			else{
+			if (ns.isDay()) {
+				int checkedPosition = dScreenController.dScreen.actionLV.getCheckedItemPosition();
+				String target;
+				if(checkedPosition != -1)
+					target = dScreenController.dScreen.actionList.get(checkedPosition);
+				else
+					target = null;
+				ns.doDayAction(currentPlayer, target);
+			}else{
 				if (ns.endedNight(currentPlayer)) {
 					ns.cancelEndNight(currentPlayer);
 					dScreenController.setSkipNightText();
