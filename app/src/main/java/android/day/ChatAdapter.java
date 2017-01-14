@@ -22,7 +22,6 @@ public class ChatAdapter extends BaseAdapter {
         this.inflater = (LayoutInflater) a.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-
     public int getCount(){
         return chatReference.size();
     }
@@ -48,7 +47,7 @@ public class ChatAdapter extends BaseAdapter {
 
         if(chatItem){
             fromContent.setText(Html.fromHtml(cItem.playerHTML));
-            textContent.setText(cItem.text);
+            textContent.setText(" : " + cItem.text);
         }else{
             fromContent.setText("");
             textContent.setText(Html.fromHtml(cItem.text));

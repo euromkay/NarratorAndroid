@@ -1,7 +1,5 @@
 package android.day;
 
-import json.JSONObject;
-
 public class ChatItem {
 	
 	public String text, playerHTML;
