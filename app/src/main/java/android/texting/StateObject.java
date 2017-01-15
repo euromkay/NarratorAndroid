@@ -488,7 +488,7 @@ public abstract class StateObject {
 			votingPlayers = new PlayerList();
 			if(i != n.getDayNumber()){
 				voteCounts.put(dayRecap);
-				return;
+				continue;
 			}
 			
 			for(Player p: n.getLivePlayers().add(n.Skipper)){
