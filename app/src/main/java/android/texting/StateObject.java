@@ -478,13 +478,14 @@ public abstract class StateObject {
 	}
 	
 	private void addJVotes(JSONObject state) throws JSONException{
-		JSONArray voteCounts = new JSONArray(), voters;
+		JSONArray voteCounts = new JSONArray(), voters, finalScore = new JSONArray();
 		
-		JSONObject dayRecap, finalScore;
+		JSONObject dayRecap, finalScoreObject;
 		PlayerList playersVotingX, votingPlayers;
 		for(int i = 1; i <= n.getDayNumber(); i++){
 			dayRecap = new JSONObject();
-			finalScore = new JSONObject();
+			
+			finalScore = new JSONArray();
 			votingPlayers = new PlayerList();
 			if(i != n.getDayNumber()){
 				voteCounts.put(dayRecap);
@@ -493,24 +494,36 @@ public abstract class StateObject {
 			
 			for(Player p: n.getLivePlayers().add(n.Skipper)){
 				voters = new JSONArray();
+				finalScoreObject = new JSONObject();
+				
 				playersVotingX = p.getVoters();
 				votingPlayers.add(playersVotingX);
-				if(!playersVotingX.isEmpty()){
-					for(Player voter: playersVotingX){
-						voters.put(voter.getName());
-					}
-					finalScore.put(p.getName(), voters);
-				}
-			}
-			playersVotingX = n.getLivePlayers().remove(votingPlayers);
-			if(!playersVotingX.isEmpty()){
-				voters = new JSONArray();
+				
+				if(playersVotingX.isEmpty()){
+					continue;
+				}	
+				finalScoreObject.put("name", p.getName());
 				for(Player voter: playersVotingX){
 					voters.put(voter.getName());
 				}
-				finalScore.put("Not Voting", voters);
+				finalScoreObject.put("voters", voters);
+				finalScoreObject.put("toLynch", n.getMinLynchVote() - p.getVoteCount());
 			}
-			voteCounts.put(finalScore);
+			playersVotingX = n.getLivePlayers().remove(votingPlayers);
+			if(!playersVotingX.isEmpty()){
+				finalScoreObject = new JSONObject();
+				voters = new JSONArray();
+				finalScoreObject.put("name", "Not Voting");
+				for(Player voter: playersVotingX){
+					voters.put(voter.getName());
+				}
+				finalScoreObject.put("voters", voters);
+				finalScoreObject.put("toLynch", -1);
+				
+			}
+			dayRecap.put(StateObject.finalScore, finalScore);
+			
+			voteCounts.put(dayRecap);
 		}
 		
 
@@ -813,4 +826,5 @@ public abstract class StateObject {
 	public static final String cancelAction = "cancelAction";
 	
 	public static final String voteCounts   = "voteCounts";
+	public static final String finalScore   = "finalScore";
 }
