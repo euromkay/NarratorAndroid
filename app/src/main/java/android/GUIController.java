@@ -17,6 +17,7 @@ import shared.logic.PlayerList;
 import shared.logic.exceptions.PlayerTargetingException;
 import shared.logic.support.Constants;
 import shared.logic.support.Random;
+import shared.roles.DrugDealer;
 import shared.roles.Framer;
 import shared.roles.Role;
 import shared.roles.Spy;
@@ -71,6 +72,13 @@ public class GUIController implements Controller, TextInput{
         swipeAbilityPanel(Framer.FRAME);
     	setOption(team);
         clickPlayer(framed);
+    }
+
+	public void drug(Player dd, String drug, Player dealt) {
+    	selectSlave(dd);
+        swipeAbilityPanel(DrugDealer.COMMAND);
+    	setOption(drug);
+        clickPlayer(dealt);
     }
     
     public void setNightTarget(Player slave){

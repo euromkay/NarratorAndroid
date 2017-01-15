@@ -7,6 +7,7 @@ import shared.logic.PlayerList;
 import shared.logic.exceptions.UnsupportedMethodException;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
+import shared.roles.DrugDealer;
 import shared.roles.Framer;
 import shared.roles.Mayor;
 import shared.roles.Role;
@@ -80,6 +81,9 @@ public class TextController implements Controller {
 
 	public void frame(Player framer, String option, Player framed){
 		texter.text(framer, Framer.FRAME + " " + option + " " + framed.getName(), ASYNC);
+	}
+	public void drug(Player dd, String option, Player dealt){
+		texter.text(dd, DrugDealer.COMMAND + " " + option + " " + dealt.getName(), ASYNC);
 	}
 	
 	public void spy(Player framer, String team){

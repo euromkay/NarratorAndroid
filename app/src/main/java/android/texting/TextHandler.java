@@ -165,10 +165,17 @@ public class TextHandler extends CommandHandler implements NarratorListener {
                     new OGIMessage(owner, e.getMessage());
                     printException(e);
 
-                }catch (VotingException e){
+                }catch (IllegalStateException e){
+                    new OGIMessage(owner, e.getMessage());
+                    printException(e);
+
+                }
+                
+                catch (VotingException e){
                 	new OGIMessage(owner, e.getMessage());
                     printException(e);
                 }
+                
         }
     }
 

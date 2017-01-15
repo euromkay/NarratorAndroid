@@ -478,6 +478,8 @@ public abstract class StateObject {
 	}
 	
 	private void addJVotes(JSONObject state) throws JSONException{
+		if(!n.isDay())
+			return;
 		JSONArray voteCounts = new JSONArray(), voters, finalScore = new JSONArray();
 		
 		JSONObject dayRecap, finalScoreObject;
