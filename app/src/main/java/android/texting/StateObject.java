@@ -508,6 +508,7 @@ public abstract class StateObject {
 				}
 				finalScoreObject.put("voters", voters);
 				finalScoreObject.put("toLynch", n.getMinLynchVote() - p.getVoteCount());
+				finalScore.put(finalScoreObject);
 			}
 			playersVotingX = n.getLivePlayers().remove(votingPlayers);
 			if(!playersVotingX.isEmpty()){
@@ -519,7 +520,7 @@ public abstract class StateObject {
 				}
 				finalScoreObject.put("voters", voters);
 				finalScoreObject.put("toLynch", -1);
-				
+				finalScore.put(finalScoreObject);
 			}
 			dayRecap.put(StateObject.finalScore, finalScore);
 			
