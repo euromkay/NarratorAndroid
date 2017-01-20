@@ -217,7 +217,7 @@ public class NarratorService extends Service {
 			if (gameState.isStarted) {
 				team = JUtils.getString(gameState.roleInfo, StateObject.roleColor);
 			} else {
-				team = "null";
+				team = Constants.DAY_CHAT;
 			}
 			put(jo, StateObject.message, Constants.SAY + " " + team + " " + message);
 			sendMessage(jo);
@@ -231,7 +231,7 @@ public class NarratorService extends Service {
 					return;
 				key = p.getTeam().getName();
 			} else
-				key = Constants.REGULAR_CHAT;
+				key = Constants.DAY_CHAT;
 
 			p.say(message, key);
 		}

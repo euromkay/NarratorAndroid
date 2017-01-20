@@ -2,6 +2,7 @@ package android.texting;
 
 
 import shared.event.EventList;
+import shared.event.Feedback;
 import shared.event.Message;
 import shared.event.OGIMessage;
 import shared.logic.Narrator;
@@ -19,8 +20,10 @@ import shared.logic.listeners.NarratorListener;
 import shared.logic.support.CommandHandler;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.roles.Armorsmith;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
+import shared.roles.Gunsmith;
 import shared.roles.Mayor;
 import shared.roles.Role;
 
@@ -263,7 +266,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     		message.append(teamNightPrompt + "\n");
         
         if(texter.getTeam().knowsTeam() && texter.getTeam().size() > 1)
-        	message.append("To talk to your allies : -  " + SQuote(SAY + " message") + "\n");
+        	message.append("To talk to your allies : -  " + SQuote(SAY + " teamName message") + "\n");
 
     	message.append("If you want to cancel your night actions, type " + SQuote("cancel") + ".\n");
         message.append("After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.\n");
@@ -369,8 +372,22 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         
         for(Player p: texters){
             sendNightPrompt(p);
-            if(isFirstNight)
+            if(isFirstNight){
             	sendNightTextPrompt(p);
+            	
+            }else{
+            	boolean gotGun = false, gotArmor = false;
+            	for(Feedback f: p.getFeedback(n.getDayNumber() - 1)){
+            		if(f.toString().equals(Armorsmith.ARMOR_RECEIVE_MESSAGE) && !gotArmor){
+            	    	new OGIMessage(p, "To use your vest, type " + Role.NQuote(Constants.VEST_COMMAND) + "\n");
+            			gotArmor = true;
+            		}
+            		if(f.toString().equals(Gunsmith.GUN_RECEIVE_MESSAGE) && !gotGun){
+            			new OGIMessage(p, "To use your gun, type " + Role.NQuote(Constants.GUN_COMMAND) + "\n");
+            	    	gotGun = true;
+            		}
+            	}
+            }
         }
         
        
