@@ -49,6 +49,7 @@ import shared.logic.support.Faction;
 import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.rules.Rules;
+import shared.logic.templates.Setup;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
@@ -69,7 +70,8 @@ public class NarratorService extends Service {
 	public void refresh() {
 		if(nacs == null)
 			nacs = new ArrayList<>();
-		local = Narrator.Default();
+		Narrator n = new Narrator();
+		Setup.Default(n);
 		fManager = new FactionManager(local);
 		Log.d("NS", "Narrator started");
 		if (nListeners == null)
