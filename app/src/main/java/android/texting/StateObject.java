@@ -620,6 +620,7 @@ public abstract class StateObject {
 			}else{
 				if(n.isInProgress()){
 					String[] abilities = p.getAbilities();
+					ArrayList<String> possibleOptions;
 					for(String s_ability: abilities){
 						int ability = p.parseAbility(s_ability);
 						PlayerList acceptableTargets = p.getAcceptableTargets(ability);
@@ -639,6 +640,12 @@ public abstract class StateObject {
 							}else{
 								names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
 							}
+						}
+						if(ability == Role.MAIN_ABILITY){
+							possibleOptions = p.getOptions();
+							if(!possibleOptions.isEmpty())
+								playerLists.put("options", new JSONArray(possibleOptions));
+							System.err.println(possibleOptions);
 						}
 						playerLists.put(s_ability, names);
 						playerLists.getJSONArray(StateObject.type).put(s_ability);
