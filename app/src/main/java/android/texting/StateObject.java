@@ -645,7 +645,6 @@ public abstract class StateObject {
 							possibleOptions = p.getOptions();
 							if(!possibleOptions.isEmpty())
 								playerLists.put("options", new JSONArray(possibleOptions));
-							System.err.println(possibleOptions);
 						}
 						playerLists.put(s_ability, names);
 						playerLists.getJSONArray(StateObject.type).put(s_ability);
