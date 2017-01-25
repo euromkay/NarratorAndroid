@@ -372,6 +372,36 @@ public abstract class StateObject {
 		jRandomRole.put("members", jMembers);
 	}
 	
+	private void packMember(JSONObject jMember, Member m) throws JSONException{
+		jMember.put("simpleName", m.getSimpleName());
+		jMember.put("color", m.getColor());
+		jMember.put("roleName", m.getName());
+	}
+	
+	private void addOtherColors(JSONObject jo, Member m) throws JSONException{
+		System.err.println("got this");
+		JSONArray jArray = new JSONArray();
+		JSONObject jOtherRole;
+		Member m2;
+		ArrayList<String> seenColors = new ArrayList<String>();
+		seenColors.add(m.getColor());
+		for(Member rt: n.getAllRoles().getMembers()){	
+			m2 = (Member) rt;
+			if(m2.getSimpleName().equals(m.getSimpleName()) && !seenColors.contains(m2.getColor())){
+				seenColors.add(m2.getColor());
+				
+				jOtherRole = new JSONObject();
+				packMember(jOtherRole, m2);
+				jArray.put(jOtherRole);
+			}	
+		}
+		
+		if(jArray.length() > 0){
+			System.err.println(jArray);
+			jo.put("other", jArray);
+		}
+	}
+	
 	private void addJFactions(JSONObject state) throws JSONException{
 		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray(), availableClasses;
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
@@ -407,6 +437,9 @@ public abstract class StateObject {
 				jRT.put("class_type", rt.getClasses());
 				if(!rt.isRandom()){
 					jRT.put("simpleName", ((Member) rt).getSimpleName());
+					if(n.isInProgress()){
+						addOtherColors(jRT, ((Member) rt));
+					}
 				}else{
 					addMembersToJRandomRole(jRT, (RandomMember) rt);
 				}
