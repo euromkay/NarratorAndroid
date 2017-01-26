@@ -372,14 +372,24 @@ public abstract class StateObject {
 		jRandomRole.put("members", jMembers);
 	}
 	
-	private void packMember(JSONObject jMember, Member m) throws JSONException{
+	private void addRuleTexts(JSONObject jo, Member m) throws JSONException{
+		JSONArray jmRules = new JSONArray();
+		for(String ruleID: m.getRuleIDs()){
+			jmRules.put(n.getRules().getRule(ruleID).toString());
+		}
+		if(jmRules.length() > 0)
+			jo.put("memberRuleExtras", jmRules);
+	}
+	
+	private JSONObject packMember(Member m) throws JSONException{
+		JSONObject jMember = new JSONObject();
 		jMember.put("simpleName", m.getSimpleName());
 		jMember.put("color", m.getColor());
 		jMember.put("roleName", m.getName());
+		return jMember;
 	}
 	
 	private void addOtherColors(JSONObject jo, Member m) throws JSONException{
-		System.err.println("got this");
 		JSONArray jArray = new JSONArray();
 		JSONObject jOtherRole;
 		Member m2;
@@ -391,13 +401,11 @@ public abstract class StateObject {
 				seenColors.add(m2.getColor());
 				
 				jOtherRole = new JSONObject();
-				packMember(jOtherRole, m2);
-				jArray.put(jOtherRole);
+				jArray.put(packMember(m2));
 			}	
 		}
 		
 		if(jArray.length() > 0){
-			System.err.println(jArray);
 			jo.put("other", jArray);
 		}
 	}
@@ -406,6 +414,7 @@ public abstract class StateObject {
 		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray(), availableClasses;
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
 		ArrayList<String> availableClassesBacker;
+		ArrayList<String> teamsWithoutVisibleFactions = new ArrayList<>();
 		for(Faction f: fManager.factions){
 			jFaction = new JSONObject();
 			fMembers = new JSONArray();
@@ -427,7 +436,10 @@ public abstract class StateObject {
 				jRT.put("name", rt.getName());
 				jRT.put("description", rt.getDescription());
 				jRT.put("color", rt.getColor());
-				jRT.put("rules", new JSONArray(rt.getRules()));
+				if(fManager.getFaction(rt.getColor()) == null && !teamsWithoutVisibleFactions.contains(rt.getColor())){
+					teamsWithoutVisibleFactions.add(rt.getColor());
+				}
+				jRT.put("rules", new JSONArray(rt.getRuleIDs()));
 				for(String class_name: rt.getClasses()){
 					if(!availableClassesBacker.contains(class_name)){
 						availableClassesBacker.add(class_name);
@@ -438,7 +450,8 @@ public abstract class StateObject {
 				if(!rt.isRandom()){
 					jRT.put("simpleName", ((Member) rt).getSimpleName());
 					if(n.isInProgress()){
-						addOtherColors(jRT, ((Member) rt));
+						addOtherColors(jRT, (Member) rt);
+						addRuleTexts(jRT, (Member) rt);
 					}
 				}else{
 					addMembersToJRandomRole(jRT, (RandomMember) rt);
@@ -456,12 +469,11 @@ public abstract class StateObject {
 			}
 			jFaction.put("blacklisted", blacklisted);
 			
-			
-			if(f.isEditable)
+			if(!n.isStarted())
 				jFaction.put("rules", f.getRules());
-			else{
-				jFaction.put("rules", new JSONArray());
-			}
+			else
+				jFaction.put("rules", Faction.getRules(f.getTeam(), n));
+			
 			jFactions.put(f.getName(), jFaction);
 			jFactions.put(f.getColor(), jFaction);
 			
@@ -488,6 +500,46 @@ public abstract class StateObject {
 			jFaction.put("enemies", enemies);
 			
 		}
+		Team forgottenTeam;
+		ArrayList<String> seenRoles;
+		for(String teamColor: teamsWithoutVisibleFactions){
+			forgottenTeam = n.getTeam(teamColor);
+			if(forgottenTeam == null){
+				continue;
+			}
+
+			jFaction = new JSONObject();
+			jFaction.put("name", forgottenTeam.getName());
+			jFaction.put("color", forgottenTeam.getColor());
+			jFaction.put("description", forgottenTeam.getDescription());
+			jFaction.put("rules", Faction.getRules(forgottenTeam, n));
+			enemies = new JSONArray();
+			for(Team t: n.getAllTeams()){
+				if(t.getName().equals(Constants.A_SKIP))
+					continue;
+				if(t == forgottenTeam)
+					continue;
+				allyInfo = new JSONObject();
+				allyInfo.put("color", t.getColor());
+				allyInfo.put("name", t.getName());
+				if(t.isEnemy(forgottenTeam))
+					enemies.put(allyInfo);
+			}
+			jFaction.put("enemies", enemies);
+			
+			fMembers = new JSONArray();
+			seenRoles = new ArrayList<>();
+			for(Member m: n.getAllRoles().getMembers()){
+				if(m.getColor().equals(teamColor) && !seenRoles.contains(m.getName())){
+					seenRoles.add(m.getName());
+					fMembers.put(packMember(m));
+				}
+			}
+			jFaction.put("members", fMembers);
+
+			jFactions.put(teamColor, jFaction);
+		}
+		
 		jFactions.put(StateObject.factionNames, factionNames);
 		
 		state.getJSONArray(StateObject.type).put(StateObject.factions);
