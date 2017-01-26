@@ -391,7 +391,6 @@ public abstract class StateObject {
 	
 	private void addOtherColors(JSONObject jo, Member m) throws JSONException{
 		JSONArray jArray = new JSONArray();
-		JSONObject jOtherRole;
 		Member m2;
 		ArrayList<String> seenColors = new ArrayList<String>();
 		seenColors.add(m.getColor());
@@ -400,7 +399,6 @@ public abstract class StateObject {
 			if(m2.getSimpleName().equals(m.getSimpleName()) && !seenColors.contains(m2.getColor())){
 				seenColors.add(m2.getColor());
 				
-				jOtherRole = new JSONObject();
 				jArray.put(packMember(m2));
 			}	
 		}
