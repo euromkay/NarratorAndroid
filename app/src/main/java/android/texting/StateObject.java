@@ -7,7 +7,9 @@ import java.util.HashMap;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import shared.event.Message;
 import shared.event.SelectionMessage;
+import shared.event.VoteAnnouncement;
 import shared.logic.Member;
 import shared.logic.Narrator;
 import shared.logic.Player;
@@ -169,11 +171,17 @@ public abstract class StateObject {
 					allyObject.put(StateObject.teamAllyRole, ally.getRoleName());
 					allyObject.put(StateObject.teamAllyColor, group.getColor());
 					allyList.put(allyObject);
+					if(group.godfatherStatus){
+						allyObject.put(StateObject.teamGodfather, true);
+					}
 				}
 				
 			}
 			roleInfo.put(StateObject.roleTeam, allyList);
 		}
+		ArrayList<String> roleSpecs = p.getRoleSpecs();
+		if(!roleSpecs.isEmpty())
+			roleInfo.put("roleSpecs", roleSpecs);
 
 		state.getJSONArray(StateObject.type).put(StateObject.roleInfo);
 		state.put(StateObject.roleInfo, roleInfo);
@@ -560,6 +568,25 @@ public abstract class StateObject {
 		return "#FFFFFF";
 	}
 	
+	private void addVoteMovements(JSONObject j, int i) throws JSONException{
+		JSONArray movements = new JSONArray();
+		
+		VoteAnnouncement va;
+		JSONObject vote;
+		for(Message m: n.getEventManager().getDayChat(i).getEvents()){
+			if(m instanceof VoteAnnouncement){
+				va = (VoteAnnouncement) m;
+				
+				vote = new JSONObject();
+				vote.put("voter", va.voter);
+				vote.put("voted", va.voted);
+				movements.put(vote);
+			}
+		}
+		
+		j.put("movements", movements);
+	}
+	
 	private void addJVotes(JSONObject state) throws JSONException{
 		if(!n.isDay())
 			return;
@@ -569,6 +596,8 @@ public abstract class StateObject {
 		PlayerList playersVotingX, votingPlayers;
 		for(int i = 1; i <= n.getDayNumber(); i++){
 			dayRecap = new JSONObject();
+			
+			addVoteMovements(dayRecap, i);
 			
 			finalScore = new JSONArray();
 			votingPlayers = new PlayerList();
@@ -850,6 +879,7 @@ public abstract class StateObject {
 	public static final String teamMembers   = "teamMembers";
 	public static final String teamAllyName  = "teamAllyName";
 	public static final String teamAllyRole  = "teamAllyRole";
+	public static final String teamGodfather = "teamGodfather";
 	
 	public static final String possibleRandoms = "possibleRandoms";
 	public static final String spawn           = "spawn";
