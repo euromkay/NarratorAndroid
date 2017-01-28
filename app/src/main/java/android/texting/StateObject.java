@@ -7,6 +7,7 @@ import java.util.HashMap;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import shared.event.DeathAnnouncement;
 import shared.event.Message;
 import shared.event.SelectionMessage;
 import shared.event.VoteAnnouncement;
@@ -116,6 +117,7 @@ public abstract class StateObject {
 		}else{
 			dayLabel = "Night " + n.getDayNumber();
 		}
+		state.put("dayNumber", n.getDayNumber());
 		state.getJSONArray(StateObject.type).put(StateObject.dayLabel);
 		state.put(StateObject.dayLabel, dayLabel);
 	}
@@ -569,9 +571,10 @@ public abstract class StateObject {
 	}
 	
 	private void addVoteMovements(JSONObject j, int i) throws JSONException{
-		JSONArray movements = new JSONArray();
+		JSONArray movements = new JSONArray(), deads;
 		
 		VoteAnnouncement va;
+		DeathAnnouncement da;
 		JSONObject vote;
 		for(Message m: n.getEventManager().getDayChat(i).getEvents()){
 			if(m instanceof VoteAnnouncement){
@@ -580,7 +583,20 @@ public abstract class StateObject {
 				vote = new JSONObject();
 				vote.put("voter", va.voter);
 				vote.put("voted", va.voted);
+				vote.put("prev", va.prev);
+				if(va.voteCount != 1)
+					vote.put("power", va.voteCount);
 				movements.put(vote);
+			}else if(m instanceof DeathAnnouncement){
+				da = (DeathAnnouncement) m;
+				if(da.dead == null || da.dead.isEmpty())
+					continue;
+				
+				deads = new JSONArray();
+				for(Player d: da.dead){
+					deads.put(d.getName());
+				}
+				movements.put(deads);
 			}
 		}
 		
@@ -590,16 +606,25 @@ public abstract class StateObject {
 	private void addJVotes(JSONObject state) throws JSONException{
 		if(!n.isDay())
 			return;
-		JSONArray voteCounts = new JSONArray(), voters, finalScore = new JSONArray();
+		JSONArray voteCounts = new JSONArray(), alivePlayers;;
 		
-		JSONObject dayRecap, finalScoreObject;
-		PlayerList playersVotingX, votingPlayers;
+		JSONObject dayRecap;
 		for(int i = 1; i <= n.getDayNumber(); i++){
 			dayRecap = new JSONObject();
-			
+			alivePlayers = new JSONArray();
 			addVoteMovements(dayRecap, i);
 			
-			finalScore = new JSONArray();
+			for(Player p: n.getAllPlayers()){
+				if(p.isAlive())
+					alivePlayers.put(p.getName());
+				else if(p.getDeathDay() >= i){
+					alivePlayers.put(p.getName());
+				}
+			}
+			
+			dayRecap.put("alivePlayers", alivePlayers);
+			
+			/*finalScore = new JSONArray();
 			votingPlayers = new PlayerList();
 			if(i != n.getDayNumber()){
 				voteCounts.put(dayRecap);
@@ -636,7 +661,7 @@ public abstract class StateObject {
 				finalScoreObject.put("toLynch", -1);
 				finalScore.put(finalScoreObject);
 			}
-			dayRecap.put(StateObject.finalScore, finalScore);
+			dayRecap.put(StateObject.finalScore, finalScore);*/
 			
 			voteCounts.put(dayRecap);
 		}
