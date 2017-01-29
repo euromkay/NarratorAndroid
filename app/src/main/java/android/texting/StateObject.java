@@ -417,17 +417,20 @@ public abstract class StateObject {
 			jo.put("memberRuleExtras", jmRules);
 	}
 	
-	private JSONObject packMember(Member m) throws JSONException{
+	private JSONObject packMember(Member m, boolean complex) throws JSONException{
 		JSONObject jMember = new JSONObject();
 		jMember.put("name", m.getName());
 		jMember.put("simpleName", m.getSimpleName());
 		jMember.put("color", m.getColor());
 		jMember.put("roleName", m.getName());
 		jMember.put("description", m.getDescription());
-		addOtherColors(jMember, m);
+		if(complex)
+			addOtherColors(jMember, m);
 		addRuleTexts(jMember, m);
 		return jMember;
 	}
+	
+	private static boolean SIMPLE = false, COMPLEX = true;
 	
 	private void addOtherColors(JSONObject jo, Member m) throws JSONException{
 		JSONArray jArray = new JSONArray();
@@ -439,7 +442,7 @@ public abstract class StateObject {
 			if(m2.getSimpleName().equals(m.getSimpleName()) && !seenColors.contains(m2.getColor())){
 				seenColors.add(m2.getColor());
 				
-				jArray.put(packMember(m2));
+				jArray.put(packMember(m2, SIMPLE));
 			}	
 		}
 		
@@ -508,7 +511,7 @@ public abstract class StateObject {
 				for(Member m: n.getAllRoles().getMembers()){
 					if(m.getColor().equals(f.getColor()) && !seenRoles.contains(m.getName())){
 						seenRoles.add(m.getName());
-						jRT = packMember(m);
+						jRT = packMember(m, COMPLEX);
 						fMembers.put(jRT);
 						jFactions.put(m.getName() + m.getColor(), jRT);
 					}
@@ -586,7 +589,7 @@ public abstract class StateObject {
 			for(Member m: n.getAllRoles().getMembers()){
 				if(m.getColor().equals(teamColor) && !seenRoles.contains(m.getName())){
 					seenRoles.add(m.getName());
-					jRT = packMember(m);
+					jRT = packMember(m, COMPLEX);
 					fMembers.put(jRT);
 					jFactions.put(m.getName() + m.getColor(), jRT);
 				}
