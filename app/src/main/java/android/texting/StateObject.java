@@ -170,6 +170,8 @@ public abstract class StateObject {
 				chats.put(chatName, t.getColor());
 			}
 		}
+		if(p.isDead())
+			chats.put(n.getEventManager().getDeadChat().getName(), Constants.DEAD_CHAT);
 		roleInfo.put("chats", chats);
 		
 		ArrayList<Team> knownTeams = shouldShowTeam(p);
@@ -514,6 +516,17 @@ public abstract class StateObject {
 						jRT = packMember(m, COMPLEX);
 						fMembers.put(jRT);
 						jFactions.put(m.getName() + m.getColor(), jRT);
+					}
+				}
+				for(RoleTemplate rt: n.getAllRoles()){
+					if(rt.isRandom()){
+						jRT = new JSONObject();
+						jRT.put("name", rt.getName());
+						jRT.put("description", rt.getDescription());
+						jRT.put("color", rt.getColor());
+						addMembersToJRandomRole(jRT, (RandomMember) rt);
+						jFactions.put(rt.getName() + rt.getColor(), jRT);
+						fMembers.put(jRT);
 					}
 				}
 			}
