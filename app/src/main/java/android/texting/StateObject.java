@@ -342,6 +342,14 @@ public abstract class StateObject {
 			ruleObject.put("val", t.canKill());
 			jRules.put(id, ruleObject);
 			
+			id = t.getColor() + "recruitable";
+			ruleObject = new JSONObject();
+			ruleObject.put("name", "Can be recruited");
+			ruleObject.put("id", id);
+			ruleObject.put("isNum", false);
+			ruleObject.put("val", t.canRecruitFrom());
+			jRules.put(id, ruleObject);
+			
 			id = t.getColor() + "identity";
 			ruleObject = new JSONObject();
 			ruleObject.put("name", "Knows who allies are");
