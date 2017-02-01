@@ -330,57 +330,25 @@ public abstract class StateObject {
 			jRules.put(r.id, ruleObject);
 		}
 		String id;
+		Rule fRule;
 		for(Team t: n.getAllTeams()){
 			if(t.getColor().equals(Constants.A_SKIP))
 				continue;
 			
-			id = t.getColor() + "kill";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Has Faction kill");
-			ruleObject.put("id", id);
-			ruleObject.put("isNum", false);
-			ruleObject.put("val", t.canKill());
-			jRules.put(id, ruleObject);
-			
-			id = t.getColor() + "recruitable";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Can be recruited");
-			ruleObject.put("id", id);
-			ruleObject.put("isNum", false);
-			ruleObject.put("val", t.canRecruitFrom());
-			jRules.put(id, ruleObject);
-			
-			id = t.getColor() + "identity";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Knows who allies are");
-			ruleObject.put("id", id);
-			ruleObject.put("isNum", false);
-			ruleObject.put("val", t.knowsTeam());
-			jRules.put(id, ruleObject);
-			
-			id = t.getColor() + "liveToWin";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Must be alive to win");
-			ruleObject.put("id", id);
-			ruleObject.put("isNum", false);
-			ruleObject.put("val", t.getAliveToWin());
-			jRules.put(id, ruleObject);
-			
-			id = t.getColor() + "godfather";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Godfather Status");
-			ruleObject.put("id", id);
-			ruleObject.put("isNum", false);
-			ruleObject.put("val", t.godfatherStatus);
-			jRules.put(id, ruleObject);
-			
-			id = t.getColor() + "priority";
-			ruleObject = new JSONObject();
-			ruleObject.put("name", "Win priority");
-			ruleObject.put("id", id);
-			ruleObject.put("val", t.getPriority());
-			ruleObject.put("isNum", true);
-			jRules.put(id, ruleObject);
+			for(String fRuleID: Team.FACTION_RULES){
+				fRule = t.getRule(fRuleID);
+				
+				id = t.getColor() + fRuleID;
+				ruleObject = new JSONObject();
+				ruleObject.put("name", fRule.name);
+				ruleObject.put("isNum", fRule instanceof RuleInt);
+				if(fRule instanceof RuleInt){
+					ruleObject.put("val", ((RuleInt) fRule).val);
+				}else{
+					ruleObject.put("val", ((RuleBool) fRule).val);
+				}
+				jRules.put(id, ruleObject);
+			}
 		}
 		
 		
