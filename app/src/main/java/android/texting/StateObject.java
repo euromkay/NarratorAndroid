@@ -198,6 +198,9 @@ public abstract class StateObject {
 		ArrayList<String> roleSpecs = p.getRoleSpecs();
 		if(!roleSpecs.isEmpty())
 			roleInfo.put("roleSpecs", roleSpecs);
+		
+		if(p.hasDayAction(Role.INVITATION_ABILITY))
+			roleInfo.put("acceptingRecruitment", p.ci.accepted);
 
 		state.getJSONArray(StateObject.type).put(StateObject.roleInfo);
 		state.put(StateObject.roleInfo, roleInfo);
@@ -402,6 +405,7 @@ public abstract class StateObject {
 		jMember.put("color", m.getColor());
 		jMember.put("roleName", m.getName());
 		jMember.put("description", m.getDescription());
+		jMember.put("rules", new JSONArray(m.getRuleIDs()));
 		if(complex)
 			addOtherColors(jMember, m);
 		addRuleTexts(jMember, m);
@@ -502,7 +506,6 @@ public abstract class StateObject {
 						jRT.put("color", rt.getColor());
 						addMembersToJRandomRole(jRT, (RandomMember) rt);
 						jFactions.put(rt.getName() + rt.getColor(), jRT);
-						fMembers.put(jRT);
 					}
 				}
 			}
@@ -780,20 +783,20 @@ public abstract class StateObject {
 				JSONArray names = getJPlayerArray(votes, p.getVoteTarget(), "Vote");
 				playerLists.put("Vote", names);
 				playerLists.getJSONArray(StateObject.type).put("Vote");
-				if(p.hasDayAction()){
-					PlayerList acceptableTargets;
-					for(String s_ability: p.getDayAbility()){
-						int ability = p.parseAbility(s_ability);
-						acceptableTargets = p.getAcceptableTargets(ability);
-						if(acceptableTargets.size() == 1 && acceptableTargets.getFirst() == p)
-							continue;
-						if(acceptableTargets.isEmpty())
-							continue;
-						names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
-						playerLists.put(s_ability, names);
-						playerLists.getJSONArray(StateObject.type).put(s_ability);
-					}
+	
+				PlayerList acceptableTargets;
+				for(String s_ability: p.getDayActions()){
+					int ability = p.parseAbility(s_ability);
+					acceptableTargets = p.getAcceptableTargets(ability);
+					if(acceptableTargets.size() == 1 && acceptableTargets.getFirst() == p)
+						continue;
+					if(acceptableTargets.isEmpty() && ability == Role.MAIN_ABILITY)
+						continue;
+					names = getJPlayerArray(acceptableTargets, new PlayerList[]{p.getTargets(ability)}, s_ability);
+					playerLists.put(s_ability, names);
+					playerLists.getJSONArray(StateObject.type).put(s_ability);
 				}
+			
 			}else{
 				if(n.isInProgress()){
 					String[] abilities = p.getAbilities();
