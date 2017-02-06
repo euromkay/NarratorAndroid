@@ -284,7 +284,9 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     	new OGIMessage(texter, message);
     	
-    	if(!texter.hasDayAction())
+    	if(texter.hasDayAction(Role.INVITATION_ABILITY))
+    		new OGIMessage(texter, "To accept your recruitment invitation, text " + SQuote(Constants.ACCEPT) + ". Otherwise, text " + SQuote(Constants.DECLINE));
+    	if(!texter.hasDayAction(Role.MAIN_ABILITY))
     		return;
     	if(texter.is(Arsonist.class)){
     		new OGIMessage(texter, "To burn everyone you doused right now, text " + SQuote(Arsonist.BURN_LOWERCASE));
@@ -401,7 +403,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     }
 
-    public void onNightTarget(Player p){
+    public void onTargetSelection(Player p){
 
     }
 

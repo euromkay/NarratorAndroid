@@ -53,6 +53,7 @@ import shared.logic.templates.Setup;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
+import shared.roles.Role;
 import voss.narrator.R;
 
 public class NarratorService extends Service {
@@ -1035,7 +1036,7 @@ public class NarratorService extends Service {
 		}else{
 			Player currentPlayer = local.getPlayerByName(name);
 			if(local.isDay())
-				return currentPlayer.hasDayAction();
+				return currentPlayer.hasDayAction(Role.MAIN_ABILITY);
 			else
 				return currentPlayer.isAlive();
 		}
@@ -1048,7 +1049,7 @@ public class NarratorService extends Service {
 			else
 				return false;
 		}else
-			return local.getPlayerByName(name).hasDayAction();
+			return local.getPlayerByName(name).hasDayAction(Role.MAIN_ABILITY);
 	}
 	
 	public JSONArray getRoles(){

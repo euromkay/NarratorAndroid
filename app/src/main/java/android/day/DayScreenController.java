@@ -82,7 +82,7 @@ public class DayScreenController{
 
 
 
-		public void onNightTarget(Player owner){
+		public void onTargetSelection(Player owner){
 			dController.onNightTarget();
 		}
 		public void onNightTargetRemove(Player owner, String command, PlayerList prev){
