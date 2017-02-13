@@ -268,7 +268,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
         if(texter.getTeam().knowsTeam() && texter.getTeam().size() > 1)
         	message.append("To talk to your allies : -  " + SQuote(SAY + " teamName message") + "\n");
 
-    	message.append("If you want to cancel your night actions, type " + SQuote("cancel") + ".\n");
+    	message.append("If you want to cancel all your night actions, type " + SQuote(Constants.CANCEL) + ".\n");
         message.append("After you're done submitting actions, text " + SQuote(END_NIGHT) + " so night can end.  If you want to cancel your bid to end night, type it again.\n");
         
         message.append("To see who hasn't ended the night : - " + SQuote(WAITING) );
