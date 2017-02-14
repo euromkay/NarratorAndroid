@@ -238,8 +238,8 @@ public abstract class StateObject {
 			graveMarker.put("day", dt.getDeathDay());
 			
 			deathTypes = new JSONArray();
-			for(String s: dt.getList()){
-				deathTypes.put(s);
+			for(String[] s: dt.getList()){
+				deathTypes.put(s[1]);
 			}
 			graveMarker.put("deathTypes", deathTypes);
 		}
