@@ -48,7 +48,7 @@ public class ActivitySettings extends Activity implements OnClickListener, OnChe
 		}
 	}
 	private void changeValues(){
-		setSwitch(R.id.rules_day_switch, Constants.RULES_DAYSTART);
+		(R.id.rules_day_switch, Constants.RULES_DAYSTART);
 		
 			
 		setSwitch(R.id.rules_self_heal_switch, Constants.RULES_DOCTOR_HEAL_SELF);
@@ -60,7 +60,7 @@ public class ActivitySettings extends Activity implements OnClickListener, OnChe
 		
 		//dropDownMenu();
 	}
-	private void setSwitch(int buttonId, String stringId){
+	private void setSwitch(int buttonId, String[] stringId){
 		Switch swich = (Switch) findViewById(buttonId);
 		
 		Log.d("Settings", stringId);
