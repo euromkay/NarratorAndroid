@@ -74,6 +74,7 @@ public class NarratorService extends Service {
 		Narrator n = new Narrator();
 		Setup.Default(n);
 		fManager = new FactionManager(local);
+		fManager.importSetup(Setup.Default(n));
 		Log.d("NS", "Narrator started");
 		if (nListeners == null)
 			nListeners = new ArrayList<>();
