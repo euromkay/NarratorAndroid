@@ -550,6 +550,10 @@ public abstract class StateObject {
 			jFaction.put("enemies", enemies);
 			
 		}
+		if(fManager.factions.isEmpty()){
+			for(Team t: n.getAllTeams())
+				teamsWithoutVisibleFactions.add(t.getColor());
+		}
 		Team forgottenTeam;
 		for(String teamColor: teamsWithoutVisibleFactions){
 			forgottenTeam = n.getTeam(teamColor);
