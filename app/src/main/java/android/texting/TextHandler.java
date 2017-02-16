@@ -256,9 +256,9 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	message.append(texter.getRoleInfo() + "\n");
     	message.append(texter.getNightText() + "\n");
     	
-    	if(texter.getRole().getGuns() != 0)
+    	if(texter.getRole().getGunCount() != 0)
     		message.append("To use your gun, type " + Role.NQuote(Constants.GUN_COMMAND) + "\n");
-    	if(texter.getRole().getVests() != 0)
+    	if(texter.getRole().getVestCount() != 0)
     		message.append("To use your vest, type " + Role.NQuote(Constants.VEST_COMMAND) + "\n");
     	
     	String teamNightPrompt = texter.getTeam().getNightPrompt();
