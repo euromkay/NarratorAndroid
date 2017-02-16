@@ -159,7 +159,7 @@ public abstract class StateObject {
 		roleInfo.put(StateObject.roleName, p.getRoleName());
 		roleInfo.put(StateObject.roleBaseName, p.getRole().getClass().getSimpleName());
 		roleInfo.put(StateObject.roleDescription, p.getRoleInfo());
-		roleInfo.put(StateObject.breadCount, p.getRole().getBread());
+		roleInfo.put(StateObject.breadCount, p.getRole().getBreadCount());
 		
 		JSONObject chats = new JSONObject();
 		
