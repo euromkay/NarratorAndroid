@@ -56,7 +56,13 @@ public class DayScreenController{
 		}
 		
 		public void onAssassination(Player assassin, Player victim, Message e){
-			dController.onAssassination(assassin.getName(), victim.getName());
+			String name;
+			if(victim == null)
+				name = null;
+			else
+				name = victim.getName();
+					
+			dController.onAssassination(assassin.getName(), name);
 		}
 
 
@@ -334,7 +340,8 @@ public class DayScreenController{
 	
 	public void onAssassination(String assassin, String killed){
 		ArrayList<String> dead = new ArrayList<>();
-		dead.add(killed);
+		if(killed != null)
+			dead.add(killed);
 		onArsonDayBurn(assassin, dead);
 	}
 
