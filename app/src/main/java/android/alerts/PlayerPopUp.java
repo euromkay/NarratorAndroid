@@ -28,37 +28,9 @@ import json.JSONException;
 import json.JSONObject;
 import shared.logic.Narrator;
 import shared.logic.Player;
-import shared.logic.Team;
 import shared.logic.support.Communicator;
 import shared.logic.support.CommunicatorNull;
 import shared.logic.support.RoleTemplate;
-import shared.logic.support.rules.Rules;
-import shared.roles.Agent;
-import shared.roles.Amnesiac;
-import shared.roles.Armorsmith;
-import shared.roles.Arsonist;
-import shared.roles.Assassin;
-import shared.roles.Baker;
-import shared.roles.Blackmailer;
-import shared.roles.Bodyguard;
-import shared.roles.Citizen;
-import shared.roles.Detective;
-import shared.roles.Doctor;
-import shared.roles.Driver;
-import shared.roles.Framer;
-import shared.roles.Gunsmith;
-import shared.roles.Janitor;
-import shared.roles.Lookout;
-import shared.roles.MassMurderer;
-import shared.roles.Mayor;
-import shared.roles.Poisoner;
-import shared.roles.SerialKiller;
-import shared.roles.Sheriff;
-import shared.roles.Stripper;
-import shared.roles.Survivor;
-import shared.roles.Veteran;
-import shared.roles.Vigilante;
-import shared.roles.Witch;
 import voss.narrator.R;
 
 
@@ -205,83 +177,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
     	ns.newTeam("Tyrell", tyrell_c, null);
     	ns.newTeam("Targaryen", targaryen_c, null);
     	
-    	Narrator narrator = ns.local;
-		Team martell = narrator.getTeam(martell_c).setName("Martell").setPriority(3);
-		Team lannister = narrator.getTeam(lannister_c).setName("Lannister").setPriority(3);
-		Team baratheon = narrator.getTeam(baratheon_c).setName("Baratheon").setPriority(3);
-		Team stark = narrator.getTeam(stark_c).setName("Stark").setPriority(2);
-		Team tyrell = narrator.getTeam(tyrell_c).setName("Tyrell").setPriority(2);
-		Team targaryen = narrator.getTeam(targaryen_c).setName("Targaryen").setPriority(2);
-		
-		lannister.setKill(true);
-		baratheon.setKill(true);
-		
-		martell.setKnowsTeam(true);
-		lannister.setKnowsTeam(true);
-		baratheon.setKnowsTeam(true);
-		
-		stark.addSheriffDetectableTeam(martell);
-		stark.addSheriffDetectableTeam(lannister);
-		stark.addSheriffDetectableTeam(baratheon);
-		
-		tyrell.addSheriffDetectableTeam(martell);
-		tyrell.addSheriffDetectableTeam(baratheon);
-		tyrell.addSheriffDetectableTeam(stark);
-		
-		targaryen.addSheriffDetectableTeam(lannister);
-		targaryen.addSheriffDetectableTeam(baratheon);
-		targaryen.addSheriffDetectableTeam(martell);
-		
-		targaryen.setEnemies(martell, baratheon, lannister);
-		stark.setEnemies(martell, tyrell, lannister);
-		baratheon.setEnemies(lannister, tyrell);
-		tyrell.setEnemies(martell);
-
-		narrator.getRules().setBool(Rules.DAY_START, Narrator.DAY_START);
-		narrator.getRules().setBool(Rules.ARSON_INVULNERABLE, false);
-		narrator.getRules().setBool(Rules.SK_INVULNERABLE, false);
-		narrator.getRules().setBool(Rules.MM_INVULNERABILITY, false);
-		narrator.getRules().setBool(Rules.POISONERR_INVUL, false);
-		
-		String[] mafia = {baratheon_c, lannister_c};
-		String[] friendlies = {targaryen_c, tyrell_c, stark_c};
-		//String[] nonMartell = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c};
-        String[] all = {targaryen_c, tyrell_c, stark_c, baratheon_c, lannister_c, martell_c};
-		String[] nonNeutrals = {martell_c, lannister_c, targaryen_c, baratheon_c};
-		
-		PlayerPopUp.addRoles(ns, Agent.class.getSimpleName(), mafia);
-		PlayerPopUp.addRoles(ns, Arsonist.ROLE_NAME, martell_c);
-		PlayerPopUp.addRoles(ns, Amnesiac.class.getSimpleName(), targaryen_c);
-		PlayerPopUp.addRoles(ns, Armorsmith.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Assassin.ROLE_NAME, mafia);
-		PlayerPopUp.addRoles(ns, Baker.ROLE_NAME, targaryen_c);
-		PlayerPopUp.addRoles(ns, Blackmailer.class.getSimpleName(), mafia);
-		PlayerPopUp.addRoles(ns, Stripper.class.getSimpleName(), baratheon_c, lannister_c, targaryen_c, martell_c);
-		PlayerPopUp.addRoles(ns, Bodyguard.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Citizen.ROLE_NAME, targaryen_c);
-		PlayerPopUp.addRoles(ns, Detective.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Doctor.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Driver.ROLE_NAME, all);
-		PlayerPopUp.addRoles(ns, Framer.ROLE_NAME, mafia);
-		PlayerPopUp.addRoles(ns, Gunsmith.ROLE_NAME, nonNeutrals);
-		PlayerPopUp.addRoles(ns, Janitor.ROLE_NAME, mafia);
-		PlayerPopUp.addRoles(ns, MassMurderer.ROLE_NAME, martell_c);
-		PlayerPopUp.addRoles(ns, Mayor.ROLE_NAME, targaryen_c);
-		PlayerPopUp.addRoles(ns, Lookout.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Poisoner.ROLE_NAME, martell_c);
-		PlayerPopUp.addRoles(ns, SerialKiller.ROLE_NAME, martell_c);
-		PlayerPopUp.addRoles(ns, Sheriff.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Survivor.class.getSimpleName(), martell_c, targaryen_c);
-		PlayerPopUp.addRoles(ns, Veteran.ROLE_NAME, targaryen_c);
-		PlayerPopUp.addRoles(ns, Vigilante.ROLE_NAME, friendlies);
-		PlayerPopUp.addRoles(ns, Witch.ROLE_NAME, martell_c);
-    }
-    
-    private static void addRoles(NarratorService ns, String role, String ... factions){
-    	for(String s: factions){
-    		ns.addTeamRole(role, s, null);
-    	}
-    	
+    	throw new NullPointerException();
     }
 
     public void updatePlayerList(){
