@@ -442,11 +442,11 @@ public class DayScreenController{
 				return;
 			JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
 			String baseRoleName = JUtils.getString(roleInfo, StateObject.roleBaseName);
-			if (baseRoleName.equals(Mayor.ROLE_NAME))
+			if (baseRoleName.equals(Mayor.class.getSimpleName()))
 				dScreen.setButtonText("Reveal as Mayor (+" + manager.ns.getMayorVotePower() + " votes)");
-			else if (baseRoleName.equals(Arsonist.ROLE_NAME))
+			else if (baseRoleName.equals(Arsonist.class.getSimpleName()))
 				dScreen.setButtonText("Burn all doused targets");
-			else if (baseRoleName.equals(Assassin.ROLE_NAME))
+			else if (baseRoleName.equals(Assassin.class.getSimpleName()))
 				dScreen.setButtonText("Assassinate");
 		}else{
 			if (manager.ns.endedNight(currentPlayer))
@@ -475,7 +475,7 @@ public class DayScreenController{
 			return;
 		JSONObject roleInfo = manager.ns.getRoleInfo(manager.getCurrentPlayer());
 		String roleName = JUtils.getString(roleInfo, StateObject.roleBaseName);
-		if(isDay() && !roleName.equals(Assassin.ROLE_NAME)){
+		if(isDay() && !roleName.equals(Assassin.class.getSimpleName())){
 			return;
 		}
 		JSONObject playerInfo = manager.ns.getPlayers(currentPlayer);

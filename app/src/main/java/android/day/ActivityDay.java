@@ -719,7 +719,7 @@ implements
 		if(ns.isDead(currentPlayer))
 			return;
 		JSONObject roleInfo = manager.ns.getRoleInfo(currentPlayer);
-		boolean isFramer = JUtils.getString(roleInfo, StateObject.roleBaseName).equals(Framer.ROLE_NAME);
+		boolean isFramer = JUtils.getString(roleInfo, StateObject.roleBaseName).equals(Framer.class.getSimpleName());
 
 		if (isFramer && isFrameActionSelected()) {
 			showView(framerSpinner);

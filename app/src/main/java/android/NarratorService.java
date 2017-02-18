@@ -323,9 +323,9 @@ public class NarratorService extends Service {
 		if (server.IsLoggedIn()) {
 			JSONObject jo = new JSONObject();
 			String roleName = JUtils.getString(gameState.roleInfo, StateObject.roleBaseName);
-			if (roleName.equals(Mayor.ROLE_NAME)) {
+			if (roleName.equals(Mayor.class.getSimpleName())) {
 				put(jo, StateObject.message, Mayor.REVEAL);
-			} else if (roleName.equals(Arsonist.ROLE_NAME)) {
+			} else if (roleName.equals(Arsonist.class.getSimpleName())) {
 				put(jo, StateObject.message, Arsonist.BURN);
 			} else {
 				if (target == null) {
