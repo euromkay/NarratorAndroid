@@ -343,6 +343,7 @@ public abstract class StateObject {
 				
 				id = t.getColor() + fRuleID;
 				ruleObject = new JSONObject();
+				ruleObject.put("id", id);
 				ruleObject.put("name", fRule.name);
 				ruleObject.put("isNum", fRule instanceof RuleInt);
 				if(fRule instanceof RuleInt){
