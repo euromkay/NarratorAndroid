@@ -512,10 +512,10 @@ public abstract class StateObject {
 			}
 			jFaction.put("class_names", availableClasses);
 			jFaction.put("members", fMembers);
-			for(Member rt: f.unavailableRoles){
+			for(Role rt: f.unavailableRoles){
 				jRT = new JSONObject();
-				jRT.put("name", rt.getName());
-				jRT.put("simpleName", rt.getSimpleName());
+				jRT.put("name", rt.getRoleName());
+				jRT.put("simpleName", rt.getClass().getSimpleName());//really should only be using this field, since these are UNAVAILABLE
 				blacklisted.put(jRT);
 			}
 			jFaction.put("blacklisted", blacklisted);
