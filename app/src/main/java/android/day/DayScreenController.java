@@ -9,6 +9,7 @@ import android.texting.StateObject;
 import android.widget.TextView;
 import json.JSONArray;
 import json.JSONObject;
+import shared.event.Announcement;
 import shared.event.EventList;
 import shared.event.Message;
 import shared.logic.Narrator;
@@ -72,6 +73,11 @@ public class DayScreenController{
 
 		public void onArsonDayBurn(Player arson, PlayerList burned, Message e){
 			dController.onArsonDayBurn(arson.getName(), burned.getNamesToStringList());
+
+		}
+		
+		public void onElectroExplosion(PlayerList burned, Announcement e){
+			dController.onElectroExplosion(burned.getNamesToStringList());
 
 		}
 
@@ -195,6 +201,16 @@ public class DayScreenController{
 
 	}
 
+	public void onElectroExplosion(ArrayList<String> dead){
+		setupPlayerDrawer();
+		if (dead.contains(currentPlayer)){
+			dScreen.onBackPressed();
+			setNarratorInfoView();
+		}
+		updatePlayerControlPanel();
+		dScreen.updateMembers();
+	}
+	
 	public void onVote(Player voter, Player target, int voteCount, Message e) {
 		updateActionPanel();
 		updateChatPanel();

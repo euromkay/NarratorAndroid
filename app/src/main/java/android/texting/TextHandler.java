@@ -1,6 +1,7 @@
 package android.texting;
 
 
+import shared.event.Announcement;
 import shared.event.EventList;
 import shared.event.Feedback;
 import shared.event.Message;
@@ -402,6 +403,10 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     public void onArsonDayBurn(Player arson, PlayerList burned, Message e){
 
     }
+    
+	public void onElectroExplosion(PlayerList deadPeople, Announcement explosion) {
+		broadcast(explosion.access(Message.PUBLIC, false));
+	}
 
     public void onTargetSelection(Player p){
 
