@@ -26,6 +26,7 @@ import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
+import shared.roles.ElectroManiac;
 import shared.roles.RandomMember;
 import shared.roles.Role;
 import shared.roles.Spy;
@@ -202,6 +203,13 @@ public abstract class StateObject {
 		if(p.hasDayAction(Role.INVITATION_ABILITY))
 			roleInfo.put("acceptingRecruitment", p.ci.accepted);
 
+		boolean electroExtraCharge = false;
+		if(p.is(ElectroManiac.class)){
+			ElectroManiac em = (ElectroManiac) p.getRole();
+			electroExtraCharge = em.usedDoubleAction == null;
+		}
+		roleInfo.put("electroExtraCharge", electroExtraCharge);
+		
 		state.getJSONArray(StateObject.type).put(StateObject.roleInfo);
 		state.put(StateObject.roleInfo, roleInfo);
 	}
