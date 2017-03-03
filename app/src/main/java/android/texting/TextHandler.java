@@ -331,7 +331,9 @@ public class TextHandler extends CommandHandler implements NarratorListener {
             	broadcast("No one died!");
             else{
                 for(Player deadPerson: dead){
-                	broadcast(deadPerson.getDescription() + " was found " + deadPerson.getDeathType().toString() + ".");
+                	if(deadPerson == null)
+                		throw new NullPointerException();
+                	broadcast(deadPerson.getDescription() + " was found " + deadPerson.getDeathType().toText());
                 }
             }
         }
