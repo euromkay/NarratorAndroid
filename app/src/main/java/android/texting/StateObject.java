@@ -225,17 +225,20 @@ public abstract class StateObject {
 		JSONArray graveYard = new JSONArray(), deathTypes;
 		
 		JSONObject graveMarker;
-		String color, roleName;
+		String color, roleName, baseName;
 		DeathType dt;
 		for(Player p: n.getDeadPlayers().sortByDeath()){
 			graveMarker = new JSONObject();
 			if(p.isCleaned()){
 				color = Constants.A_CLEANED;
 				roleName = "????";
+				baseName = roleName;
 			}else{
 				color = p.getTeam().getColor();
 				roleName = p.getRoleName();
+				baseName = p.getRole().getClass().getSimpleName();
 			}
+			graveMarker.put(StateObject.roleBaseName, baseName);
 			graveMarker.put(StateObject.roleName, roleName);
 			graveMarker.put(StateObject.color, color);
 			graveMarker.put("name", p.getName());
@@ -302,6 +305,7 @@ public abstract class StateObject {
 						jPlayerNames.put(target.getName());
 				}
 				jAction.put("playerNames", jPlayerNames);
+				jAction.put("option", a.getOption());
 				
 				jActionList.put(jAction);
 			}
