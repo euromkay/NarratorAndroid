@@ -19,6 +19,7 @@ import shared.logic.PlayerList;
 import shared.logic.Team;
 import shared.logic.support.Constants;
 import shared.logic.support.Faction;
+import shared.logic.support.FactionGrouping;
 import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.action.Action;
@@ -226,6 +227,7 @@ public abstract class StateObject {
 		
 		JSONObject graveMarker;
 		String color, roleName, baseName;
+		Member m;
 		DeathType dt;
 		for(Player p: n.getDeadPlayers().sortByDeath()){
 			graveMarker = new JSONObject();
@@ -233,6 +235,11 @@ public abstract class StateObject {
 				color = Constants.A_CLEANED;
 				roleName = "????";
 				baseName = roleName;
+			}else if(p.hasSuits()){
+				m = n.getAllRoles().get(p.suits.get(0));
+				color = m.getColor();
+				roleName = m.getName();
+				baseName = m.getBaseName();
 			}else{
 				color = p.getTeam().getColor();
 				roleName = p.getRoleName();
@@ -305,7 +312,8 @@ public abstract class StateObject {
 						jPlayerNames.put(target.getName());
 				}
 				jAction.put("playerNames", jPlayerNames);
-				jAction.put("option", a.getOption());
+				jAction.put(option, a.getOption());
+				jAction.put(option2, a.getOption2());
 				
 				jActionList.put(jAction);
 			}
@@ -389,14 +397,17 @@ public abstract class StateObject {
 	 * isEditable  -> can editFaction
 	 */
 	
-	private void addMembersToJRandomRole(JSONObject jRandomRole, RandomMember rr) throws JSONException{
+	private void addMembersToJRandomRole(JSONObject jRandomRole, RandomMember rr, HashMap<String, JSONObject> dictionary) throws JSONException{
 		JSONArray jMembers = new JSONArray();
 		JSONObject jMemb;
+		String key;
 		for(Member rm: rr.list.values()){
-			jMemb = new JSONObject();
-			jMemb.put("name", rm.getName());
-			jMemb.put("color", rm.getColor());
-			
+			key = rm.getName() + rm.getColor();
+			jMemb = dictionary.get(key);
+			if(jMemb == null){
+				jMemb = packMember(rm, COMPLEX, dictionary);
+				dictionary.put(key, jMemb);
+			}
 			jMembers.put(jMemb);
 		}
 		jRandomRole.put("members", jMembers);
@@ -411,23 +422,34 @@ public abstract class StateObject {
 			jo.put("memberRuleExtras", jmRules);
 	}
 	
-	private JSONObject packMember(Member m, boolean complex) throws JSONException{
+	private JSONObject packMember(RoleTemplate rt, boolean complex, HashMap<String, JSONObject> dictionary) throws JSONException{
 		JSONObject jMember = new JSONObject();
-		jMember.put("name", m.getName());
-		jMember.put("simpleName", m.getSimpleName());
-		jMember.put("color", m.getColor());
-		jMember.put("roleName", m.getName());
-		jMember.put("description", m.getDescription());
-		jMember.put("rules", new JSONArray(m.getRuleIDs()));
-		if(complex)
-			addOtherColors(jMember, m);
-		addRuleTexts(jMember, m);
+		jMember.put("name", rt.getName());
+		
+		jMember.put("color", rt.getColor());
+		jMember.put("roleName", rt.getName());
+		jMember.put("description", rt.getDescription());
+		jMember.put("rules", new JSONArray(rt.getRuleIDs()));
+		
+		
+		if(rt.isRandom()){
+			addMembersToJRandomRole(jMember, (RandomMember) rt, dictionary);
+		}else{
+			Member m = (Member) rt;
+			jMember.put("simpleName", m.getSimpleName());
+			if(n.isInProgress()){
+				if(complex)
+					addOtherColors(jMember, m, dictionary);
+				addRuleTexts(jMember, m);
+			}
+		}
+		
 		return jMember;
 	}
 	
 	private static boolean SIMPLE = false, COMPLEX = true;
 	
-	private void addOtherColors(JSONObject jo, Member m) throws JSONException{
+	private void addOtherColors(JSONObject jo, Member m, HashMap<String, JSONObject> dictionary) throws JSONException{
 		JSONArray jArray = new JSONArray();
 		Member m2;
 		ArrayList<String> seenColors = new ArrayList<String>();
@@ -437,7 +459,7 @@ public abstract class StateObject {
 			if(m2.getSimpleName().equals(m.getSimpleName()) && !seenColors.contains(m2.getColor())){
 				seenColors.add(m2.getColor());
 				
-				jArray.put(packMember(m2, SIMPLE));
+				jArray.put(packMember(m2, SIMPLE, dictionary));
 			}	
 		}
 		
@@ -447,114 +469,69 @@ public abstract class StateObject {
 	}
 	
 	private void addJFactions(JSONObject state) throws JSONException{
-		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray(), availableClasses;
+		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray();
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
-		ArrayList<String> availableClassesBacker, seenRoles;
-		ArrayList<String> teamsWithoutVisibleFactions = new ArrayList<>();
-		for(Faction f: fManager.factions){
-			jFaction = new JSONObject();
-			fMembers = new JSONArray();
-			blacklisted = new JSONArray();
-			availableClasses = new JSONArray();
-			availableClassesBacker = new ArrayList<>();
+		String key;
+		ArrayList<FactionGrouping> fGroup = new ArrayList<>();
+		ArrayList<Member> possibleRoles = n.getAllRoles().getMembers();
+		HashMap<String, JSONObject> factionRoleMap = new HashMap<>();
 		
-			jFaction.put("name", f.getName());
-			factionNames.put(f.getName());
+		
+		for(Faction f: fManager.factions){
+			//garuntees that i'm not adding the random/neutral faction unless the game's started
+			if(f.getTeam() != null || !n.isStarted())
+				fGroup.add(f);
+		}
+		for(Team t: n.getAllTeams()){
+			if(fManager.getFaction(t.getColor()) == null)
+				fGroup.add(t);
+		}
+		
+		for(FactionGrouping f: fGroup){
+			if(n.getTeam(f.getColor()) != null)
+				f = n.getTeam(f.getColor());
+			jFaction = new JSONObject();
+
 			jFaction.put("color", f.getColor());
+			jFaction.put("name", f.getName());
 			jFaction.put("description", f.getDescription());
-			jFaction.put("isEditable", f.isEditable);
+			jFaction.put("isEditable", f.isEditable(fManager));
 			
-			
-			
-			if(!n.isStarted())
-				for(RoleTemplate rt: f.members){
-					jRT = new JSONObject();
-					jRT.put("name", rt.getName());
-					jRT.put("description", rt.getDescription());
-					jRT.put("color", rt.getColor());
-					if(fManager.getFaction(rt.getColor()) == null && !teamsWithoutVisibleFactions.contains(rt.getColor())){
-						teamsWithoutVisibleFactions.add(rt.getColor());
-					}
-					jRT.put("rules", new JSONArray(rt.getRuleIDs()));
-					for(String class_name: rt.getClasses()){
-						if(!availableClassesBacker.contains(class_name)){
-							availableClassesBacker.add(class_name);
-							availableClasses.put(class_name);
-						}
-					}
-					jRT.put("class_type", rt.getClasses());
-					if(!rt.isRandom()){
-						jRT.put("simpleName", ((Member) rt).getSimpleName());
-						if(n.isInProgress()){
-							addOtherColors(jRT, (Member) rt);
-							addRuleTexts(jRT, (Member) rt);
-						}
-					}else{
-						addMembersToJRandomRole(jRT, (RandomMember) rt);
-					}
+
+			fMembers = new JSONArray();
+			for(RoleTemplate rt: f.getMembers(fManager, possibleRoles)){
+				key = rt.getName() + rt.getColor();
+				jRT = factionRoleMap.get(key);
+				if(jRT == null){
+					jRT = packMember(rt, COMPLEX, factionRoleMap);
+					
+					factionRoleMap.put(key, jRT);
 					jFactions.put(rt.getName() + rt.getColor(), jRT);
-					fMembers.put(jRT);
 				}
-			else{
-				for(RoleTemplate rt: f.members){
-					if(fManager.getFaction(rt.getColor()) == null && !teamsWithoutVisibleFactions.contains(rt.getColor())){
-						teamsWithoutVisibleFactions.add(rt.getColor());
-					}
-				}
-				fMembers = new JSONArray();
-				seenRoles = new ArrayList<>();
-				for(Member m: n.getAllRoles().getMembers()){
-					if(m.getColor().equals(f.getColor()) && !seenRoles.contains(m.getName())){
-						seenRoles.add(m.getName());
-						jRT = packMember(m, COMPLEX);
-						fMembers.put(jRT);
-						jFactions.put(m.getName() + m.getColor(), jRT);
-					}
-				}
-				for(RoleTemplate rt: n.getAllRoles()){
-					if(rt.isRandom()){
-						jRT = new JSONObject();
-						jRT.put("name", rt.getName());
-						jRT.put("description", rt.getDescription());
-						jRT.put("color", rt.getColor());
-						addMembersToJRandomRole(jRT, (RandomMember) rt);
-						jFactions.put(rt.getName() + rt.getColor(), jRT);
-					}
-				}
+
+				fMembers.put(jRT);
 			}
-			jFaction.put("class_names", availableClasses);
 			jFaction.put("members", fMembers);
-			for(Role rt: f.unavailableRoles){
+			
+			blacklisted = new JSONArray();
+			for(Role rt: f.getUnavailableRoles(fManager)){
 				jRT = new JSONObject();
 				jRT.put("name", rt.getRoleName());
 				jRT.put("simpleName", rt.getClass().getSimpleName());//really should only be using this field, since these are UNAVAILABLE
 				blacklisted.put(jRT);
 			}
 			jFaction.put("blacklisted", blacklisted);
+			jFaction.put("rules", f.getRules(fManager));
 			
-			if(!n.isStarted())
-				jFaction.put("rules", f.getRules());
-			else
-				jFaction.put("rules", Faction.getRules(f.getTeam(), n));
-			
-			jFactions.put(f.getName(), jFaction);
-			jFactions.put(f.getColor(), jFaction);
-			
-			Team fTeam = f.getTeam();
-			if(fTeam == null)
-				continue;
-
 			allies = new JSONArray();
 			enemies = new JSONArray();
 			for(Team t: n.getAllTeams()){
-				if(t.getName().equals(Constants.A_SKIP))
-					continue;
-				if(t == fTeam)
+				if(t == f || f instanceof Faction)
 					continue;
 				allyInfo = new JSONObject();
 				allyInfo.put("color", t.getColor());
 				allyInfo.put("name", t.getName());
-				if(t.isEnemy(fTeam))
+				if(t.isEnemy((Team) f))
 					enemies.put(allyInfo);
 				else
 					allies.put(allyInfo);
@@ -562,50 +539,22 @@ public abstract class StateObject {
 			jFaction.put("allies", allies);
 			jFaction.put("enemies", enemies);
 			
-		}
-		if(fManager.factions.isEmpty()){
-			for(Team t: n.getAllTeams())
-				teamsWithoutVisibleFactions.add(t.getColor());
-		}
-		Team forgottenTeam;
-		for(String teamColor: teamsWithoutVisibleFactions){
-			forgottenTeam = n.getTeam(teamColor);
-			if(forgottenTeam == null){
-				continue;
-			}
-
-			jFaction = new JSONObject();
-			jFaction.put("name", forgottenTeam.getName());
-			jFaction.put("color", forgottenTeam.getColor());
-			jFaction.put("description", forgottenTeam.getDescription());
-			jFaction.put("rules", Faction.getRules(forgottenTeam, n));
-			enemies = new JSONArray();
-			for(Team t: n.getAllTeams()){
-				if(t.getName().equals(Constants.A_SKIP))
-					continue;
-				if(t == forgottenTeam)
-					continue;
-				allyInfo = new JSONObject();
-				allyInfo.put("color", t.getColor());
-				allyInfo.put("name", t.getName());
-				if(t.isEnemy(forgottenTeam))
-					enemies.put(allyInfo);
-			}
-			jFaction.put("enemies", enemies);
 			
-			fMembers = new JSONArray();
-			seenRoles = new ArrayList<>();
-			for(Member m: n.getAllRoles().getMembers()){
-				if(m.getColor().equals(teamColor) && !seenRoles.contains(m.getName())){
-					seenRoles.add(m.getName());
-					jRT = packMember(m, COMPLEX);
-					fMembers.put(jRT);
-					jFactions.put(m.getName() + m.getColor(), jRT);
-				}
+			if(fManager.getFaction(f.getColor()) != null)
+				factionNames.put(f.getColor());
+			
+			jFactions.put(f.getColor(), jFaction);
+		}
+		
+		for(RoleTemplate rt: n.getAllRoles()){
+			key = rt.getName() + rt.getColor();
+			jRT = factionRoleMap.get(key);
+			if(jRT == null){
+				jRT = packMember(rt, COMPLEX, factionRoleMap);
+				
+				factionRoleMap.put(key, jRT);
+				jFactions.put(rt.getName() + rt.getColor(), jRT);
 			}
-			jFaction.put("members", fMembers);
-
-			jFactions.put(teamColor, jFaction);
 		}
 		
 		jFactions.put(StateObject.factionNames, factionNames);
@@ -1030,6 +979,7 @@ public abstract class StateObject {
 	public static final String targets      = "targets";
 	public static final String command      = "command";
 	public static final String option       = "option";
+	public static final String option2      = "option2";
 	public static final String cancelAction = "cancelAction";
 	
 	public static final String voteCounts   = "voteCounts";
