@@ -11,6 +11,7 @@ import shared.roles.DrugDealer;
 import shared.roles.Framer;
 import shared.roles.Mayor;
 import shared.roles.Role;
+import shared.roles.Tailor;
 import shared.roles.Veteran;
 
 
@@ -88,6 +89,10 @@ public class TextController implements Controller {
 	
 	public void spy(Player framer, String team){
 		texter.text(framer, Framer.FRAME + " " + team, ASYNC);
+	}
+	
+	public void suit(Player tailor, String team, String role, Player suited){
+		texter.text(tailor, Tailor.COMMAND + " " + team + " " + role + " " + suited.getName(), ASYNC);
 	}
 
     public Player vote(Player slave, Player target) {

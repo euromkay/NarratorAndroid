@@ -85,6 +85,11 @@ public class GUIController implements Controller, TextInput{
     	//TODO
     }
     
+    public void suit(Player tailor, String team, String role, Player suited){
+		//TODO
+    	//tailor.setTarget(Role.MAIN_ABILITY, CommandHandler.parseTeam(team, n), role, suited);
+	}
+    
     public void setNightTarget(Player slave, Player ... choice){
     	selectSlave(slave);
         swipeAbilityPanel(slave.reverseParse(Role.MAIN_ABILITY));
