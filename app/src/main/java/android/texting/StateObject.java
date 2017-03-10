@@ -287,7 +287,6 @@ public abstract class StateObject {
 		if(p != null){
 			ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
 			
-
 			String text;
 			JSONObject jAction;
 			SelectionMessage sm;
@@ -476,14 +475,14 @@ public abstract class StateObject {
 		ArrayList<Member> possibleRoles = n.getAllRoles().getMembers();
 		HashMap<String, JSONObject> factionRoleMap = new HashMap<>();
 		
-		
-		for(Faction f: fManager.factions){
-			//garuntees that i'm not adding the random/neutral faction unless the game's started
-			if(f.getTeam() != null || !n.isStarted())
-				fGroup.add(f);
-		}
+		if(!n.isStarted())
+			for(Faction f: fManager.factions){
+				//garuntees that i'm not adding the random/neutral faction unless the game's started
+				if(f.getTeam() != null || !n.isStarted())
+					fGroup.add(f);
+			}
 		for(Team t: n.getAllTeams()){
-			if(fManager.getFaction(t.getColor()) == null)
+			if(n.isStarted() || fManager.getFaction(t.getColor()) == null)
 				fGroup.add(t);
 		}
 		
