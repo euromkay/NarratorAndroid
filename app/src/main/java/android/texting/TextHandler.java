@@ -201,7 +201,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     private void sendRoleInfo(Player owner){
         String roles_list_message = "These are the roles in game:\n";
-        for(RoleTemplate r : n.getAllRoles()){
+        for(RoleTemplate r : n.getRolesList()){
             if(r.isRandom())
                 roles_list_message += r.getName() + "\n";
             else

@@ -13,6 +13,7 @@ import shared.event.SelectionMessage;
 import shared.event.VoteAnnouncement;
 import shared.logic.DeathType;
 import shared.logic.Member;
+import shared.logic.MemberList;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -72,7 +73,7 @@ public abstract class StateObject {
 		JSONObject role, subRole;
 		JSONArray jPossibleRandoms;
 		RandomMember rm;
-		for(RoleTemplate r: n.getAllRoles()){
+		for(RoleTemplate r: n.getRolesList()){
 			role = new JSONObject();
 			role.put(StateObject.roleType, r.getName());
 			
@@ -236,7 +237,7 @@ public abstract class StateObject {
 				roleName = "????";
 				baseName = roleName;
 			}else if(p.hasSuits()){
-				m = n.getAllRoles().get(p.suits.get(0));
+				m = n.getPossibleMembers().get(p.suits.get(0));
 				color = m.getColor();
 				roleName = m.getName();
 				baseName = m.getBaseName();
@@ -451,15 +452,10 @@ public abstract class StateObject {
 	private void addOtherColors(JSONObject jo, Member m, HashMap<String, JSONObject> dictionary) throws JSONException{
 		JSONArray jArray = new JSONArray();
 		Member m2;
-		ArrayList<String> seenColors = new ArrayList<String>();
-		seenColors.add(m.getColor());
-		for(Member rt: n.getAllRoles().getMembers()){	
-			m2 = (Member) rt;
-			if(m2.getSimpleName().equals(m.getSimpleName()) && !seenColors.contains(m2.getColor())){
-				seenColors.add(m2.getColor());
+		for(Member rt: n.getPossibleMembers().getOtherColors(m.getBaseRole().getClass())){	
+			m2 = (Member) rt;	
+			jArray.put(packMember(m2, SIMPLE, dictionary));
 				
-				jArray.put(packMember(m2, SIMPLE, dictionary));
-			}	
 		}
 		
 		if(jArray.length() > 0){
@@ -472,7 +468,7 @@ public abstract class StateObject {
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
 		String key;
 		ArrayList<FactionGrouping> fGroup = new ArrayList<>();
-		ArrayList<Member> possibleRoles = n.getAllRoles().getMembers();
+		MemberList possibleRoles = n.getPossibleMembers();
 		HashMap<String, JSONObject> factionRoleMap = new HashMap<>();
 		
 		if(!n.isStarted())
@@ -545,7 +541,7 @@ public abstract class StateObject {
 			jFactions.put(f.getColor(), jFaction);
 		}
 		
-		for(RoleTemplate rt: n.getAllRoles()){
+		for(RoleTemplate rt: n.getRolesList()){
 			key = rt.getName() + rt.getColor();
 			jRT = factionRoleMap.get(key);
 			if(jRT == null){
