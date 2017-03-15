@@ -28,9 +28,11 @@ import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
+import shared.roles.Bulletproof;
 import shared.roles.ElectroManiac;
 import shared.roles.RandomMember;
 import shared.roles.Role;
+import shared.roles.Sheriff;
 import shared.roles.Spy;
 import shared.roles.Witch;
 
@@ -415,7 +417,16 @@ public abstract class StateObject {
 	
 	private void addRuleTexts(JSONObject jo, Member m) throws JSONException{
 		JSONArray jmRules = new JSONArray();
+		String color = Bulletproof.MillerColor(n);
 		for(String ruleID: m.getRuleIDs()){
+			if(ruleID.equals(Rules.BP_MILLER[0])){
+				if(!n.getPossibleMembers().contains(Sheriff.class))
+					continue;
+				if(color != null){
+					jmRules.put("Will turn up as " + n.getTeam(color) + " to sheriffs");
+					continue;
+				}
+			}
 			jmRules.put(n.getRules().getRule(ruleID).toString());
 		}
 		if(jmRules.length() > 0)
