@@ -518,7 +518,7 @@ public class NarratorService extends Service {
 			put(jo, StateObject.message, StateObject.removeRole);
 			sendMessage(jo);
 		} else {
-			RoleTemplate rt = local.getAllRoles().get(roleName, color);
+			RoleTemplate rt = local.getRolesList().get(roleName, color);
 			local.removeRole(rt);
 		}
 		if (sManager != null)
