@@ -29,10 +29,12 @@ import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
 import shared.roles.Bulletproof;
+import shared.roles.Citizen;
 import shared.roles.ElectroManiac;
 import shared.roles.RandomMember;
 import shared.roles.Role;
 import shared.roles.Sheriff;
+import shared.roles.Sleepwalker;
 import shared.roles.Spy;
 import shared.roles.Witch;
 
@@ -159,11 +161,30 @@ public abstract class StateObject {
 			return;
 		}
 		
+		String roleName, baseName, description;
+		
+		if(p.is(Sleepwalker.class)){
+			MemberList mList = p.getNarrator().getPossibleMembers();
+			Member m;
+			if(mList.contains(Citizen.class)){
+				m = mList.getOtherColors(Citizen.class).get(0);
+			}else{
+				m = mList.getOtherColors(Sleepwalker.class).get(0);
+			}
+			roleName = m.getName();
+			baseName = m.getBaseName();
+			description = m.getDescription();
+		}else{
+			roleName = p.getRoleName();
+			baseName = p.getRole().getClass().getSimpleName();
+			description = p.getRoleInfo();
+		}
+		
 		JSONObject roleInfo = new JSONObject();
 		roleInfo.put(StateObject.roleColor, p.getTeam().getColor());
-		roleInfo.put(StateObject.roleName, p.getRoleName());
-		roleInfo.put(StateObject.roleBaseName, p.getRole().getClass().getSimpleName());
-		roleInfo.put(StateObject.roleDescription, p.getRoleInfo());
+		roleInfo.put(StateObject.roleName, roleName);
+		roleInfo.put(StateObject.roleBaseName, baseName);
+		roleInfo.put(StateObject.roleDescription, description);
 		roleInfo.put(StateObject.breadCount, p.getRole().getBreadCount());
 		
 		JSONObject chats = new JSONObject();
