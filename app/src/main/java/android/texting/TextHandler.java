@@ -78,6 +78,8 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	Object[] result = super.prefer(owner, s);
     	if(result[0] == TEAM_PREFER){
 			new OGIMessage(owner, "You preferred to be on " + ((Team) result[1]).getName());
+    	}else if(result.length > 2){
+			new OGIMessage(owner, "You tried to prefer " + ((RoleTemplate) result[1]).getName() + " but actually preferred to be a citizen type role");
     	}else{
 			new OGIMessage(owner, "You preferred to be a " + ((RoleTemplate) result[1]).getName());
     	}
