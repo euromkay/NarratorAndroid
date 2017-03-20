@@ -24,6 +24,7 @@ import shared.logic.support.FactionGrouping;
 import shared.logic.support.FactionManager;
 import shared.logic.support.RoleTemplate;
 import shared.logic.support.action.Action;
+import shared.logic.support.action.ActionList;
 import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
@@ -309,9 +310,10 @@ public abstract class StateObject {
 		JSONObject jActions = new JSONObject();
 		JSONArray jActionList = new JSONArray();
 		if(p != null){
-			ArrayList<Action> actions = p.getActions().actions, subset = new ArrayList<>();
+			ActionList actions = p.getActions();
+			ArrayList<Action> subset = new ArrayList<>();
 			
-			String text;
+			String text, command;
 			JSONObject jAction;
 			SelectionMessage sm;
 			JSONArray jPlayerNames;
@@ -325,8 +327,14 @@ public abstract class StateObject {
 				subset.add(a);
 				text = "You will " + sm.add(p.getRole().getPhrase(subset)).access(p, true) + ".";
 				jAction.put("text", text);
-				jAction.put("command", p.reverseParse(a.ability).toLowerCase());
 				
+				command = p.reverseParse(a.ability);
+				if(command != null)
+					jAction.put("command", command.toLowerCase());
+				else{
+					System.err.println("couldn't reverse this ability");
+					System.err.println(p.toString());
+				}
 				if(p.is(Spy.class) && a.ability == Spy.MAIN_ABILITY){
 					t = n.getTeam(a.getOption());
 					jPlayerNames.put(t.getName());
@@ -792,7 +800,7 @@ public abstract class StateObject {
 			
 			}else{
 				if(n.isInProgress()){
-					String[] abilities = p.getAbilities();
+					ArrayList<String> abilities = p.getAbilities();
 					ArrayList<String> possibleOptions;
 					for(String s_ability: abilities){
 						int ability = p.parseAbility(s_ability);
