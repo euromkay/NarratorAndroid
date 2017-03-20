@@ -237,7 +237,7 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     private void sendNightPrompt(Player p){
         String message = SQuote(END_NIGHT)  + " so night can end.";
-        if (p.getAbilities().length == 0){
+        if (p.getAbilities().isEmpty()){
         	new OGIMessage(p, "Type " + message );
         }else{
         	new OGIMessage(p, "Submit your night action(s).  When you're done, type " + message);
