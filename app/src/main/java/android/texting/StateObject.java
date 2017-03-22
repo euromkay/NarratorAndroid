@@ -29,12 +29,10 @@ import shared.logic.support.rules.Rule;
 import shared.logic.support.rules.RuleBool;
 import shared.logic.support.rules.RuleInt;
 import shared.logic.support.rules.Rules;
-import shared.roles.Bulletproof;
 import shared.roles.Citizen;
 import shared.roles.ElectroManiac;
 import shared.roles.RandomMember;
 import shared.roles.Role;
-import shared.roles.Sheriff;
 import shared.roles.Sleepwalker;
 import shared.roles.Spy;
 import shared.roles.Witch;
@@ -445,21 +443,9 @@ public abstract class StateObject {
 	}
 	
 	private void addRuleTexts(JSONObject jo, Member m) throws JSONException{
-		JSONArray jmRules = new JSONArray();
-		String color = Bulletproof.MillerColor(n);
-		for(String ruleID: m.getRuleIDs()){
-			if(ruleID.equals(Rules.BP_MILLER[0])){
-				if(!n.getPossibleMembers().contains(Sheriff.class))
-					continue;
-				if(color != null){
-					jmRules.put("Will turn up as " + n.getTeam(color) + " to sheriffs");
-					continue;
-				}
-			}
-			jmRules.put(n.getRules().getRule(ruleID).toString());
-		}
-		if(jmRules.length() > 0)
-			jo.put("memberRuleExtras", jmRules);
+		ArrayList<String> jRules = m.getBaseRole().getRuleTexts(n, m.getColor());
+		if(jRules.size() > 0)
+			jo.put("memberRuleExtras", jRules);
 	}
 	
 	private JSONObject packMember(RoleTemplate rt, boolean complex, HashMap<String, JSONObject> dictionary) throws JSONException{
@@ -531,7 +517,7 @@ public abstract class StateObject {
 			jFaction.put("name", f.getName());
 			jFaction.put("description", f.getDescription());
 			jFaction.put("isEditable", f.isEditable(fManager));
-			
+			jFaction.put("sheriffDetectables", f.getSheriffDetectables());
 
 			fMembers = new JSONArray();
 			for(RoleTemplate rt: f.getMembers(fManager, possibleRoles)){
@@ -776,11 +762,10 @@ public abstract class StateObject {
 			if(n.isDay){
 				PlayerList votes;
 				if(n.isInProgress())
-					votes = n.getLivePlayers().remove(p);
+					votes = n.getLivePlayers();
 				else
-					votes = n.getAllPlayers().remove(p);
-				if(p.isDead())
-					votes.clear();
+					votes = n.getAllPlayers();
+				votes.sortByName();
 				JSONArray names = getJPlayerArray(votes, p.getVoteTarget(), "Vote");
 				playerLists.put("Vote", names);
 				playerLists.getJSONArray(StateObject.type).put("Vote");
@@ -799,7 +784,7 @@ public abstract class StateObject {
 				}
 			
 			}else{
-				if(n.isInProgress()){
+				if(n.isInProgress() && p.isAlive()){
 					ArrayList<String> abilities = p.getAbilities();
 					ArrayList<String> possibleOptions;
 					for(String s_ability: abilities){
@@ -835,6 +820,9 @@ public abstract class StateObject {
 						playerLists.put("You have no acceptable night actions tonight!", names);
 						playerLists.getJSONArray(StateObject.type).put("You have no acceptable night actions tonight!");
 					}
+				}else if(n.isInProgress()){
+					playerLists.put("The Living", getJPlayerArray(n.getLivePlayers().sortByName(), new PlayerList[]{new PlayerList()}, "The Living"));
+					playerLists.getJSONArray(StateObject.type).put("The Living");
 				}else{
 					playerLists.put("Game Over", getJPlayerArray(n.getAllPlayers(), new PlayerList[]{new PlayerList()}, "Game Over"));
 					playerLists.getJSONArray(StateObject.type).put("Game Over");
