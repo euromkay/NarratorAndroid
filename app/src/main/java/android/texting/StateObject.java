@@ -791,7 +791,9 @@ public abstract class StateObject {
 						int ability = p.parseAbility(s_ability);
 						PlayerList acceptableTargets = p.getAcceptableTargets(ability);
 						JSONArray names;
-						if(ability == Role.MAIN_ABILITY && p.is(Spy.class)){
+						if(acceptableTargets == null){
+							names = new JSONArray();
+						}else if(ability == Role.MAIN_ABILITY && p.is(Spy.class)){
 							names = new JSONArray();
 						}else{
 							if(acceptableTargets.isEmpty())
