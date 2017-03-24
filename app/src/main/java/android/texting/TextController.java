@@ -5,6 +5,7 @@ import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.exceptions.UnsupportedMethodException;
+import shared.logic.support.Constants;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.DrugDealer;
@@ -93,6 +94,10 @@ public class TextController implements Controller {
 	
 	public void suit(Player tailor, String team, String role, Player suited){
 		texter.text(tailor, Tailor.COMMAND + " " + team + " " + role + " " + suited.getName(), ASYNC);
+	}
+	
+	public void vest(Player vester){
+		texter.text(vester, Constants.VEST_COMMAND, ASYNC);
 	}
 
     public Player vote(Player slave, Player target) {

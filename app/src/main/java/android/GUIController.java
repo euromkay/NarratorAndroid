@@ -89,6 +89,9 @@ public class GUIController implements Controller, TextInput{
 		//TODO
     	//tailor.setTarget(Role.MAIN_ABILITY, CommandHandler.parseTeam(team, n), role, suited);
 	}
+    public void vest(Player vester){
+    	//TODO
+    }
     
     public void setNightTarget(Player slave, Player ... choice){
     	selectSlave(slave);
