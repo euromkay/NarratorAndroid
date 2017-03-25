@@ -774,6 +774,7 @@ public abstract class StateObject {
 				for(String s_ability: p.getDayActions()){
 					int ability = p.parseAbility(s_ability);
 					acceptableTargets = p.getAcceptableTargets(ability);
+						continue;
 					if(acceptableTargets.size() == 1 && acceptableTargets.getFirst() == p)
 						continue;
 					if(acceptableTargets.isEmpty() && ability == Role.MAIN_ABILITY)
