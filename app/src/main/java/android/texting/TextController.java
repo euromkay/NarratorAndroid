@@ -19,7 +19,7 @@ import shared.roles.Veteran;
 
 public class TextController implements Controller {
 
-    private TextInput texter;
+    protected TextInput texter;
     public TextController(TextInput texter){
         this.texter = texter;
     }
