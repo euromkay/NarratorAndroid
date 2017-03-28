@@ -8,6 +8,7 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import shared.event.DeathAnnouncement;
+import shared.event.EventLog;
 import shared.event.Message;
 import shared.event.SelectionMessage;
 import shared.event.VoteAnnouncement;
@@ -186,18 +187,6 @@ public abstract class StateObject {
 		roleInfo.put(StateObject.roleDescription, description);
 		roleInfo.put(StateObject.breadCount, p.getRole().getBreadCount());
 		
-		JSONObject chats = new JSONObject();
-		
-		String chatName;
-		for(Team t: p.getTeams()){
-			if(t.knowsTeam()){
-				chatName = n.getEventManager().getNightLog(t.getColor(), 0).getName();
-				chats.put(chatName, t.getColor());
-			}
-		}
-		if(p.isDead())
-			chats.put(n.getEventManager().getDeadChat().getName(), Constants.DEAD_CHAT);
-		roleInfo.put("chats", chats);
 		
 		ArrayList<Team> knownTeams = shouldShowTeam(p);
 		boolean displayTeam = !knownTeams.isEmpty();
@@ -633,6 +622,14 @@ public abstract class StateObject {
 		j.put("movements", movements);
 	}
 	
+	public static JSONObject getChatKeys(Narrator n, Player p) throws JSONException {
+		JSONObject chats = new JSONObject();
+		for(EventLog el: Player.getEventLog(n, p)){
+			chats.put(el.getName(), el.getKey());
+		}
+		return chats;
+	}
+	
 	private void addJVotes(JSONObject state) throws JSONException{
 		if(!n.isDay())
 			return;
@@ -907,6 +904,7 @@ public abstract class StateObject {
 	public static final String hostPublic = "hostPublic";
 	public static final String joinPublic = "joinPublic";
 	
+	public static final String lobbyUpdate = "lobbyUpdate";
 	public static final String guiUpdate   = "guiUpdate";
 	public static final String chatReset   = "chatReset";
 	public static final String messageType = "messageType";
@@ -1011,4 +1009,8 @@ public abstract class StateObject {
 	
 	public static final String voteCounts   = "voteCounts";
 	public static final String finalScore   = "finalScore";
+	
+	public static final String addBots = "addBotUsers";
+	public static final String botNum  = "number_of_bots";
+	
 }
