@@ -622,10 +622,15 @@ public abstract class StateObject {
 		j.put("movements", movements);
 	}
 	
-	public static JSONObject getChatKeys(Narrator n, Player p) throws JSONException {
-		JSONObject chats = new JSONObject();
+	public static JSONArray getChatKeys(Narrator n, Player p) throws JSONException {
+		JSONArray chats = new JSONArray();
+		JSONObject chat;
 		for(EventLog el: Player.getEventLog(n, p)){
-			chats.put(el.getName(), el.getKey());
+			chat = new JSONObject();
+			chat.put(StateObject.chatName, el.getName());
+			if(el.isActive())
+				chat.put(StateObject.chatKey, el.getKey());
+			chats.put(chat);
 		}
 		return chats;
 	}
@@ -906,9 +911,12 @@ public abstract class StateObject {
 	
 	public static final String lobbyUpdate = "lobbyUpdate";
 	public static final String guiUpdate   = "guiUpdate";
-	public static final String chatReset   = "chatReset";
 	public static final String messageType = "messageType";
 
+	public static final String chatReset   = "chatReset";
+	public static final String chatKey = "chatKey";
+	public static final String chatName = "chatName";
+	
 	public static final String dayLabel = "dayLabel";
 	
 	public static final String type = "type";
