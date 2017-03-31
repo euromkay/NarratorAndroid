@@ -10,6 +10,7 @@ import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.DrugDealer;
 import shared.roles.Framer;
+import shared.roles.Jailor;
 import shared.roles.Mayor;
 import shared.roles.Role;
 import shared.roles.Tailor;
@@ -139,6 +140,10 @@ public class TextController implements Controller {
 	public void doDayAction(Player p, Player target){
 		if(p.is(Assassin.class)){
 			texter.text(p, Assassin.ASSASSINATE + " " + target.getName(), SYNC);
+			return;
+		}
+		if(p.is(Jailor.class)){
+			texter.text(p, Jailor.JAIL + " " + target.getName(), SYNC);
 			return;
 		}
 		throw new UnsupportedMethodException();
