@@ -98,7 +98,7 @@ public class DayScreenController{
 		public void onTargetSelection(Player owner){
 			dController.onNightTarget();
 		}
-		public void onNightTargetRemove(Player owner, String command, PlayerList prev){
+		public void onTargetRemove(Player owner, String command, PlayerList prev){
 			dController.onNightTargetRemove(owner.getName(), command, prev.getNamesToStringList());
 		}
 
