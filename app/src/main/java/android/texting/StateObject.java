@@ -296,8 +296,10 @@ public abstract class StateObject {
 	private void addJActions(Player p, JSONObject state) throws JSONException{
 		JSONObject jActions = new JSONObject();
 		JSONArray jActionList = new JSONArray();
-		if(p != null){
-			ActionList actions = p.getActions();
+		ActionList actions = null;
+		if(p != null)
+			actions = p.getActions();
+		if(actions != null){
 			ArrayList<Action> subset = new ArrayList<>();
 			
 			String text, command;
@@ -329,7 +331,7 @@ public abstract class StateObject {
 					for(Player target: a.getTargets())
 						jPlayerNames.put(target.getName());
 				}
-				jAction.put("playerNames", jPlayerNames);
+				jAction.put(playerNames, jPlayerNames);
 				jAction.put(option, a.getOption());
 				jAction.put(option2, a.getOption2());
 				
@@ -342,7 +344,7 @@ public abstract class StateObject {
 			jActions.put("canAddAction", false);
 		}
 
-		jActions.put("actionList", jActionList);
+		jActions.put(StateObject.actionList, jActionList);
 		
 		
 		
@@ -773,7 +775,7 @@ public abstract class StateObject {
 				playerLists.getJSONArray(StateObject.type).put("Vote");
 	
 				PlayerList acceptableTargets;
-				for(String s_ability: p.getDayActions()){
+				for(String s_ability: p.getDayAbilities()){
 					int ability = p.parseAbility(s_ability);
 					acceptableTargets = p.getAcceptableTargets(ability);
 					if(acceptableTargets == null)//triggered by arson burn by having null acceptable targets
@@ -1014,6 +1016,8 @@ public abstract class StateObject {
 	public static final String option       = "option";
 	public static final String option2      = "option2";
 	public static final String cancelAction = "cancelAction";
+	public static final String actionList   = "actionList";
+	public static final String playerNames  = "playerNames";
 	
 	public static final String voteCounts   = "voteCounts";
 	public static final String finalScore   = "finalScore";
