@@ -293,6 +293,6 @@ public class GUIController implements Controller, TextInput{
 	public void doDayAction(Player slave, Player target){
 		logger.doDayAction(slave, target);
 		selectSlave(slave);
-		swipeAbilityPanel(target.getDayActions().get(0));
+		swipeAbilityPanel(target.getDayAbilities().get(0));
 	}
 }
