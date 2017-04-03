@@ -16,6 +16,7 @@ import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.listeners.NarratorListener;
+import shared.logic.support.action.Action;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
 import shared.roles.Mayor;
@@ -121,6 +122,10 @@ public class DayScreenController{
 		}
 
 		public void onAnnouncement(Message nl) {
+			
+		}
+		
+		public void onDayActionSubmit(Player submitter, Action a) {
 			
 		}
 	}

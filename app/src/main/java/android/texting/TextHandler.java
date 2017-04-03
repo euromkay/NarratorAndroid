@@ -1,6 +1,8 @@
 package android.texting;
 
 
+import java.util.ArrayList;
+
 import shared.event.Announcement;
 import shared.event.EventList;
 import shared.event.Feedback;
@@ -21,6 +23,7 @@ import shared.logic.listeners.NarratorListener;
 import shared.logic.support.CommandHandler;
 import shared.logic.support.Constants;
 import shared.logic.support.RoleTemplate;
+import shared.logic.support.action.Action;
 import shared.roles.Armorsmith;
 import shared.roles.Arsonist;
 import shared.roles.Assassin;
@@ -460,5 +463,9 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 		broadcast(nl.access(Message.PUBLIC, false));
 	}
 
-    
+	public void onDayActionSubmit(Player submitter, Action a) {
+		ArrayList<Object> list = submitter.getRole().getRolePhrase(a);
+		list.add(0, "You will ");
+		new OGIMessage(submitter, list);
+	}
 }
