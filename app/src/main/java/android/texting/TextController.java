@@ -151,7 +151,10 @@ public class TextController implements Controller {
 
 	public void unvote(Player slave) {
 		texter.text(slave, TextHandler.UNVOTE, SYNC);
-		
+	}
+
+	public void cancelDayAction(Player slave, int i) {
+		texter.text(slave, Constants.CANCEL + " " + (i), SYNC);
 	}
 
 	
