@@ -660,46 +660,6 @@ public abstract class StateObject {
 			}
 			
 			dayRecap.put("alivePlayers", alivePlayers);
-			
-			/*finalScore = new JSONArray();
-			votingPlayers = new PlayerList();
-			if(i != n.getDayNumber()){
-				voteCounts.put(dayRecap);
-				continue;
-			}
-			
-			for(Player p: n.getLivePlayers().add(n.Skipper)){
-				voters = new JSONArray();
-				finalScoreObject = new JSONObject();
-				
-				playersVotingX = p.getVoters();
-				votingPlayers.add(playersVotingX);
-				
-				if(playersVotingX.isEmpty()){
-					continue;
-				}	
-				finalScoreObject.put("name", p.getName());
-				for(Player voter: playersVotingX){
-					voters.put(voter.getName());
-				}
-				finalScoreObject.put("voters", voters);
-				finalScoreObject.put("toLynch", n.getMinLynchVote() - p.getVoteCount());
-				finalScore.put(finalScoreObject);
-			}
-			playersVotingX = n.getLivePlayers().remove(votingPlayers);
-			if(!playersVotingX.isEmpty()){
-				finalScoreObject = new JSONObject();
-				voters = new JSONArray();
-				finalScoreObject.put("name", "Not Voting");
-				for(Player voter: playersVotingX){
-					voters.put(voter.getName());
-				}
-				finalScoreObject.put("voters", voters);
-				finalScoreObject.put("toLynch", -1);
-				finalScore.put(finalScoreObject);
-			}
-			dayRecap.put(StateObject.finalScore, finalScore);*/
-			
 			voteCounts.put(dayRecap);
 		}
 		
@@ -836,8 +796,13 @@ public abstract class StateObject {
 					}
 					if(playerLists.getJSONArray(StateObject.type).length() == 0){
 						names = getJPlayerArray(new PlayerList());
-						playerLists.put("You have no acceptable night actions tonight!", names);
-						playerLists.getJSONArray(StateObject.type).put("You have no acceptable night actions tonight!");
+						String title;
+						if(p.isJailed())
+							title = "You are jailed!";
+						else
+							title = "You have no acceptable night actions tonight!";
+						playerLists.put(title, names);
+						playerLists.getJSONArray(StateObject.type).put(title);
 					}
 				}else if(n.isInProgress()){
 					playerLists.put("The Living", getJPlayerArray(n.getLivePlayers().sortByName(), new PlayerList[]{new PlayerList()}));
@@ -926,9 +891,10 @@ public abstract class StateObject {
 	public static final String guiUpdate   = "guiUpdate";
 	public static final String messageType = "messageType";
 
-	public static final String chatReset   = "chatReset";
-	public static final String chatKey = "chatKey";
-	public static final String chatName = "chatName";
+	public static final String chatReset  = "chatReset";
+	public static final String chatKey    = "chatKey";
+	public static final String chatName   = "chatName";
+	public static final String sender     = "sender";
 	
 	public static final String dayLabel = "dayLabel";
 	
