@@ -936,7 +936,7 @@ public class NarratorService extends Service {
 			for(Message cm : el){
 				if(cm instanceof ChatMessage){
 					cMessage = (ChatMessage) cm;
-					ci = new ChatItem(Message.accessHelper(cMessage.sender, accessKey, cm.getDay(), true));
+					ci = new ChatItem(Message.accessHelper(cMessage.getSender(), accessKey, cm.getDay(), true));
 				}else
 					ci = new ChatItem(cm.access(accessKey, true));
 				ret.add(ci);
@@ -974,7 +974,7 @@ public class NarratorService extends Service {
 			for(Message cm : eList){
 				if(cm instanceof ChatMessage){
 					cMessage = (ChatMessage) cm;
-					ci = new ChatItem(Message.accessHelper(cMessage.sender, accessKey, cm.getDay(), true));
+					ci = new ChatItem(Message.accessHelper(cMessage.getSender(), accessKey, cm.getDay(), true));
 				}else
 					ci = new ChatItem(cm.access(accessKey, true));
 				ret.add(ci);
