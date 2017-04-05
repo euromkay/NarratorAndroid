@@ -365,10 +365,10 @@ public abstract class StateObject {
 			ruleObject.put("id", r.id);
 			ruleObject.put("name", r.name);
 			if(r.getClass() == RuleInt.class){
-				ruleObject.put("val", ((RuleInt) r).val);
+				ruleObject.put("val", ((RuleInt) r).getValue());
 				ruleObject.put("isNum", true);
 			}else{
-				ruleObject.put("val", ((RuleBool) r).val);
+				ruleObject.put(StateObject.val, ((RuleBool) r).getValue());
 				ruleObject.put("isNum", false);
 			}
 			jRules.put(r.id, ruleObject);
@@ -388,9 +388,9 @@ public abstract class StateObject {
 				ruleObject.put("name", fRule.name);
 				ruleObject.put("isNum", fRule instanceof RuleInt);
 				if(fRule instanceof RuleInt){
-					ruleObject.put("val", ((RuleInt) fRule).val);
+					ruleObject.put(StateObject.val, ((RuleInt) fRule).getValue());
 				}else{
-					ruleObject.put("val", ((RuleBool) fRule).val);
+					ruleObject.put(StateObject.val, ((RuleBool) fRule).getValue());
 				}
 				jRules.put(id, ruleObject);
 			}
@@ -955,9 +955,10 @@ public abstract class StateObject {
 	public static final String host = "host";
 	public static final String timer = "timer";
 	
-	public static final String rules = "rules";
+	public static final String rules      = "rules";
 	public static final String ruleChange = "ruleChange";
-	public static final String ruleID = "ruleID";
+	public static final String ruleID     = "ruleID";
+	public static final String val        = "val";
 
 	public static final String playerName = "playerName";
 	public static final String playerIndex = "playerIndex";
