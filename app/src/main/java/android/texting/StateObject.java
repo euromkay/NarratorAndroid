@@ -431,13 +431,13 @@ public abstract class StateObject {
 			}
 			jMembers.put(jMemb);
 		}
-		jRandomRole.put("members", jMembers);
+		jRandomRole.put(members, jMembers);
 	}
 	
 	private void addRuleTexts(JSONObject jo, Member m) throws JSONException{
 		ArrayList<String> jRules = m.getBaseRole().getRuleTexts(n, m.getColor());
 		if(jRules.size() > 0)
-			jo.put("memberRuleExtras", jRules);
+			jo.put(StateObject.memberRuleExtras, jRules);
 	}
 	
 	private JSONObject packMember(RoleTemplate rt, boolean complex, HashMap<String, JSONObject> dictionary) throws JSONException{
@@ -455,7 +455,7 @@ public abstract class StateObject {
 		}else{
 			Member m = (Member) rt;
 			jMember.put("simpleName", m.getSimpleName());
-			if(n.isInProgress()){
+			if(n.isStarted()){
 				if(complex)
 					addOtherColors(jMember, m, dictionary);
 				addRuleTexts(jMember, m);
@@ -482,7 +482,7 @@ public abstract class StateObject {
 	}
 	
 	private void addJFactions(JSONObject state) throws JSONException{
-		JSONArray fMembers, blacklisted, allies, enemies, factionNames = new JSONArray();
+		JSONArray fMembers, blacklistedRoles, allies, enemies, factionNames = new JSONArray();
 		JSONObject jFaction, jRT, allyInfo, jFactions = new JSONObject();
 		String key;
 		ArrayList<FactionGrouping> fGroup = new ArrayList<>();
@@ -513,6 +513,9 @@ public abstract class StateObject {
 
 			fMembers = new JSONArray();
 			for(RoleTemplate rt: f.getMembers(fManager, possibleRoles)){
+				if(n.isStarted() && !rt.isRandom() && !possibleRoles.contains(((Member) rt).getBaseRole().getClass()))
+					continue;
+					
 				key = rt.getName() + rt.getColor();
 				jRT = factionRoleMap.get(key);
 				if(jRT == null){
@@ -524,16 +527,16 @@ public abstract class StateObject {
 
 				fMembers.put(jRT);
 			}
-			jFaction.put("members", fMembers);
+			jFaction.put(members, fMembers);
 			
-			blacklisted = new JSONArray();
+			blacklistedRoles = new JSONArray();
 			for(Role rt: f.getUnavailableRoles(fManager)){
 				jRT = new JSONObject();
 				jRT.put("name", rt.getRoleName());
 				jRT.put("simpleName", rt.getClass().getSimpleName());//really should only be using this field, since these are UNAVAILABLE
-				blacklisted.put(jRT);
+				blacklistedRoles.put(jRT);
 			}
-			jFaction.put("blacklisted", blacklisted);
+			jFaction.put(blacklisted, blacklistedRoles);
 			jFaction.put("rules", f.getRules(fManager));
 			
 			allies = new JSONArray();
@@ -630,8 +633,6 @@ public abstract class StateObject {
 		JSONObject chat;
 		for(EventLog el: Player.getEventLog(n, p)){
 			chat = new JSONObject();
-			if(el == null)
-				Player.getEventLog(n, p);
 			chat.put(StateObject.chatName, el.getName());
 			if(el.isActive())
 				chat.put(StateObject.chatKey, el.getKey());
@@ -926,6 +927,8 @@ public abstract class StateObject {
 	public static final String teamAllyName  = "teamAllyName";
 	public static final String teamAllyRole  = "teamAllyRole";
 	public static final String teamGodfather = "teamGodfather";
+	public static final String members       = "members";
+	public static final String blacklisted   = "blacklisted";
 	
 	public static final String possibleRandoms = "possibleRandoms";
 	public static final String spawn           = "spawn";
@@ -955,10 +958,11 @@ public abstract class StateObject {
 	public static final String host = "host";
 	public static final String timer = "timer";
 	
-	public static final String rules      = "rules";
-	public static final String ruleChange = "ruleChange";
-	public static final String ruleID     = "ruleID";
-	public static final String val        = "val";
+	public static final String rules            = "rules";
+	public static final String ruleChange       = "ruleChange";
+	public static final String ruleID           = "ruleID";
+	public static final String val              = "val";
+	public static final String memberRuleExtras = "memberRuleExtras";
 
 	public static final String playerName = "playerName";
 	public static final String playerIndex = "playerIndex";
@@ -975,14 +979,15 @@ public abstract class StateObject {
 	
 	public static final String leaveGame = "leaveGame";
 
-	public static final String deleteTeam = "deleteTeam";
-	public static final String removeTeamAlly = "removeTeamAlly";
+	public static final String addTeam         = "addTeam";
+	public static final String deleteTeam      = "deleteTeam";
+	public static final String removeTeamAlly  = "removeTeamAlly";
 	public static final String removeTeamEnemy = "removeTeamEnemy";
-	public static final String enemy = "enemy";
-	public static final String ally = "ally";
-	public static final String addTeamRole = "addTeamRole";
-	public static final String removeTeamRole = "removeTeamRole";
-	public static final String simpleName = "simpleName";
+	public static final String enemy           = "enemy";
+	public static final String ally            = "ally";
+	public static final String addTeamRole     = "addTeamRole";
+	public static final String removeTeamRole  = "removeTeamRole";
+	public static final String simpleName      = "simpleName";
 	
 	public static final String actions = "actions";
 	
