@@ -202,8 +202,11 @@ public abstract class StateObject {
 					allyObject.put(StateObject.teamAllyRole, ally.getRoleName());
 					allyObject.put(StateObject.teamAllyColor, group.getColor());
 					allyList.put(allyObject);
-					if(group.godfatherStatus){
-						allyObject.put(StateObject.teamGodfather, true);
+					if(group.untraceable == ally){
+						allyObject.put(StateObject.teamUntraceable, true);
+					}
+					if(group.ironWill == ally){
+						allyObject.put(StateObject.teamIronWill, true);
 					}
 				}
 				
@@ -921,14 +924,15 @@ public abstract class StateObject {
 	public static final String roleKnowsTeam = "roleKnowsTeam";
 	public static final String breadCount = "breadCount";
 	
-	public static final String teamName      = "teamName";
-	public static final String teamAllyColor = "teamAllyColor";
-	public static final String teamMembers   = "teamMembers";
-	public static final String teamAllyName  = "teamAllyName";
-	public static final String teamAllyRole  = "teamAllyRole";
-	public static final String teamGodfather = "teamGodfather";
-	public static final String members       = "members";
-	public static final String blacklisted   = "blacklisted";
+	public static final String teamName        = "teamName";
+	public static final String teamAllyColor   = "teamAllyColor";
+	public static final String teamMembers     = "teamMembers";
+	public static final String teamAllyName    = "teamAllyName";
+	public static final String teamAllyRole    = "teamAllyRole";
+	public static final String teamUntraceable = "teamUntraceable";
+	public static final String teamIronWill    = "teamIronWill";
+	public static final String members         = "members";
+	public static final String blacklisted     = "blacklisted";
 	
 	public static final String possibleRandoms = "possibleRandoms";
 	public static final String spawn           = "spawn";
