@@ -93,7 +93,7 @@ public class PlayerPopUp extends DialogFragment implements View.OnClickListener,
         } 
         Player clicked = null;
 		try {
-			clicked = activity.ns.local.getPlayerByName(players.getJSONObject(position).getString(StateObject.playerName));
+			clicked = activity.ns.local.getPlayerByID(players.getJSONObject(position).getString(StateObject.playerName));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

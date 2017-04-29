@@ -309,12 +309,12 @@ public class NarratorService extends Service {
 			sendMessage(jo);
 		} else {
 			Player owner = local.getPlayerByName(owner_s);
-			PlayerList targets = PlayerList.FromNames(target_s, local);
+			PlayerList targets = null;//PlayerList.FromNames(target_s, local);
 			int ability = owner.parseAbility(ability_s);
 			if (owner.getActions().isTargeting(targets, ability))
 				owner.cancelTarget(targets, ability);
 			else
-				owner.setTarget(ability, option, targets.getArray());
+				owner.setTarget(ability, option, (Player) null);//targets.getArray());
 		}
 	}
 

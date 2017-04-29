@@ -281,7 +281,7 @@ implements
 				if(ns.gameState.isAlive){
 					GUIController.selectScreen(this, topInDrawer);
 			}else{
-				if(ns.local.getPlayerByName(topInDrawer).isAlive())
+				if(ns.local.getPlayerByID(topInDrawer).isAlive())
 					GUIController.selectScreen(this, topInDrawer);
 			}
 		}
