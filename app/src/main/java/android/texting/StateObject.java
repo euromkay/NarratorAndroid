@@ -187,6 +187,7 @@ public abstract class StateObject {
 		roleInfo.put(StateObject.roleBaseName, baseName);
 		roleInfo.put(StateObject.roleDescription, description);
 		roleInfo.put(StateObject.breadCount, p.getRole().getBreadCount());
+		roleInfo.put(StateObject.displayName, p.getName());
 		
 		
 		ArrayList<Team> knownTeams = shouldShowTeam(p);
@@ -888,8 +889,10 @@ public abstract class StateObject {
 	}
 	
 	
-	public static final String hostPublic = "hostPublic";
-	public static final String joinPublic = "joinPublic";
+	public static final String hostPublic  = "hostPublic";
+	public static final String hostPrivate = "hostPrivate";
+	public static final String joinPublic  = "joinPublic";
+	public static final String joinPrivate  = "joinPrivate";
 	
 	public static final String lobbyUpdate = "lobbyUpdate";
 	public static final String guiUpdate   = "guiUpdate";
@@ -915,6 +918,7 @@ public abstract class StateObject {
 
 	public static final String activeTeams ="activeTeams";
 	
+	public static final String displayName = "displayName";
 	public static final String roleInfo = "roleInfo";
 	public static final String roleColor = "roleColor";
 	public static final String roleName = "roleName";
