@@ -805,7 +805,7 @@ public abstract class StateObject {
 						if(p.isJailed())
 							title = "You are jailed!";
 						else
-							title = "You have no acceptable night actions tonight!";
+							title = "Currently Sleeping";
 						playerLists.put(title, names);
 						playerLists.getJSONArray(StateObject.type).put(title);
 					}
@@ -1016,4 +1016,7 @@ public abstract class StateObject {
 	public static final String addBots = "addBotUsers";
 	public static final String botNum  = "number_of_bots";
 	
+	public static final String nodeError = "nodeError";
+	
+	public static final String nameChange = "nameChange";
 }

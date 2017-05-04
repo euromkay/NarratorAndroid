@@ -423,12 +423,14 @@ public class TextHandler extends CommandHandler implements NarratorListener {
 
     }
 
+    public static String END_NIGHT_CONF = "You've ended the night";
     public void onEndNight(Player p) {
-    	new OGIMessage(p, "You've ended the night");
+    	new OGIMessage(p, END_NIGHT_CONF);
     }
 
+    public static String CANCEL_END_NIGHT_CONF = "You've canceled your motion to end the night";
     public void onCancelEndNight(Player p) {
-    	new OGIMessage(p, "You've canceled your motion to end the night");
+    	new OGIMessage(p, CANCEL_END_NIGHT_CONF);
     }
 
     public void onMayorReveal(Player m, Message e){
