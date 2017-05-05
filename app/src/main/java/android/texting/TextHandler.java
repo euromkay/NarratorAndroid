@@ -8,6 +8,7 @@ import shared.event.EventList;
 import shared.event.Feedback;
 import shared.event.Message;
 import shared.event.OGIMessage;
+import shared.event.VoteAnnouncement;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -445,15 +446,15 @@ public class TextHandler extends CommandHandler implements NarratorListener {
     	
     }
 
-    public void onVote(Player p, Player q, int toLynch, Message e){
+    public void onVote(Player p, Player q, int toLynch, VoteAnnouncement e){
     	broadcast(e.access(Message.PUBLIC, false));
     }
 
-    public void onUnvote(Player p, Player q, int toLynch, Message e){
+    public void onUnvote(Player p, Player q, int toLynch, VoteAnnouncement e){
     	broadcast(e.access(Message.PUBLIC, false));
     }
 
-    public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, Message e) {
+    public void onChangeVote(Player voter, Player prevTarget, Player target, int toLynch, VoteAnnouncement e) {
     	broadcast(e.access(Message.PUBLIC, false));
     }
 

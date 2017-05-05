@@ -12,6 +12,7 @@ import json.JSONObject;
 import shared.event.Announcement;
 import shared.event.EventList;
 import shared.event.Message;
+import shared.event.VoteAnnouncement;
 import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
@@ -83,13 +84,13 @@ public class DayScreenController{
 		}
 
 
-		public void onVote(Player voter, Player target, int voteCount, Message e){
+		public void onVote(Player voter, Player target, int voteCount, VoteAnnouncement e){
 			dController.onVote(voter, target, voteCount, e);
 		}
-		public void onUnvote(Player voter, Player prev, int voteCountToLynch, Message e){
+		public void onUnvote(Player voter, Player prev, int voteCountToLynch, VoteAnnouncement e){
 			dController.onUnvote(voter, prev, voteCountToLynch, e);
 		}
-		public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch, Message e){
+		public void onChangeVote(Player voter, Player target, Player prevTarget, int toLynch, VoteAnnouncement e){
 			dController.onChangeVote(voter, target, prevTarget, toLynch, e);
 		}
 
