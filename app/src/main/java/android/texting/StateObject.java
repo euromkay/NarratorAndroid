@@ -898,10 +898,11 @@ public abstract class StateObject {
 	public static final String guiUpdate   = "guiUpdate";
 	public static final String messageType = "messageType";
 
-	public static final String chatReset  = "chatReset";
-	public static final String chatKey    = "chatKey";
-	public static final String chatName   = "chatName";
-	public static final String sender     = "sender";
+	public static final String unreadUpdate = "unreadUpdate";
+	public static final String chatReset    = "chatReset";
+	public static final String chatKey      = "chatKey";
+	public static final String chatName     = "chatName";
+	public static final String sender       = "sender";
 	
 	public static final String dayLabel = "dayLabel";
 	
@@ -911,6 +912,8 @@ public abstract class StateObject {
 
 	public static final String requestGameState = "requestGameState";
 	public static final String requestChat = "requestChat";
+	public static final String requestUnreads = "requestUnreads";
+	public static final String setReadChat = "setReadChat";
 
 	public static final String roles = "roles";
 	public static final String roleType = "roleType";
