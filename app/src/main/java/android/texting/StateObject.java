@@ -51,8 +51,9 @@ public abstract class StateObject {
 	public static final String ACTIONS     = "Actions";
 	public static final String VOTES       = "Votes";
 	
+	public static final String warning = "warning";
 	public static final String message = "message";
-	public static final String gameID = "gameID";
+	public static final String gameID  = "gameID";
 	
 	
 	

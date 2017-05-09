@@ -18,6 +18,9 @@ public class CommunicatorPhone extends Communicator{
 	public void sendMessage(EventList messages) {
 
 	}
+	public void sendWarning(Message e){
+		
+	}
 	
 	public boolean equals(Object o){
 		if(o == null)

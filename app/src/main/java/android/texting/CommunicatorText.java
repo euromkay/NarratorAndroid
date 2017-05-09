@@ -23,6 +23,9 @@ public class CommunicatorText extends Communicator{
 	public void sendMessage(Message e){
 		sendMessage(e.access(getPlayer(), false));
 	}
+	public void sendWarning(Message e){
+		sendMessage(e);
+	}
 	public void sendMessage(String message) {
 		if(message.length() < MAX_LENGTH){
 			sendText(message);
