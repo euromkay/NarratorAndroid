@@ -913,6 +913,8 @@ public abstract class StateObject {
 	
 	public static final String type = "type";
 	
+	public static final String playerList = "playerList";
+	
 	public static final String playerLists = "playerLists";
 
 	public static final String requestGameState = "requestGameState";
