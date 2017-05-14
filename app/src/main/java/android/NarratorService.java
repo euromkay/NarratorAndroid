@@ -498,7 +498,7 @@ public class NarratorService extends Service {
 				e.printStackTrace();
 			}
 		} else if (isHost()) {
-			local.getRules().setBool(id, b);
+			local.setBool(id, b);
 		}
 	}
 
@@ -506,7 +506,7 @@ public class NarratorService extends Service {
 		if (server.IsLoggedIn()) {
 			//server.UpdateRules(ns.getGameListing(), ns.local.getRules());
 		} else if (isHost()) {
-			local.getRules().setInt(id, b);
+			local.setInt(id, b);
 		}
 	}
 
@@ -1078,7 +1078,7 @@ public class NarratorService extends Service {
 		if(server.IsLoggedIn()){
 			return gameState.mayorVoteCount;
 		}else{
-			return local.getRules().getInt(Rules.MAYOR_VOTE_POWER);
+			return local.getInt(Rules.MAYOR_VOTE_POWER);
 		}
 	}
 	public int getMinLynchVote() {

@@ -327,8 +327,9 @@ public abstract class StateObject {
 				if(command != null)
 					jAction.put("command", command.toLowerCase());
 				else{
-					System.err.println("couldn't reverse this ability");
+					System.err.println("couldn't reverse this ability in StateObject");
 					System.err.println(p.toString());
+					p.reverseParse(a.ability);
 				}
 				if(p.is(Spy.class) && a.ability == Spy.MAIN_ABILITY){
 					t = n.getTeam(a.getOption());
@@ -361,7 +362,7 @@ public abstract class StateObject {
 	private void addJRules(JSONObject state) throws JSONException{
 		addJFactions(state);
 		JSONObject jRules = new JSONObject();
-		Rules rules = n.getRules();
+		Rules rules = n._rules;
 		Rule r;
 		JSONObject ruleObject;
 		for(String key: rules.rules.keySet()){
@@ -638,6 +639,9 @@ public abstract class StateObject {
 		JSONObject chat;
 		for(EventLog el: Player.getEventLog(n, p)){
 			chat = new JSONObject();
+			if(el == null){
+				Player.getEventLog(n, p);
+			}
 			chat.put(StateObject.chatName, el.getName());
 			if(el.isActive())
 				chat.put(StateObject.chatKey, el.getKey());
@@ -1026,4 +1030,8 @@ public abstract class StateObject {
 	
 	public static final String setSetup  = "setSetup";
 	public static final String setupName = "setupName";
+	
+	public static final String lastWill = "lastWill";
+	
+	public static final String releaseToken = "releaseToken";
 }
