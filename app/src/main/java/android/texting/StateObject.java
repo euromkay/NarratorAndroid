@@ -79,7 +79,7 @@ public abstract class StateObject {
 		JSONObject role, subRole;
 		JSONArray jPossibleRandoms;
 		RandomMember rm;
-		for(RoleTemplate r: n.getRolesList()){
+		for(RoleTemplate r: n.getRolesList().sort()){
 			role = new JSONObject();
 			role.put(StateObject.roleType, r.getName());
 			
