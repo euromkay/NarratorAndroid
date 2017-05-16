@@ -1033,7 +1033,9 @@ public abstract class StateObject {
 	public static final String setSetup  = "setSetup";
 	public static final String setupName = "setupName";
 	
-	public static final String lastWill = "lastWill";
+	public static final String lastWill     = "lastWill";
+	public static final String teamLastWill = "teamLastWill";
+	public static final String willText     = "willText";
 	
 	public static final String releaseToken = "releaseToken";
 }
