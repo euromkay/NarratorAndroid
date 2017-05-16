@@ -1038,4 +1038,6 @@ public abstract class StateObject {
 	public static final String willText     = "willText";
 	
 	public static final String releaseToken = "releaseToken";
+	public static final String guestTokenAdd = "guestTokenAdd";
+	public static final String token         = "token";
 }
