@@ -1028,6 +1028,7 @@ public abstract class StateObject {
 	
 	public static final String nodeError = "nodeError";
 	
+	public static final String action     = "action";
 	public static final String nameChange = "nameChange";
 	
 	public static final String setSetup  = "setSetup";
