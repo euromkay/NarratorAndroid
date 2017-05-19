@@ -60,7 +60,6 @@ import json.JSONException;
 import json.JSONObject;
 import shared.event.OGIMessage;
 import shared.logic.Member;
-import shared.logic.Narrator;
 import shared.logic.Player;
 import shared.logic.PlayerList;
 import shared.logic.exceptions.IllegalActionException;
@@ -784,7 +783,7 @@ implements
 
 	public void showMessagesPanel() {
 		showView(chatLV);
-		if(manager.dScreenController.playerSelected() || Narrator.DEBUG) {
+		if(manager.dScreenController.playerSelected()) {
 			showView(chatET);
 			showView(chatButton);
 		}
