@@ -262,6 +262,8 @@ public abstract class StateObject {
 				color = p.getTeam().getColor();
 				roleName = p.getRoleName();
 				baseName = p.getRole().getClass().getSimpleName();
+				if(p._lastWill != null && !p._lastWill.isEmpty())
+					graveMarker.put(StateObject.lastWill, p._lastWill);
 			}
 			graveMarker.put(StateObject.roleBaseName, baseName);
 			graveMarker.put(StateObject.roleName, roleName);
@@ -275,7 +277,7 @@ public abstract class StateObject {
 			
 			deathTypes = new JSONArray();
 			for(String[] s: dt.getList()){
-				deathTypes.put(s[1]);
+				deathTypes.put(s[1]);//0 is the id, 1 is the description
 			}
 			graveMarker.put("deathTypes", deathTypes);
 		}
