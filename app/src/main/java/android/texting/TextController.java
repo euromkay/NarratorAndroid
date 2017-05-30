@@ -14,6 +14,7 @@ import shared.roles.Jailor;
 import shared.roles.Mayor;
 import shared.roles.Role;
 import shared.roles.Tailor;
+import shared.roles.Ventriloquist;
 import shared.roles.Veteran;
 
 
@@ -155,6 +156,18 @@ public class TextController implements Controller {
 
 	public void cancelDayAction(Player slave, int i) {
 		texter.text(slave, Constants.CANCEL + " " + (i), SYNC);
+	}
+
+	public void ventVote(Player vent, Player puppet, Player target) {
+		texter.text(vent, Ventriloquist.VENT_VOTE + " " + puppet.getName() + " " + target.getName(), SYNC);
+	}
+
+	public void ventUnvote(Player vent, Player puppet) {
+		texter.text(vent, Ventriloquist.VENT_UNVOTE + " " + puppet.getName(), SYNC);
+	}
+
+	public void ventSkipVote(Player vent, Player puppet) {
+		texter.text(vent, Ventriloquist.VENT_SKIP_VOTE + " " + puppet, SYNC);
 	}
 
 	
