@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import android.day.ActivityDay;
 import android.day.TargetablesAdapter;
 import android.screens.SimpleGestureFilter;
-import android.texting.TextController;
-import android.texting.TextInput;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -23,15 +21,15 @@ import shared.roles.Role;
 import shared.roles.Spy;
 import voss.narrator.R;
 
-public class GUIController implements Controller, TextInput{
+public class GUIController implements Controller, shared.logic.templates.TextController.TextInput{
 
     public ActivityDay dScreen;
     public Random rand;
-    private TextController logger;
+    private shared.logic.templates.TextController logger;
     public GUIController(ActivityDay dScreen){
         this.dScreen = dScreen;
         rand = new Random();
-        logger = new TextController(this);
+        logger = new shared.logic.templates.TextController(this);
     }
 
 
@@ -294,5 +292,23 @@ public class GUIController implements Controller, TextInput{
 		logger.doDayAction(slave, target);
 		selectSlave(slave);
 		swipeAbilityPanel(target.getDayAbilities().get(0));
+	}
+
+	@Override
+	public void ventVote(Player vent, Player puppet, Player target) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ventUnvote(Player vent, Player puppet) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ventSkipVote(Player vent, Player puppet) {
+		// TODO Auto-generated method stub
+		
 	}
 }
